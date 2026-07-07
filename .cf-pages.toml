@@ -1,0 +1,15 @@
+# Cloudflare Pages configuration
+# W-Forex Bot Frontend (Next.js 16)
+
+# Build settings
+[build]
+  command = "npm run build"
+  cwd = "web"
+
+# Environment variables (set these in Cloudflare dashboard too)
+[vars]
+  NODE_VERSION = "20"
+
+# Next.js on Cloudflare needs @cloudflare/next-on-pages
+# Install: npm install -D @cloudflare/next-on-pages
+# Build command alternative: npx @cloudflare/next-on-pages

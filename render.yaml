@@ -1,0 +1,74 @@
+services:
+  # ====================================================================
+  #  W-FOREX-BOT · API Server
+  # ====================================================================
+  - type: web
+    name: w-forex-bot-api
+    runtime: node
+    plan: starter
+    region: frankfurt
+    rootDir: server
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npx prisma migrate deploy && npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: w-forex-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_JWT_SECRET
+        generateValue: true
+      - key: ADMIN_EMAIL
+        value: admin@wforexbot.com
+      - key: ENCRYPTION_KEY
+        generateValue: true
+      - key: CORS_ORIGIN
+        value: https://w-forex-bot.onrender.com
+      - key: PAYMENTO_API_URL
+        value: https://api.paymento.io/v1
+      - key: PAYMENTO_API_KEY
+        sync: false  # set manually in dashboard
+      - key: PAYMENTO_SECRET_KEY
+        sync: false
+      - key: PAYMENTO_MERCHANT_ID
+        sync: false
+      - key: PAYMENTO_IPN_URL
+        value: https://w-forex-bot-api.onrender.com/api/payments/ipn
+      - key: TELEGRAM_CHANNEL_URL
+        value: https://t.me/+iXalBkHABfBkYWQ0
+
+  # ====================================================================
+  #  W-FOREX-BOT · Frontend (Next.js)
+  # ====================================================================
+  - type: web
+    name: w-forex-bot-web
+    runtime: node
+    plan: starter
+    region: frankfurt
+    rootDir: web
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        value: https://w-forex-bot-api.onrender.com
+      - key: NEXT_PUBLIC_TELEGRAM_CHANNEL
+        value: https://t.me/+iXalBkHABfBkYWQ0
+
+# ====================================================================
+#  DATABASE
+# ====================================================================
+databases:
+  - name: w-forex-db
+    databaseName: wforexbot
+    plan: starter
+    region: frankfurt
+    ipAllowList: []  # allow all (tighten in production)

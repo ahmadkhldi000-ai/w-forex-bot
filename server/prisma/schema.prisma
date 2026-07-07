@@ -1,0 +1,503 @@
+// ====================================================================
+//  W-FOREX-BOT · Prisma Schema
+//  Database: PostgreSQL
+//  ====================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --------------------------------------------------------------------
+//  ENUMS
+// --------------------------------------------------------------------
+
+enum UserRole {
+  USER
+  VIP
+  PREMIUM
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+  PENDING
+}
+
+enum SubscriptionTier {
+  FREE
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PAST_DUE
+  TRIALING
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+  EXPIRED
+}
+
+enum PaymentMethod {
+  USDT_TRC20
+  USDT_ERC20
+  BTC
+  ETH
+  TRX
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+  LIFETIME
+}
+
+enum TradeType {
+  BUY
+  SELL
+}
+
+enum TradeStatus {
+  OPEN
+  CLOSED
+  PENDING
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+  MODERATOR
+}
+
+enum Permission {
+  // Users
+  USERS_VIEW
+  USERS_MANAGE
+  // Subscriptions
+  SUBS_VIEW
+  SUBS_MANAGE
+  // Payments
+  PAYMENTS_VIEW
+  PAYMENTS_MANAGE
+  // Bot
+  BOT_VIEW
+  BOT_MANAGE
+  // MT5
+  MT5_VIEW
+  MT5_MANAGE
+  // Settings
+  SETTINGS_VIEW
+  SETTINGS_MANAGE
+  // Notifications
+  NOTIFS_MANAGE
+  // Reports
+  REPORTS_VIEW
+  REPORTS_EXPORT
+  // Audit Logs
+  LOGS_VIEW
+  LOGS_EXPORT
+  // Admins (super admin only)
+  ADMINS_MANAGE
+}
+
+enum LogAction {
+  LOGIN
+  LOGOUT
+  REGISTER
+  CREATE
+  UPDATE
+  DELETE
+  PAYMENT
+  SUBSCRIPTION_CHANGE
+  RISK_CONSENT
+  BOT_ACTION
+  MT5_ACTION
+  SETTINGS_CHANGE
+  FAILED_LOGIN
+  EXPORT
+}
+
+// --------------------------------------------------------------------
+//  USER MODEL
+// --------------------------------------------------------------------
+
+model User {
+  id              String         @id @default(cuid())
+  email           String         @unique
+  passwordHash    String
+  name            String?
+  phone           String?
+  avatarUrl       String?
+
+  role            UserRole       @default(USER)
+  status          UserStatus     @default(PENDING)
+
+  // Risk consent (click-through agreement)
+  riskAccepted    Boolean        @default(false)
+  riskAcceptedAt  DateTime?
+  riskAcceptedIp  String?
+
+  // Email verification & 2FA
+  emailVerified   Boolean        @default(false)
+  twoFactorEnabled Boolean       @default(false)
+  twoFactorSecret String?
+
+  // Copy trading settings
+  copyTradingEnabled  Boolean    @default(false)
+  copyRiskPercent     Float      @default(2) @db.Real
+  copyMaxLeverage     Int        @default(30)
+  copyLotSize         Float      @default(0.01) @db.Real
+
+  // MT5 connection (encrypted at rest by app layer)
+  mt5Login        String?
+  mt5PasswordEnc  String?        // AES-256 encrypted
+  mt5Server       String?
+
+  // Subscription relation
+  subscriptions   Subscription[]
+
+  // Relations
+  payments        Payment[]
+  trades          Trade[]
+  sessions        Session[]
+  notifications   Notification[]
+  auditLogs       AuditLog[]
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  lastLoginAt     DateTime?
+  lastLoginIp     String?
+
+  @@index([email])
+  @@index([status])
+  @@map("users")
+}
+
+// --------------------------------------------------------------------
+//  ADMIN MODEL (separate table from users — as per spec)
+// --------------------------------------------------------------------
+
+model Admin {
+  id              String         @id @default(cuid())
+  email           String         @unique
+  username        String         @unique
+  passwordHash    String
+
+  name            String?
+  role            AdminRole      @default(ADMIN)
+  permissions     Permission[]
+
+  // Security
+  twoFactorEnabled Boolean       @default(false)
+  twoFactorSecret String?
+  forcePasswordChange Boolean    @default(true)  // must change on first login
+
+  // IP whitelist
+  ipWhitelist     String[]       @default([])
+
+  // Account lockout
+  failedAttempts  Int            @default(0)
+  lockedUntil     DateTime?
+
+  // Session control
+  sessions        AdminSession[]
+  auditLogs       AuditLog[]
+
+  // SSO
+  googleId        String?
+  githubId        String?
+
+  isActive        Boolean        @default(true)
+  lastLoginAt     DateTime?
+  lastLoginIp     String?
+  newDeviceNotifiedAt DateTime?
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([email])
+  @@map("admins")
+}
+
+// --------------------------------------------------------------------
+//  SESSIONS
+// --------------------------------------------------------------------
+
+model Session {
+  id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token       String     @unique
+  ipAddress   String?
+  userAgent   String?
+  expiresAt   DateTime
+  createdAt   DateTime   @default(now())
+
+  @@index([userId])
+  @@index([token])
+  @@map("sessions")
+}
+
+model AdminSession {
+  id          String     @id @default(cuid())
+  adminId     String
+  admin       Admin      @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  token       String     @unique
+  ipAddress   String?
+  userAgent   String?
+  expiresAt   DateTime
+  createdAt   DateTime   @default(now())
+
+  @@index([adminId])
+  @@map("admin_sessions")
+}
+
+// --------------------------------------------------------------------
+//  SUBSCRIPTIONS
+// --------------------------------------------------------------------
+
+model Subscription {
+  id              String             @id @default(cuid())
+  userId          String
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tier            SubscriptionTier   @default(FREE)
+  status          SubscriptionStatus @default(TRIALING)
+  billingCycle    BillingCycle       @default(MONTHLY)
+
+  amount          Decimal            @db.Decimal(12, 2)
+  currency        String             @default("USD")
+
+  startDate       DateTime
+  endDate         DateTime
+  cancelledAt     DateTime?
+
+  // Coupon
+  couponCode      String?
+  discountPercent Float              @default(0) @db.Real
+
+  // Related payments
+  payments        Payment[]
+
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+// --------------------------------------------------------------------
+//  PAYMENTS (Paymento integration)
+// --------------------------------------------------------------------
+
+model Payment {
+  id              String         @id @default(cuid())
+  userId          String?
+  user            User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  subscriptionId  String?
+  subscription    Subscription?  @relation(fields: [subscriptionId], references: [id])
+
+  // Paymento
+  paymentoToken   String?        @unique    // token from Paymento step 2
+  paymentoTxId    String?        @unique    // transaction id from Paymento
+
+  amount          Decimal        @db.Decimal(12, 2)
+  currency        String         @default("USD")
+  method          PaymentMethod?
+  status          PaymentStatus  @default(PENDING)
+
+  // Guest checkout
+  guestEmail      String?
+
+  // Webhook tracking
+  ipnReceived     Boolean        @default(false)
+  ipnVerified     Boolean        @default(false)
+  ipnPayload      Json?           // raw payload for audit
+
+  description     String?
+  invoiceUrl      String?
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  completedAt     DateTime?
+
+  @@index([userId])
+  @@index([status])
+  @@index([paymentoTxId])
+  @@map("payments")
+}
+
+// --------------------------------------------------------------------
+//  TRADES (real-time from MT5)
+// --------------------------------------------------------------------
+
+model Trade {
+  id              String       @id @default(cuid())
+  userId          String?
+  user            User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // MT5
+  mt5Ticket       BigInt       @unique
+  mt5Login        String
+  symbol          String
+  type            TradeType
+  volume          Float        @db.Real
+  openPrice       Float        @db.DoublePrecision
+  closePrice      Float?       @db.DoublePrecision
+  sl              Float?       @db.DoublePrecision
+  tp              Float?       @db.DoublePrecision
+
+  profit          Float        @default(0) @db.DoublePrecision
+  swap            Float        @default(0) @db.DoublePrecision
+  commission      Float        @default(0) @db.DoublePrecision
+  netProfit       Float        @default(0) @db.DoublePrecision
+
+  status          TradeStatus  @default(OPEN)
+  isCopyTrade     Boolean      @default(false)
+
+  openTime        DateTime
+  closeTime       DateTime?
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([symbol])
+  @@index([status])
+  @@index([mt5Login])
+  @@map("trades")
+}
+
+// --------------------------------------------------------------------
+//  NOTIFICATIONS
+// --------------------------------------------------------------------
+
+model Notification {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type        String    // payment, subscription, trade, system, risk
+  title       String
+  message     String
+  isRead      Boolean   @default(false)
+  data        Json?
+
+  createdAt   DateTime  @default(now())
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+// --------------------------------------------------------------------
+//  AUDIT LOGS (compliance — all admin & user actions)
+// --------------------------------------------------------------------
+
+model AuditLog {
+  id          String     @id @default(cuid())
+  userId      String?
+  user        User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  adminId     String?
+  admin       Admin?     @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  action      LogAction
+  resource    String?    // e.g. "user", "payment", "subscription"
+  resourceId  String?
+
+  ipAddress   String?
+  userAgent   String?
+  details     Json?      // before/after diff or extra context
+
+  createdAt   DateTime   @default(now())
+
+  @@index([userId])
+  @@index([adminId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// --------------------------------------------------------------------
+//  PLATFORM SETTINGS (managed by admin)
+// --------------------------------------------------------------------
+
+model Setting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  type        String   @default("string") // string, number, boolean, json
+  category    String   @default("general")
+  description String?
+  isPublic    Boolean  @default(false)
+
+  updatedAt   DateTime @updatedAt
+  updatedBy   String?  // adminId
+
+  @@map("settings")
+}
+
+// --------------------------------------------------------------------
+//  COUPONS
+// --------------------------------------------------------------------
+
+model Coupon {
+  id              String   @id @default(cuid())
+  code            String   @unique
+  description     String?
+  discountPercent Float    @db.Real
+  maxUses         Int      @default(-1) // -1 = unlimited
+  usedCount       Int      @default(0)
+  validFrom       DateTime @default(now())
+  validUntil      DateTime?
+  isActive        Boolean  @default(true)
+  appliedTo       SubscriptionTier?
+
+  createdAt       DateTime @default(now())
+
+  @@map("coupons")
+}
+
+// --------------------------------------------------------------------
+//  MEMBERSHIP PLANS (configurable pricing)
+// --------------------------------------------------------------------
+
+model Plan {
+  id              String           @id @default(cuid())
+  tier            SubscriptionTier @unique
+  name            String
+  description     String?
+
+  priceMonthly    Decimal          @db.Decimal(12, 2)
+  priceYearly     Decimal          @db.Decimal(12, 2)
+  currency        String           @default("USD")
+
+  // Limits
+  maxAccounts     Int              @default(1)
+  maxLotSize      Float            @default(0.01) @db.Real
+  maxLeverage     Int              @default(30)
+  features        Json             // array of feature strings
+
+  isActive        Boolean          @default(true)
+  sortOrder       Int              @default(0)
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@map("plans")
+}
