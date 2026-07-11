@@ -53,3 +53,8 @@ web/.investigation/
 # Test/investigation artifacts
 test-results/
 .investigation/
+
+# Temporary deploy config files
+next.config.ts.bak
+next.config.github.ts
+.env.github

@@ -1,5 +1,7 @@
 # 🤖 W-Forex Bot
 
+> 🌐 **Live Demo:** https://ahmadkhldi000-ai.github.io/w-forex-bot/
+
 <div dir="rtl">
 
 منصة تداول فوركس متكاملة بالذكاء الاصطناعي — اتصال مباشر بـ MetaTrader 5، نظام نسخ صفقات احترافي، اشتراكات متعددة الطبقات، ولوحة إدارة كاملة.
