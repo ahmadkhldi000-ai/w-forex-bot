@@ -2,17 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Menu, X, TrendingUp } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const links = [
-  { label: "الميزات", href: "#features" },
-  { label: "الاستراتيجية", href: "#strategy" },
-  { label: "كيف يعمل", href: "#how" },
-  { label: "الأسعار", href: "#pricing" },
-];
+import { useI18n } from "@/lib/i18n/provider";
+import { LangToggle } from "./lang-toggle";
 
 export function MarketingNav() {
+  const { lang, t } = useI18n();
+  const links = t.nav.links[lang];
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -34,9 +31,17 @@ export function MarketingNav() {
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-10">
         {/* Logo */}
-        <Link href="/" className="group flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--accent-bright)] to-[var(--accent)] shadow-[0_6px_20px_-6px_rgba(25,201,138,0.7)]">
-            <TrendingUp className="h-5 w-5 text-[#04130d]" strokeWidth={2.5} />
+        <Link href="/" className="flex items-center gap-2.5">
+          <span className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--accent-bright)] to-[var(--accent)] shadow-[0_6px_20px_-6px_rgba(25,201,138,0.6)]">
+            <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
+              <path
+                d="M3 17l5-6 4 4 5-8 4 5"
+                stroke="#04130d"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </span>
           <span className="flex items-baseline gap-1">
             <span className="text-lg font-bold tracking-tight text-[var(--text-primary)]">
@@ -74,35 +79,39 @@ export function MarketingNav() {
         </nav>
 
         <div className="hidden items-center gap-2 lg:flex">
+          <LangToggle variant="compact" />
           <a
             href="/dashboard"
             className="rounded-lg px-3.5 py-2 text-sm font-medium text-[var(--text-secondary)] transition-smooth hover:text-[var(--text-primary)]"
           >
-            تسجيل الدخول
+            {t.nav.signin[lang]}
           </a>
           <a
             href="/dashboard"
             className="shine relative inline-flex h-10 items-center gap-1.5 overflow-hidden rounded-xl bg-gradient-to-b from-[var(--accent-bright)] to-[var(--accent)] px-5 text-sm font-semibold text-[#04130d] shadow-[0_8px_24px_-8px_rgba(25,201,138,0.6)] transition-smooth hover:-translate-y-0.5"
           >
-            الدخول للوحة التحكم
+            {t.nav.dashboard[lang]}
           </a>
         </div>
 
-        {/* Mobile toggle */}
-        <button
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-[var(--text-primary)] hover:bg-white/5 lg:hidden"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="القائمة"
-        >
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        {/* Mobile controls */}
+        <div className="flex items-center gap-2 lg:hidden">
+          <LangToggle variant="compact" />
+          <button
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-[var(--text-primary)] hover:bg-white/5"
+            onClick={() => setOpen((v) => !v)}
+            aria-label={t.nav.menu[lang]}
+          >
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}
       <div
         className={cn(
           "overflow-hidden transition-smooth lg:hidden",
-          open ? "max-h-80 border-b border-[var(--border-subtle)]" : "max-h-0",
+          open ? "max-h-96 border-b border-[var(--border-subtle)]" : "max-h-0",
         )}
         style={{ background: "var(--bg-base)" }}
       >
@@ -119,9 +128,10 @@ export function MarketingNav() {
           ))}
           <a
             href="/dashboard"
+            onClick={() => setOpen(false)}
             className="mt-2 inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-b from-[var(--accent-bright)] to-[var(--accent)] text-sm font-semibold text-[#04130d]"
           >
-            الدخول للوحة التحكم
+            {t.nav.dashboard[lang]}
           </a>
         </div>
       </div>

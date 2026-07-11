@@ -16,6 +16,8 @@ import {
   ShieldCheck,
   LogOut,
   ChevronLeft,
+  Server,
+  Lock,
 } from "lucide-react";
 
 const navItems = [
@@ -23,9 +25,11 @@ const navItems = [
   { label: "المستخدمون", href: "/admin/users", icon: Users },
   { label: "الاشتراكات", href: "/admin/subscriptions", icon: Repeat },
   { label: "المدفوعات", href: "/admin/payments", icon: CreditCard },
+  { label: "حسابات MT5", href: "/admin/mt5-accounts", icon: Server },
   { label: "البوت & MT5", href: "/admin/bot", icon: Bot },
   { label: "التقارير", href: "/admin/reports", icon: BarChart3 },
-  { label: "سجلّات النظام", href: "/admin/logs", icon: ScrollText },
+  { label: "سجلّات النشاط", href: "/admin/logs", icon: ScrollText },
+  { label: "الأمان", href: "/admin/security", icon: Lock },
   { label: "الإعدادات", href: "/admin/settings", icon: Settings },
 ];
 

@@ -34,6 +34,7 @@ enum SubscriptionTier {
   BASIC
   PRO
   ENTERPRISE
+  VIP
 }
 
 enum SubscriptionStatus {
@@ -136,51 +137,52 @@ enum LogAction {
 // --------------------------------------------------------------------
 
 model User {
-  id              String         @id @default(cuid())
-  email           String         @unique
-  passwordHash    String
-  name            String?
-  phone           String?
-  avatarUrl       String?
+  id           String  @id @default(cuid())
+  email        String  @unique
+  passwordHash String
+  name         String?
+  phone        String?
+  avatarUrl    String?
 
-  role            UserRole       @default(USER)
-  status          UserStatus     @default(PENDING)
+  role   UserRole   @default(USER)
+  status UserStatus @default(PENDING)
 
   // Risk consent (click-through agreement)
-  riskAccepted    Boolean        @default(false)
-  riskAcceptedAt  DateTime?
-  riskAcceptedIp  String?
+  riskAccepted   Boolean   @default(false)
+  riskAcceptedAt DateTime?
+  riskAcceptedIp String?
 
   // Email verification & 2FA
-  emailVerified   Boolean        @default(false)
-  twoFactorEnabled Boolean       @default(false)
-  twoFactorSecret String?
+  emailVerified    Boolean @default(false)
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret  String?
 
   // Copy trading settings
-  copyTradingEnabled  Boolean    @default(false)
-  copyRiskPercent     Float      @default(2) @db.Real
-  copyMaxLeverage     Int        @default(30)
-  copyLotSize         Float      @default(0.01) @db.Real
+  copyTradingEnabled Boolean @default(false)
+  copyRiskPercent    Float   @default(2) @db.Real
+  copyMaxLeverage    Int     @default(30)
+  copyLotSize        Float   @default(0.01) @db.Real
 
   // MT5 connection (encrypted at rest by app layer)
-  mt5Login        String?
-  mt5PasswordEnc  String?        // AES-256 encrypted
-  mt5Server       String?
+  mt5Login       String?
+  mt5PasswordEnc String? // AES-256 encrypted
+  mt5Server      String?
 
   // Subscription relation
-  subscriptions   Subscription[]
+  subscriptions Subscription[]
 
   // Relations
-  payments        Payment[]
-  trades          Trade[]
-  sessions        Session[]
-  notifications   Notification[]
-  auditLogs       AuditLog[]
+  payments      Payment[]
+  invoices      Invoice[]
+  trades        Trade[]
+  sessions      Session[]
+  notifications Notification[]
+  auditLogs     AuditLog[]
 
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  lastLoginAt     DateTime?
-  lastLoginIp     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  lastLoginAt DateTime?
+  lastLoginIp String?
 
   @@index([email])
   @@index([status])
@@ -192,42 +194,42 @@ model User {
 // --------------------------------------------------------------------
 
 model Admin {
-  id              String         @id @default(cuid())
-  email           String         @unique
-  username        String         @unique
-  passwordHash    String
+  id           String @id @default(cuid())
+  email        String @unique
+  username     String @unique
+  passwordHash String
 
-  name            String?
-  role            AdminRole      @default(ADMIN)
-  permissions     Permission[]
+  name        String?
+  role        AdminRole    @default(ADMIN)
+  permissions Permission[]
 
   // Security
-  twoFactorEnabled Boolean       @default(false)
-  twoFactorSecret String?
-  forcePasswordChange Boolean    @default(true)  // must change on first login
+  twoFactorEnabled    Boolean @default(false)
+  twoFactorSecret     String?
+  forcePasswordChange Boolean @default(true) // must change on first login
 
   // IP whitelist
-  ipWhitelist     String[]       @default([])
+  ipWhitelist String[] @default([])
 
   // Account lockout
-  failedAttempts  Int            @default(0)
-  lockedUntil     DateTime?
+  failedAttempts Int       @default(0)
+  lockedUntil    DateTime?
 
   // Session control
-  sessions        AdminSession[]
-  auditLogs       AuditLog[]
+  sessions  AdminSession[]
+  auditLogs AuditLog[]
 
   // SSO
-  googleId        String?
-  githubId        String?
+  googleId String?
+  githubId String?
 
-  isActive        Boolean        @default(true)
-  lastLoginAt     DateTime?
-  lastLoginIp     String?
+  isActive            Boolean   @default(true)
+  lastLoginAt         DateTime?
+  lastLoginIp         String?
   newDeviceNotifiedAt DateTime?
 
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([email])
   @@map("admins")
@@ -238,14 +240,14 @@ model Admin {
 // --------------------------------------------------------------------
 
 model Session {
-  id          String     @id @default(cuid())
-  userId      String
-  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  token       String     @unique
-  ipAddress   String?
-  userAgent   String?
-  expiresAt   DateTime
-  createdAt   DateTime   @default(now())
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 
   @@index([userId])
   @@index([token])
@@ -253,14 +255,14 @@ model Session {
 }
 
 model AdminSession {
-  id          String     @id @default(cuid())
-  adminId     String
-  admin       Admin      @relation(fields: [adminId], references: [id], onDelete: Cascade)
-  token       String     @unique
-  ipAddress   String?
-  userAgent   String?
-  expiresAt   DateTime
-  createdAt   DateTime   @default(now())
+  id        String   @id @default(cuid())
+  adminId   String
+  admin     Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 
   @@index([adminId])
   @@map("admin_sessions")
@@ -271,30 +273,31 @@ model AdminSession {
 // --------------------------------------------------------------------
 
 model Subscription {
-  id              String             @id @default(cuid())
-  userId          String
-  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  tier            SubscriptionTier   @default(FREE)
-  status          SubscriptionStatus @default(TRIALING)
-  billingCycle    BillingCycle       @default(MONTHLY)
+  tier         SubscriptionTier   @default(FREE)
+  status       SubscriptionStatus @default(TRIALING)
+  billingCycle BillingCycle       @default(MONTHLY)
 
-  amount          Decimal            @db.Decimal(12, 2)
-  currency        String             @default("USD")
+  amount   Decimal @db.Decimal(12, 2)
+  currency String  @default("USD")
 
-  startDate       DateTime
-  endDate         DateTime
-  cancelledAt     DateTime?
+  startDate   DateTime
+  endDate     DateTime
+  cancelledAt DateTime?
 
   // Coupon
   couponCode      String?
-  discountPercent Float              @default(0) @db.Real
+  discountPercent Float   @default(0) @db.Real
 
   // Related payments
-  payments        Payment[]
+  payments Payment[]
+  invoices Invoice[]
 
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([status])
@@ -306,41 +309,105 @@ model Subscription {
 // --------------------------------------------------------------------
 
 model Payment {
-  id              String         @id @default(cuid())
-  userId          String?
-  user            User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  id     String  @id @default(cuid())
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  subscriptionId  String?
-  subscription    Subscription?  @relation(fields: [subscriptionId], references: [id])
+  subscriptionId String?
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
 
   // Paymento
-  paymentoToken   String?        @unique    // token from Paymento step 2
-  paymentoTxId    String?        @unique    // transaction id from Paymento
+  paymentoToken String? @unique // token from Paymento step 2
+  paymentoTxId  String? @unique // transaction id from Paymento
 
-  amount          Decimal        @db.Decimal(12, 2)
-  currency        String         @default("USD")
-  method          PaymentMethod?
-  status          PaymentStatus  @default(PENDING)
+  amount   Decimal        @db.Decimal(12, 2)
+  currency String         @default("USD")
+  method   PaymentMethod?
+  status   PaymentStatus  @default(PENDING)
 
   // Guest checkout
-  guestEmail      String?
+  guestEmail String?
 
   // Webhook tracking
-  ipnReceived     Boolean        @default(false)
-  ipnVerified     Boolean        @default(false)
-  ipnPayload      Json?           // raw payload for audit
+  ipnReceived Boolean @default(false)
+  ipnVerified Boolean @default(false)
+  ipnPayload  Json? // raw payload for audit
 
-  description     String?
-  invoiceUrl      String?
+  description String?
+  invoiceUrl  String?
 
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  completedAt     DateTime?
+  // USDT TRC-20 payment tracking
+  depositAddress String? // TRC-20 wallet address to receive payment
+  cryptoNetwork  String? @default("TRC20") // TRC20, ERC20, etc.
+  cryptoAmount  Decimal? @db.Decimal(18, 6) // amount in crypto (USDT)
+  txHash        String? // on-chain transaction hash
+  confirmations Int    @default(0) // blockchain confirmations
+  paymentWindowExpires DateTime? // countdown deadline for pending payment
+
+  invoices Invoice[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  completedAt DateTime?
 
   @@index([userId])
   @@index([status])
   @@index([paymentoTxId])
+  @@index([depositAddress])
+  @@index([txHash])
   @@map("payments")
+}
+
+// --------------------------------------------------------------------
+//  INVOICES
+// --------------------------------------------------------------------
+
+model Invoice {
+  id          String   @id @default(cuid())
+  number      String   @unique // sequential: INV-2026-0001
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  subscriptionId String?
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+
+  paymentId   String?
+  payment     Payment? @relation(fields: [paymentId], references: [id])
+
+  // Line items
+  tier         String
+  billingCycle String
+  subtotal     Decimal @db.Decimal(12, 2)
+  discount     Decimal @db.Decimal(12, 2) @default(0)
+  tax          Decimal @db.Decimal(12, 2) @default(0)
+  total        Decimal @db.Decimal(12, 2)
+
+  currency   String  @default("USD")
+  status     InvoiceStatus @default(PENDING)
+
+  // Billing details
+  customerName  String?
+  customerEmail String?
+  notes         String?
+
+  issueDate    DateTime @default(now())
+  dueDate      DateTime
+  paidAt       DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([subscriptionId])
+  @@index([status])
+  @@map("invoices")
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  VOID
+  REFUNDED
 }
 
 // --------------------------------------------------------------------
@@ -348,34 +415,34 @@ model Payment {
 // --------------------------------------------------------------------
 
 model Trade {
-  id              String       @id @default(cuid())
-  userId          String?
-  user            User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  id     String  @id @default(cuid())
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   // MT5
-  mt5Ticket       BigInt       @unique
-  mt5Login        String
-  symbol          String
-  type            TradeType
-  volume          Float        @db.Real
-  openPrice       Float        @db.DoublePrecision
-  closePrice      Float?       @db.DoublePrecision
-  sl              Float?       @db.DoublePrecision
-  tp              Float?       @db.DoublePrecision
+  mt5Ticket  BigInt    @unique
+  mt5Login   String
+  symbol     String
+  type       TradeType
+  volume     Float     @db.Real
+  openPrice  Float     @db.DoublePrecision
+  closePrice Float?    @db.DoublePrecision
+  sl         Float?    @db.DoublePrecision
+  tp         Float?    @db.DoublePrecision
 
-  profit          Float        @default(0) @db.DoublePrecision
-  swap            Float        @default(0) @db.DoublePrecision
-  commission      Float        @default(0) @db.DoublePrecision
-  netProfit       Float        @default(0) @db.DoublePrecision
+  profit     Float @default(0) @db.DoublePrecision
+  swap       Float @default(0) @db.DoublePrecision
+  commission Float @default(0) @db.DoublePrecision
+  netProfit  Float @default(0) @db.DoublePrecision
 
-  status          TradeStatus  @default(OPEN)
-  isCopyTrade     Boolean      @default(false)
+  status      TradeStatus @default(OPEN)
+  isCopyTrade Boolean     @default(false)
 
-  openTime        DateTime
-  closeTime       DateTime?
+  openTime  DateTime
+  closeTime DateTime?
 
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([symbol])
@@ -389,17 +456,17 @@ model Trade {
 // --------------------------------------------------------------------
 
 model Notification {
-  id          String    @id @default(cuid())
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  type        String    // payment, subscription, trade, system, risk
-  title       String
-  message     String
-  isRead      Boolean   @default(false)
-  data        Json?
+  type    String // payment, subscription, trade, system, risk
+  title   String
+  message String
+  isRead  Boolean @default(false)
+  data    Json?
 
-  createdAt   DateTime  @default(now())
+  createdAt DateTime @default(now())
 
   @@index([userId, isRead])
   @@map("notifications")
@@ -410,21 +477,21 @@ model Notification {
 // --------------------------------------------------------------------
 
 model AuditLog {
-  id          String     @id @default(cuid())
-  userId      String?
-  user        User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
-  adminId     String?
-  admin       Admin?     @relation(fields: [adminId], references: [id], onDelete: SetNull)
+  id      String  @id @default(cuid())
+  userId  String?
+  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  adminId String?
+  admin   Admin?  @relation(fields: [adminId], references: [id], onDelete: SetNull)
 
-  action      LogAction
-  resource    String?    // e.g. "user", "payment", "subscription"
-  resourceId  String?
+  action     LogAction
+  resource   String? // e.g. "user", "payment", "subscription"
+  resourceId String?
 
-  ipAddress   String?
-  userAgent   String?
-  details     Json?      // before/after diff or extra context
+  ipAddress String?
+  userAgent String?
+  details   Json? // before/after diff or extra context
 
-  createdAt   DateTime   @default(now())
+  createdAt DateTime @default(now())
 
   @@index([userId])
   @@index([adminId])
@@ -438,16 +505,16 @@ model AuditLog {
 // --------------------------------------------------------------------
 
 model Setting {
-  id          String   @id @default(cuid())
-  key         String   @unique
+  id          String  @id @default(cuid())
+  key         String  @unique
   value       String
-  type        String   @default("string") // string, number, boolean, json
-  category    String   @default("general")
+  type        String  @default("string") // string, number, boolean, json
+  category    String  @default("general")
   description String?
-  isPublic    Boolean  @default(false)
+  isPublic    Boolean @default(false)
 
-  updatedAt   DateTime @updatedAt
-  updatedBy   String?  // adminId
+  updatedAt DateTime @updatedAt
+  updatedBy String? // adminId
 
   @@map("settings")
 }
@@ -457,18 +524,18 @@ model Setting {
 // --------------------------------------------------------------------
 
 model Coupon {
-  id              String   @id @default(cuid())
-  code            String   @unique
+  id              String            @id @default(cuid())
+  code            String            @unique
   description     String?
-  discountPercent Float    @db.Real
-  maxUses         Int      @default(-1) // -1 = unlimited
-  usedCount       Int      @default(0)
-  validFrom       DateTime @default(now())
+  discountPercent Float             @db.Real
+  maxUses         Int               @default(-1) // -1 = unlimited
+  usedCount       Int               @default(0)
+  validFrom       DateTime          @default(now())
   validUntil      DateTime?
-  isActive        Boolean  @default(true)
+  isActive        Boolean           @default(true)
   appliedTo       SubscriptionTier?
 
-  createdAt       DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@map("coupons")
 }
@@ -478,26 +545,186 @@ model Coupon {
 // --------------------------------------------------------------------
 
 model Plan {
-  id              String           @id @default(cuid())
-  tier            SubscriptionTier @unique
-  name            String
-  description     String?
+  id          String           @id @default(cuid())
+  tier        SubscriptionTier @unique
+  name        String
+  description String?
 
-  priceMonthly    Decimal          @db.Decimal(12, 2)
-  priceYearly     Decimal          @db.Decimal(12, 2)
-  currency        String           @default("USD")
+  priceMonthly Decimal @db.Decimal(12, 2)
+  priceYearly  Decimal @db.Decimal(12, 2)
+  currency     String  @default("USD")
 
   // Limits
-  maxAccounts     Int              @default(1)
-  maxLotSize      Float            @default(0.01) @db.Real
-  maxLeverage     Int              @default(30)
-  features        Json             // array of feature strings
+  maxAccounts Int   @default(1)
+  maxLotSize  Float @default(0.01) @db.Real
+  maxLeverage Int   @default(30)
+  features    Json // array of feature strings
 
-  isActive        Boolean          @default(true)
-  sortOrder       Int              @default(0)
+  isActive  Boolean @default(true)
+  sortOrder Int     @default(0)
 
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("plans")
+}
+
+// --------------------------------------------------------------------
+//  MT5 MASTER ACCOUNT MANAGEMENT
+//  Multiple MT5 accounts supported; exactly one is "active" (trading)
+//  and one is the "master" (copy-trading source) at any time.
+//  Uniqueness of active/master is enforced at the service layer.
+// --------------------------------------------------------------------
+
+enum MT5Server {
+  METAQUOTES_DEMO
+  METAQUOTES_REAL
+  ICMARKETS_DEMO
+  ICMARKETS_REAL
+  PEPPERSTONE_DEMO
+  PEPPERSTONE_REAL
+  CUSTOM
+}
+
+model MT5Account {
+  id String @id @default(cuid())
+
+  label      String // friendly name, e.g. "Main Prop Firm"
+  login      String // MT5 login (account number)
+  server     MT5Server @default(METAQUOTES_DEMO)
+  serverName String? // raw server string when CUSTOM
+
+  // Credentials are stored ENCRYPTED at the service layer, never plaintext.
+  passwordEnc String
+
+  // Trading profile
+  currency String @default("USD")
+  leverage Int    @default(100)
+  balance  Float  @default(0) @db.Real
+  equity   Float  @default(0) @db.Real
+
+  // State — exactly one active & one master system-wide (enforced in code)
+  isActive     Boolean @default(false)
+  isMaster     Boolean @default(false)
+  isActiveConn Boolean @default(false) // live bridge connected?
+
+  // Audit
+  createdBy       String? // adminId
+  lastConnectedAt DateTime?
+  lastError       String?
+
+  // Live fields updated by the Web Connector (MT5 EA)
+  broker      String?
+  serverRaw   String?
+  margin      Float   @default(0) @db.Real
+  drawdown    Float   @default(0) @db.Real
+  drawdownPct Float   @default(0) @db.Real
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  performances  Performance[]
+  connectorLogs ConnectorLog[]
+  apiKeys       ApiKey[]
+
+  @@index([isActive])
+  @@index([isMaster])
+  @@index([login])
+  @@map("mt5_accounts")
+}
+
+// --------------------------------------------------------------------
+//  PERFORMANCE SNAPSHOT
+//  One row per account snapshot pushed by the Web Connector.
+//  Used to build equity curves, drawdown charts, and rolling stats.
+// --------------------------------------------------------------------
+model Performance {
+  id           String     @id @default(cuid())
+  mt5AccountId String
+  account      MT5Account @relation(fields: [mt5AccountId], references: [id], onDelete: Cascade)
+
+  balance     Float @db.Real
+  equity      Float @db.Real
+  margin      Float @db.Real
+  drawdown    Float @default(0) @db.Real
+  drawdownPct Float @default(0) @db.Real
+
+  openTrades  Int   @default(0)
+  totalTrades Int   @default(0)
+  wins        Int   @default(0)
+  losses      Int   @default(0)
+  winRate     Float @default(0) @db.Real
+  realizedPnl Float @default(0) @db.Real
+  floatingPnl Float @default(0) @db.Real
+
+  snapshotTime DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  @@index([mt5AccountId])
+  @@index([snapshotTime])
+  @@map("performance_snapshots")
+}
+
+// --------------------------------------------------------------------
+//  CONNECTOR LOG
+//  Lightweight event log for the MT5 Web Connector — every ingest
+//  cycle and every auth failure is recorded here.
+// --------------------------------------------------------------------
+model ConnectorLog {
+  id           String      @id @default(cuid())
+  mt5AccountId String?
+  account      MT5Account? @relation(fields: [mt5AccountId], references: [id], onDelete: SetNull)
+
+  level     ConnectorLogLevel @default(INFO)
+  event     String // account | trade_open | trade_modify | trade_close | full_sync | connection | auth_failed
+  message   String
+  source    String            @default("web_connector")
+  ipAddress String?
+
+  createdAt DateTime @default(now())
+
+  @@index([mt5AccountId])
+  @@index([event])
+  @@index([createdAt])
+  @@index([level])
+  @@map("connector_logs")
+}
+
+enum ConnectorLogLevel {
+  DEBUG
+  INFO
+  WARN
+  ERROR
+}
+
+// --------------------------------------------------------------------
+//  API KEYS (Web Connector authentication)
+//  The MT5 EA presents the raw key in the X-API-Key header; the server
+//  stores a SHA-256 hash and does a constant-time comparison.
+// --------------------------------------------------------------------
+model ApiKey {
+  id           String      @id @default(cuid())
+  name         String // friendly label, e.g. "Main EA"
+  keyHash      String      @unique // sha256(rawKey)
+  keyPrefix    String // first 8 chars for display
+  scope        ApiKeyScope @default(MT5_INGEST)
+  mt5AccountId String?
+  account      MT5Account? @relation(fields: [mt5AccountId], references: [id], onDelete: SetNull)
+
+  isActive     Boolean   @default(true)
+  lastUsedAt   DateTime?
+  requestCount Int       @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([keyHash])
+  @@map("api_keys")
+}
+
+enum ApiKeyScope {
+  MT5_INGEST
+  READ_ONLY
+  FULL_ACCESS
 }

@@ -1,0 +1,73 @@
+# ====================================================================
+#  W-FOREX-BOT · Docker Compose (Local Development)
+#  Run: docker compose up -d
+# ====================================================================
+
+services:
+  # ---- PostgreSQL Database ----
+  db:
+    image: postgres:16-alpine
+    container_name: wforex-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: wforex
+      POSTGRES_PASSWORD: wforex_dev_pass
+      POSTGRES_DB: wforex
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wforex -d wforex"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ---- Redis (sessions, cache, rate limiting) ----
+  redis:
+    image: redis:7-alpine
+    container_name: wforex-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ---- Backend API Server ----
+  # Build & run locally: docker compose up api
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: wforex-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      DATABASE_URL: "postgresql://wforex:wforex_dev_pass@db:5432/wforex?schema=public"
+      REDIS_URL: "redis://redis:6379"
+      JWT_SECRET: "dev-secret-change-me"
+      JWT_EXPIRES_IN: "7d"
+      ADMIN_JWT_SECRET: "dev-admin-secret-change-me"
+      ADMIN_JWT_EXPIRES_IN: "24h"
+      ADMIN_EMAIL: "admin@wforexbot.com"
+      ENCRYPTION_KEY: "0000000000000000000000000000000000000000000000000000000000000000"
+      CORS_ORIGINS: "http://localhost:3001,http://localhost:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "npx prisma migrate deploy && node dist/index.js"
+
+volumes:
+  pgdata:
+  redisdata:

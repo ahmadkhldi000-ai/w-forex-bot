@@ -49,3 +49,7 @@ server/prisma/migrations/dev.db*
 .cache/
 coverage/
 web/.investigation/
+
+# Test/investigation artifacts
+test-results/
+.investigation/

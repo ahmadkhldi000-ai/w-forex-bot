@@ -1,5 +1,8 @@
-import { TrendingUp } from "lucide-react";
+"use client";
+
+import { TrendingUp, Send } from "lucide-react";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n/provider";
 
 type IconProps = { className?: string };
 
@@ -24,33 +27,18 @@ const GithubIcon = ({ className }: IconProps) => (
   </svg>
 );
 
-const socials: { icon: (p: IconProps) => React.ReactElement; label: string }[] = [
-  { icon: TelegramIcon, label: "Telegram" },
-  { icon: XIcon, label: "Twitter / X" },
-  { icon: YoutubeIcon, label: "YouTube" },
-  { icon: GithubIcon, label: "GitHub" },
-];
+const TELEGRAM_CHANNEL_URL = "https://t.me/+iXalBkHABfBkYWQ0";
 
-const columns = [
-  {
-    title: "المنتج",
-    links: ["الميزات", "الاستراتيجية", "الأسعار", "لوحة التحكم", "API"],
-  },
-  {
-    title: "الشركة",
-    links: ["من نحن", "المدوّنة", "وظائف", "شركاء", "اتصل بنا"],
-  },
-  {
-    title: "الموارد",
-    links: ["مركز المساعدة", "التوثيق", "دليل التداول", "حالة الخدمة", "المجتمع"],
-  },
-  {
-    title: "قانوني",
-    links: ["الشروط", "الخصوصية", "إخلاء المسؤولية", "ملفات الارتباط"],
-  },
+const socials: { icon: (p: IconProps) => React.ReactElement; label: string; href: string }[] = [
+  { icon: TelegramIcon, label: "Telegram", href: TELEGRAM_CHANNEL_URL },
+  { icon: XIcon, label: "Twitter / X", href: "#" },
+  { icon: YoutubeIcon, label: "YouTube", href: "#" },
+  { icon: GithubIcon, label: "GitHub", href: "#" },
 ];
 
 export function MarketingFooter() {
+  const { lang, t } = useI18n();
+  const columns = t.footer.columns[lang];
   return (
     <footer
       className="relative border-t border-[var(--border-subtle)]"
@@ -88,14 +76,25 @@ export function MarketingFooter() {
               </span>
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-[var(--text-secondary)]">
-              روبوت تداول آلي بالذكاء الاصطناعي يحقّق عوائد ثابتة في سوق الفوركس
-              مع إدارة مخاطر صارمة.
+              {t.footer.tagline[lang]}
             </p>
-            <div className="mt-5 flex gap-2">
-              {socials.map(({ icon: Icon, label }) => (
+            {/* Join Telegram Community button */}
+            <a
+              href={TELEGRAM_CHANNEL_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#229ED9] px-4 py-2.5 text-sm font-semibold text-white transition-smooth hover:-translate-y-0.5 hover:bg-[#2aabee]"
+            >
+              <Send className="h-4 w-4" />
+              {t.footer.joinTelegram[lang]}
+            </a>
+            <div className="mt-3 flex gap-2">
+              {socials.map(({ icon: Icon, label, href }) => (
                 <a
                   key={label}
-                  href="#"
+                  href={href}
+                  target={href.startsWith("http") ? "_blank" : undefined}
+                  rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
                   aria-label={label}
                   className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-muted)] transition-smooth hover:-translate-y-0.5 hover:border-[var(--border-strong)] hover:text-[var(--accent-bright)]"
                 >
@@ -128,12 +127,10 @@ export function MarketingFooter() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-[var(--border-subtle)] pt-7 text-center sm:flex-row sm:text-right">
           <p className="text-xs text-[var(--text-muted)]">
-            © 2026 W Forex Bot. جميع الحقوق محفوظة.
+            © 2026 W Forex Bot. {t.footer.rights[lang]}
           </p>
           <p className="max-w-2xl text-xs leading-relaxed text-[var(--text-muted)]">
-            تحذير المخاطر: ينطوي تداول العملات الأجنبية على مخاطر عالية وقد لا
-            يكون مناسباً لجميع المستثمرين. الأداء السابق لا يضمن النتائج
-            المستقبلية.
+            {t.footer.riskNote[lang]}
           </p>
         </div>
       </div>

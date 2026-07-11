@@ -1,6 +1,23 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Providers } from "./providers";
+
+/**
+ * Runs before hydration to set <html lang/dir> from persisted preference,
+ * preventing a flash of the wrong language/direction on load.
+ */
+const setInitialLang = `
+(function(){
+  try {
+    var l = localStorage.getItem('lang');
+    if (l) {
+      document.documentElement.lang = l;
+      document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';
+    }
+  } catch (e) {}
+})();
+`;
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,11 +29,20 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://wforexbot.vercel.app";
+
 export const metadata: Metadata = {
-  title: "W Forex Bot — تداول الفوركس بالذكاء الاصطناعي",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "WForexBot — تداول الفوركس بالذكاء الاصطناعي",
+    template: "%s · WForexBot",
+  },
   description:
     "روبوت تداول آلي مؤتمت يحلّل سوق الفوركس على مدار الساعة وينفّذ صفقات بدقّة عالية مع إدارة مخاطر صارمة. عوائد ثابتة بدون عواطف.",
+  applicationName: "WForexBot",
   keywords: [
+    "WForexBot",
     "فوركس",
     "روبوت تداول",
     "EA",
@@ -24,7 +50,48 @@ export const metadata: Metadata = {
     "تداول آلي",
     "MT5",
     "Forex Bot",
+    "Smart Money Concepts",
+    "Automated Trading",
   ],
+  authors: [{ name: "WForexBot" }],
+  creator: "WForexBot",
+  publisher: "WForexBot",
+  alternates: {
+    canonical: "/",
+    languages: {
+      ar: "/",
+      en: "/",
+    },
+  },
+  openGraph: {
+    type: "website",
+    locale: "ar_SA",
+    url: siteUrl,
+    siteName: "WForexBot",
+    title: "WForexBot — تداول الفوركس بالذكاء الاصطناعي",
+    description:
+      "روبوت تداول آلي مؤتمت يحلّل سوق الفوركس على مدار الساعة وينفّذ صفقات بدقّة عالية مع إدارة مخاطر صارمة.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "WForexBot — تداول الفوركس بالذكاء الاصطناعي",
+    description:
+      "روبوت تداول آلي مؤتمت يحلّل سوق الفوركس على مدار الساعة وينفّذ صفقات بدقّة عالية مع إدارة مخاطر صارمة.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+    },
+  },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -39,7 +106,8 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-bg text-fg">
-        {children}
+        <script dangerouslySetInnerHTML={{ __html: setInitialLang }} />
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

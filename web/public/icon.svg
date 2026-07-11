@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!-- Background: deep charcoal-green gradient -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0A0F0D"/>
+      <stop offset="1" stop-color="#13201A"/>
+    </linearGradient>
+    <linearGradient id="wmark" x1="140" y1="160" x2="372" y2="360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#34D399"/>
+      <stop offset="1" stop-color="#10B981"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="256" y1="180" x2="256" y2="360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FBBF24"/>
+      <stop offset="1" stop-color="#F59E0B"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded square background -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- Candlestick chart motif (left, subtle) -->
+  <g opacity="0.25" stroke="#34D399" stroke-width="10" stroke-linecap="round">
+    <line x1="120" y1="150" x2="120" y2="210"/>
+    <line x1="180" y1="130" x2="180" y2="190"/>
+    <line x1="240" y1="170" x2="240" y2="240"/>
+  </g>
+  <g opacity="0.25" fill="#34D399">
+    <rect x="108" y="160" width="24" height="40" rx="4"/>
+    <rect x="168" y="140" width="24" height="40" rx="4"/>
+    <rect x="228" y="180" width="24" height="50" rx="4"/>
+  </g>
+  <!-- "W" letter mark -->
+  <path d="M150 175 L185 345 L220 235 L256 345 L291 235 L326 345 L362 175"
+        stroke="url(#wmark)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Trending arrow (gold accent) -->
+  <path d="M170 388 L256 320 L322 360 L392 280"
+        stroke="url(#accent)" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M360 272 L402 270 L400 312"
+        stroke="url(#accent)" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

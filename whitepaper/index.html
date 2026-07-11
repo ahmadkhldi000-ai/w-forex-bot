@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WFB Token — Whitepaper · The AI-Powered Utility Token</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- =====================================================================
+     SVG ICON DEFS (reusable)
+     ===================================================================== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- Gold gradient -->
+    <linearGradient id="g-gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F4E4A6"/><stop offset="40%" stop-color="#D4AF37"/>
+      <stop offset="72%" stop-color="#B8902A"/><stop offset="100%" stop-color="#8A6A1E"/>
+    </linearGradient>
+    <linearGradient id="g-royal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4E8BFF"/><stop offset="55%" stop-color="#1565FF"/><stop offset="100%" stop-color="#0A3FAE"/>
+    </linearGradient>
+    <linearGradient id="g-duo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#D4AF37"/><stop offset="55%" stop-color="#E8C766"/><stop offset="100%" stop-color="#1565FF"/>
+    </linearGradient>
+    <radialGradient id="g-vignette" cx="50%" cy="42%" r="62%">
+      <stop offset="0%" stop-color="#1A1A22"/><stop offset="100%" stop-color="#070708"/>
+    </radialGradient>
+    <!-- WFB Monogram -->
+    <symbol id="logo-wfb" viewBox="0 0 100 100">
+      <rect x="4" y="4" width="92" height="92" rx="24" fill="none" stroke="url(#g-gold)" stroke-width="2" opacity="0.7"/>
+      <path d="M22 30 L31 72 L40 44 L50 72 L59 44 L68 72 L78 30" fill="none" stroke="url(#g-gold)" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <!-- Icons (lucide-style) -->
+    <symbol id="i-brain" viewBox="0 0 24 24"><path class="l" d="M12 5a3 3 0 0 0-3 3 3 3 0 0 0-3 3v1a3 3 0 0 0 0 6 3 3 0 0 0 3 3 3 3 0 0 0 6 0 3 3 0 0 0 3-3 3 3 0 0 0 0-6v-1a3 3 0 0 0-3-3 3 3 0 0 0-3-3Z"/><path class="l" d="M12 5v15"/></symbol>
+    <symbol id="i-bot" viewBox="0 0 24 24"><rect class="l" x="4" y="8" width="16" height="12" rx="3"/><path class="l" d="M12 8V4M9 2h6"/><circle cx="9" cy="14" r="1.3" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.3" fill="currentColor" stroke="none"/><path class="l" d="M2 13v2M22 13v2"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path class="l" d="M3 3v18h18"/><path class="l" d="M7 14l3-3 3 2 5-6"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path class="l" d="M12 3l8 3v6c0 4.5-3 7.5-8 9-5-1.5-8-4.5-8-9V6z"/><path class="l" d="M9 12l2 2 4-4"/></symbol>
+    <symbol id="i-coin" viewBox="0 0 24 24"><circle class="l" cx="12" cy="12" r="8"/><path class="l" d="M14.5 9.5c-.5-.8-1.5-1.3-2.6-1.3-1.5 0-2.7.8-2.7 2 0 2.7 5.3 1.3 5.3 4 0 1.2-1.2 2-2.7 2-1.1 0-2.1-.5-2.6-1.3M12 6.5v1M12 16v1.5"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path class="l" d="M12 3l9 5-9 5-9-5z"/><path class="l" d="M3 13l9 5 9-5M3 17l9 5 9-5"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect class="l" x="3" y="3" width="7" height="7" rx="1.5"/><rect class="l" x="14" y="3" width="7" height="7" rx="1.5"/><rect class="l" x="3" y="14" width="7" height="7" rx="1.5"/><rect class="l" x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle class="l" cx="12" cy="12" r="9"/><path class="l" d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect class="l" x="5" y="11" width="14" height="9" rx="2"/><path class="l" d="M8 11V8a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.5" r="1.2" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path class="l" d="M13 2L4 14h7l-1 8 9-12h-7z"/></symbol>
+    <symbol id="i-network" viewBox="0 0 24 24"><circle class="l" cx="12" cy="5" r="2.5"/><circle class="l" cx="5" cy="18" r="2.5"/><circle class="l" cx="19" cy="18" r="2.5"/><path class="l" d="M12 7.5v3M10.5 11.5l-4 4.5M13.5 11.5l4 4.5"/></symbol>
+    <symbol id="i-wallet" viewBox="0 0 24 24"><path class="l" d="M3 7h15a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path class="l" d="M3 7V6a2 2 0 0 1 2-2h11"/><circle class="l" cx="16" cy="13" r="1.5"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><rect class="l" x="6" y="2.5" width="12" height="19" rx="3"/><path class="l" d="M10.5 18.5h3"/></symbol>
+    <symbol id="i-gift" viewBox="0 0 24 24"><rect class="l" x="3" y="8" width="18" height="4" rx="1"/><path class="l" d="M5 12v8h14v-8M12 8v12"/><path class="l" d="M12 8S10.5 4 8.5 4 6 6 8 8M12 8s1.5-4 3.5-4S18 6 16 8"/></symbol>
+    <symbol id="i-scale" viewBox="0 0 24 24"><path class="l" d="M12 3v18M5 7h14M5 7l-2.5 6a3 3 0 0 0 5 0zM19 7l-2.5 6a3 3 0 0 0 5 0z"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle class="l" cx="9" cy="8" r="3.2"/><path class="l" d="M3.5 20a5.5 5.5 0 0 1 11 0M16 5.2a3 3 0 0 1 0 5.6M17 13.5a5.5 5.5 0 0 1 3.5 5.1"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path class="l" d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle class="l" cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-cpu" viewBox="0 0 24 24"><rect class="l" x="6" y="6" width="12" height="12" rx="2"/><rect class="l" x="9.5" y="9.5" width="5" height="5" rx="1"/><path class="l" d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 24 24"><path class="l" d="M7 18a4 4 0 0 1-.5-7.97A5 5 0 0 1 16 9.5a3.5 3.5 0 0 1 1 6.5"/></symbol>
+    <symbol id="i-code" viewBox="0 0 24 24"><path class="l" d="M8 7l-5 5 5 5M16 7l5 5-5 5M13 5l-2 14"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path class="l" d="M12 3l9 16H3z"/><path class="l" d="M12 10v4M12 17v.5"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path class="l" d="M4 12l5 5L20 6"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path class="l" d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-trend" viewBox="0 0 24 24"><path class="l" d="M3 17l6-6 4 4 8-8"/><path class="l" d="M14 7h7v7"/></symbol>
+    <symbol id="i-compass" viewBox="0 0 24 24"><circle class="l" cx="12" cy="12" r="9"/><path class="l" d="M15.5 8.5l-2 5-5 2 2-5z"/></symbol>
+    <symbol id="i-fingerprint" viewBox="0 0 24 24"><path class="l" d="M12 11a2 2 0 0 0-2 2c0 2 .5 4 1 5.5M5 9a8 8 0 0 1 14 0M8 20c-1-2-1.5-4-1.5-7a5.5 5.5 0 0 1 11 0c0 1.5 0 3-.5 4M12 13c0 3 .5 5 1.5 7"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path class="l" d="M10 14a4 4 0 0 0 6 0l3-3a4 4 0 0 0-6-6l-1 1"/><path class="l" d="M14 10a4 4 0 0 0-6 0l-3 3a4 4 0 0 0 6 6l1-1"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect class="l" x="3" y="5" width="18" height="14" rx="2"/><path class="l" d="M3 7l9 6 9-6"/></symbol>
+    <symbol id="i-arrow-down" viewBox="0 0 24 24"><path class="l" d="M12 5v14M6 13l6 6 6-6"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path class="l" d="M12 3l2.6 5.6 6.4.8-4.7 4.3 1.2 6.3L12 17.8 6.5 20l1.2-6.3L3 9.4l6.4-.8z"/></symbol>
+    <symbol id="i-rocket" viewBox="0 0 24 24"><path class="l" d="M5 15c-1 1-1.5 4-1.5 4s3-.5 4-1.5M14 4c3 0 6 3 6 6 0 4-4 9-8 11-2-1-3-2-4-4 2-4 3-9 6-13M9 15s-2 0-3-1 0-3 1-4M14 4s2 0 3 1 0 3-1 4"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><circle class="l" cx="8" cy="8" r="4"/><path class="l" d="M11 11l9 9M17 17l2-2M15 15l2-2"/></symbol>
+    <symbol id="i-database" viewBox="0 0 24 24"><ellipse class="l" cx="12" cy="5" rx="8" ry="3"/><path class="l" d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></symbol>
+    <symbol id="i-handshake" viewBox="0 0 24 24"><path class="l" d="M3 12l4-4 4 2 2-2 4 4 4-4v8H3z"/><path class="l" d="M11 14l2 2 2-2"/></symbol>
+  </defs>
+</svg>
+
+
+<!-- =====================================================================
+     PAGE 1 — COVER
+     ===================================================================== -->
+<section class="page bleed bg-grain" id="cover">
+  <div style="position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 30%, #15151c 0%, #0B0B0B 55%, #050506 100%);z-index:0;"></div>
+
+  <!-- Decorative tech lines + glows -->
+  <svg viewBox="0 0 595 842" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%;z-index:1;opacity:.9">
+    <defs>
+      <linearGradient id="cv-line" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#1565FF" stop-opacity="0"/>
+        <stop offset="50%" stop-color="#1565FF" stop-opacity="0.55"/>
+        <stop offset="100%" stop-color="#4E8BFF" stop-opacity="0"/>
+      </linearGradient>
+      <radialGradient id="cv-halo" cx="50%" cy="38%" r="30%">
+        <stop offset="0%" stop-color="#D4AF37" stop-opacity="0.35"/>
+        <stop offset="100%" stop-color="#D4AF37" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <rect width="595" height="842" fill="url(#cv-halo)"/>
+    <!-- tech circuit lines -->
+    <g stroke="url(#cv-line)" stroke-width="1" fill="none">
+      <path d="M0 120 H220 L250 150 H420 L450 180 H595"/>
+      <path d="M0 250 H160 L190 220 H360"/>
+      <path d="M595 320 H410 L380 350 H210 L180 380 H0"/>
+      <path d="M595 540 H300 L270 570 H0"/>
+      <path d="M0 660 H240 L270 630 H470"/>
+      <path d="M595 740 H350 L320 770 H0"/>
+    </g>
+    <!-- nodes -->
+    <g fill="#D4AF37">
+      <circle cx="250" cy="150" r="2.5"/><circle cx="450" cy="180" r="2.5"/>
+      <circle cx="190" cy="220" r="2.5"/><circle cx="380" cy="350" r="2.5"/>
+      <circle cx="270" cy="570" r="2.5"/><circle cx="270" cy="630" r="2.5"/>
+    </g>
+    <!-- faint orbiting rings -->
+    <g transform="translate(297,300)" fill="none" stroke="#D4AF37" stroke-opacity="0.18">
+      <ellipse rx="150" ry="58" stroke-width="1"/>
+      <ellipse rx="210" ry="84" stroke-width="0.8" transform="rotate(28)"/>
+      <ellipse rx="270" ry="110" stroke-width="0.6" transform="rotate(-18)"/>
+    </g>
+  </svg>
+
+  <span class="hairline-corner hc-tl"></span>
+  <span class="hairline-corner hc-tr"></span>
+  <span class="hairline-corner hc-bl"></span>
+  <span class="hairline-corner hc-br"></span>
+
+  <div class="content" style="display:flex;flex-direction:column;justify-content:space-between;padding:22mm 20mm;">
+    <!-- Top brand bar -->
+    <div class="row between" style="align-items:flex-start;">
+      <div class="wfb-badge" style="color:#fff;font-size:11pt;">
+        <span class="glyph">W</span>
+        <span>W FOREX BOT</span>
+      </div>
+      <div class="stack" style="gap:6px;text-align:right;">
+        <span class="pill gold">BEP-20 · BNB Chain</span>
+        <span class="tiny upper muted" style="letter-spacing:.2em;">Official Whitepaper · v1.0</span>
+      </div>
+    </div>
+
+    <!-- Center: logo + title -->
+    <div style="text-align:center;">
+      <div style="margin:0 auto 18px;width:120px;height:120px;position:relative;">
+        <div style="position:absolute;inset:-30px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.45),transparent 70%);filter:blur(14px);"></div>
+        <svg viewBox="0 0 100 100" style="width:120px;height:120px;position:relative;"><use href="#logo-wfb"/></svg>
+      </div>
+      <div class="tiny upper" style="letter-spacing:.5em;color:var(--gold);margin-bottom:10px;">WFB · TOKEN</div>
+      <h1 class="display" style="font-size:62pt;margin-bottom:14px;">
+        <span class="gold-text">WFB</span> <span style="color:#fff;">TOKEN</span>
+      </h1>
+      <p style="font-family:var(--font-display);font-style:italic;font-weight:500;font-size:15pt;color:var(--txt-80);max-width:130mm;margin:0 auto;line-height:1.4;">
+        The AI-Powered Utility Token for the<br>Future of Intelligent Trading
+      </p>
+      <div style="margin:22px auto 0;width:70px;" class="gold-rule"></div>
+      <p class="upper" style="font-family:var(--font-ui);font-weight:500;font-size:9.5pt;letter-spacing:.22em;color:var(--royal-soft);">
+        One Ecosystem &nbsp;·&nbsp; One Token &nbsp;·&nbsp; Unlimited Possibilities
+      </p>
+    </div>
+
+    <!-- Bottom meta -->
+    <div class="row between" style="align-items:flex-end;">
+      <div class="stack" style="gap:5px;">
+        <span class="stat-label">Issued</span>
+        <span class="small" style="color:#fff;font-weight:600;">2026 · Institutional Edition</span>
+      </div>
+      <div style="text-align:center;">
+        <div class="mono small gold-text" style="font-weight:600;">0xWFB · BEP-20</div>
+        <div class="tiny muted upper" style="margin-top:4px;">Smart Contract Standard</div>
+      </div>
+      <div class="stack" style="gap:5px;text-align:right;">
+        <span class="stat-label">Document</span>
+        <span class="small" style="color:#fff;font-weight:600;">Whitepaper v1.0</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- =====================================================================
+     PAGE 2 — TABLE OF CONTENTS
+     ===================================================================== -->
+<section class="page bg-grain bg-grid" id="toc">
+  <div class="glow-gold" style="width:240px;height:240px;top:-60px;right:-40px;"></div>
+  <div class="glow-royal" style="width:220px;height:220px;bottom:40px;left:-60px;"></div>
+
+  <div class="content">
+    <div class="sec-head">
+      <span class="eyebrow">Index</span>
+      <h2 class="h-section" style="margin-top:8px;">Table of <span class="accent">Contents</span></h2>
+      <p class="h-sub">A guided journey through the WFB ecosystem — from vision and technology to tokenomics, roadmap, and beyond.</p>
+    </div>
+
+    <div class="grid-2" style="gap:9px 28px;margin-top:6px;">
+      <!-- TOC items -->
+      <a class="glass card-pad" style="text-decoration:none;display:flex;align-items:center;gap:13px;" href="#cover">
+        <span class="k-num" style="font-size:18pt;min-width:34px;">01</span>
+        <div class="grow"><div style="font-family:var(--font-ui);font-weight:600;font-size:11pt;color:#fff;">Cover</div><div class="tiny muted">Title &amp; Identity</div></div>
+        <svg class="l" width="16" height="16" style="color:var(--txt-40)"><use href="#i-arrow-down"/></svg>
+      </a>
+      <a class="glass card-pad" style="text-decoration:none;display:flex;align-items:center;gap:13px;" href="#toc">
+        <span class="k-num" style="font-size:18pt;min-width:34px;">02</span>
+        <div class="grow"><div style="font-family:var(--font-ui);font-weight:600;font-size:11pt;color:#fff;">Table of Contents</div><div class="tiny muted">Document Map</div></div>
+        <svg class="l" width="16" height="16" style="color:var(--txt-40)"><use href="#i-arrow-down"/></svg>
+      </a>
+      <a class="glass card-pad" style="text-decoration:none;display:flex;align-items:center;gap:13px;" href="#exec">
+        <span class="k-num" style="font-size:18pt;min-width:34px;">03</span>
+        <div class="grow"><div style="font-family:var(--font-ui);font-weight:600;font-size:11pt;color:#fff;">Executive Summary</div><div class="tiny muted">Vision · Mission · Future</div></div>
+        <svg class="l" width="16" height="16" style="color:var(--txt-40)"><use href="#i-arrow-down"/></svg>
+      </a>
+      <a class="glass card-pad" style="text-decoration:none;display:flex;align-items:center;gap:13px;" href="#problem">
+        <span class="k-num" style="font-size:18pt;min-width:34px;">04</span>
+        <div class="grow"><div style="font-family:var(--font-ui);font-weight:600;font-size:11pt;color:#fff;">The Problem</div><div class="tiny muted">Market Pain Points</div></div>
+        <svg class="l" width="16" height="16" style="color:var(--txt-40)"><use href="#i-arrow-down"/></svg>
+      </a>
+      <a class="glass card-pad" style="text-decoration:none;display:flex;align-items:center;gap:13px;" href="#solution">
+        <span class="k-num" style="font-size:18pt;min-width:34px;">05</span>
+        <div class="grow"><div style="font-family:var(--font-ui);font-weight:600;font-size:11pt;color:#fff;">Our Solution</div><div class="tiny muted">AI · Automation · Blockchain</div></div>
+        <svg class="l" width="16" height="16" style="color:var(--txt-40)"><use href="#i-arrow-down"/></svg>
+      </a>
+      <a class="glass card-pad" style="text-decoration:none;display:flex;align-items:center;gap:13px;" href="#ecosystem">
+        <span class="k-num" style="font-size:18pt;min-width:34px;">06</span>
+        <div class="grow"><div style="font-family:var(--font-ui);font-weight:600;font-size:11pt;color:#fff;">Ecosystem</div><div class="tiny muted">Integrated Architecture</div></div>
+        <svg class="l" width="16" height="16" style="color:var(--txt-40)"><use href="#i-arrow-down"/></svg>
+      </a>
+      <a class="glass card-pad" style="text-decoration:none;display:flex;align-items:center;gap:13px;" href="#utility">
+        <span class="k-num" style="font-size:18pt;min-width:34px;">07</span>
+        <div class="grow"><div style="font-family:var(--font-ui);font-weight:600;font-size:11pt;color:#fff;">Token Utility</div><div class="tiny muted">Use Cases &amp; Benefits</div></div>
+        <svg class="l" width="16" height="16" style="color:var(--txt-40)"><use href="#i-arrow-down"/></svg>
+      </a>
+      <a class="glass card-pad" style="text-decoration:none;display:flex;align-items:center;gap:13px;" href="#tokenomics">
+        <span class="k-num" style="font-size:18pt;min-width:34px;">08</span>
+        <div class="grow"><div style="font-family:var(--font-ui);font-weight:600;font-size:11pt;color:#fff;">Tokenomics</div><div class="tiny muted">Supply &amp; Allocation</div></div>
+        <svg class="l" width="16" height="16" style="color:var(--txt-40)"><use href="#i-arrow-down"/></svg>
+      </a>
+      <a class="glass card-pad" style="text-decoration:none;display:flex;align-items:center;gap:13px;" href="#revenue">
+        <span class="k-num" style="font-size:18pt;min-width:34px;">09</span>
+        <div class="grow"><div style="font-family:var(--font-ui);font-weight:600;font-size:11pt;color:#fff;">Revenue Model</div><div class="tiny muted">Sustainable Economics</div></div>
+        <svg class="l" width="16" height="16" style="color:var(--txt-40)"><use href="#i-arrow-down"/></svg>
+      </a>
+      <a class="glass card-pad" style="text-decoration:none;display:flex;align-items:center;gap:13px;" href="#roadmap">
+        <span class="k-num" style="font-size:18pt;min-width:34px;">10</span>
+        <div class="grow"><div style="font-family:var(--font-ui);font-weight:600;font-size:11pt;color:#fff;">Roadmap</div><div class="tiny muted">Four-Phase Timeline</div></div>
+        <svg class="l" width="16" height="16" style="color:var(--txt-40)"><use href="#i-arrow-down"/></svg>
+      </a>
+      <a class="glass card-pad" style="text-decoration:none;display:flex;align-items:center;gap:13px;" href="#tech">
+        <span class="k-num" style="font-size:18pt;min-width:34px;">11</span>
+        <div class="grow"><div style="font-family:var(--font-ui);font-weight:600;font-size:11pt;color:#fff;">Technology</div><div class="tiny muted">Architecture &amp; AI</div></div>
+        <svg class="l" width="16" height="16" style="color:var(--txt-40)"><use href="#i-arrow-down"/></svg>
+      </a>
+      <a class="glass card-pad" style="text-decoration:none;display:flex;align-items:center;gap:13px;" href="#security">
+        <span class="k-num" style="font-size:18pt;min-width:34px;">12</span>
+        <div class="grow"><div style="font-family:var(--font-ui);font-weight:600;font-size:11pt;color:#fff;">Security</div><div class="tiny muted">Safety &amp; Best Practices</div></div>
+        <svg class="l" width="16" height="16" style="color:var(--txt-40)"><use href="#i-arrow-down"/></svg>
+      </a>
+      <a class="glass card-pad" style="text-decoration:none;display:flex;align-items:center;gap:13px;" href="#competition">
+        <span class="k-num" style="font-size:18pt;min-width:34px;">13</span>
+        <div class="grow"><div style="font-family:var(--font-ui);font-weight:600;font-size:11pt;color:#fff;">Competitive Advantages</div><div class="tiny muted">Market Position</div></div>
+        <svg class="l" width="16" height="16" style="color:var(--txt-40)"><use href="#i-arrow-down"/></svg>
+      </a>
+      <a class="glass card-pad" style="text-decoration:none;display:flex;align-items:center;gap:13px;" href="#community">
+        <span class="k-num" style="font-size:18pt;min-width:34px;">14</span>
+        <div class="grow"><div style="font-family:var(--font-ui);font-weight:600;font-size:11pt;color:#fff;">Community Strategy</div><div class="tiny muted">Growth &amp; Engagement</div></div>
+        <svg class="l" width="16" height="16" style="color:var(--txt-40)"><use href="#i-arrow-down"/></svg>
+      </a>
+      <a class="glass card-pad" style="text-decoration:none;display:flex;align-items:center;gap:13px;" href="#risk">
+        <span class="k-num" style="font-size:18pt;min-width:34px;">15</span>
+        <div class="grow"><div style="font-family:var(--font-ui);font-weight:600;font-size:11pt;color:#fff;">Risk Factors</div><div class="tiny muted">Transparency &amp; Mitigation</div></div>
+        <svg class="l" width="16" height="16" style="color:var(--txt-40)"><use href="#i-arrow-down"/></svg>
+      </a>
+      <a class="glass card-pad" style="text-decoration:none;display:flex;align-items:center;gap:13px;" href="#disclaimer">
+        <span class="k-num" style="font-size:18pt;min-width:34px;">16</span>
+        <div class="grow"><div style="font-family:var(--font-ui);font-weight:600;font-size:11pt;color:#fff;">Legal &amp; Closing</div><div class="tiny muted">Disclaimer · Contact</div></div>
+        <svg class="l" width="16" height="16" style="color:var(--txt-40)"><use href="#i-arrow-down"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="page-foot">
+    <span class="mark"><svg class="l"><use href="#logo-wfb"/></svg> WFB Token</span>
+    <span>Contents</span>
+    <span>02</span>
+  </div>
+</section>
+
+<!-- =====================================================================
+     PAGE 3 — EXECUTIVE SUMMARY
+     ===================================================================== -->
+<section class="page bg-grain" id="exec">
+  <div class="glow-gold" style="width:280px;height:280px;top:-80px;left:-60px;"></div>
+  <div class="glow-royal" style="width:200px;height:200px;bottom:60px;right:-50px;"></div>
+
+  <div class="content">
+    <div class="sec-head row between" style="align-items:flex-end;">
+      <div>
+        <span class="eyebrow">Section 03</span>
+        <h2 class="h-section" style="margin-top:8px;">Executive <span class="accent">Summary</span></h2>
+      </div>
+      <span class="k-num">03</span>
+    </div>
+
+    <p class="lede" style="margin-bottom:18px;">
+      <strong>WFB Token</strong> is the native utility asset of the <strong>W Forex Bot</strong> ecosystem — an AI-driven trading platform that connects directly to MetaTrader&nbsp;5, automates intelligent trade execution, and unifies Forex and digital-asset markets under one intelligent, transparent, and accessible system.
+    </p>
+
+    <!-- Pillars -->
+    <div class="grid-3" style="margin-bottom:18px;">
+      <div class="glass glass-gold card-pad">
+        <div class="ichip" style="margin-bottom:11px;"><svg class="l"><use href="#i-compass"/></svg></div>
+        <h3 style="font-size:12pt;margin-bottom:6px;">Vision</h3>
+        <p class="small muted" style="line-height:1.55;">To democratize institutional-grade intelligent trading — placing AI automation and on-chain transparency into the hands of every participant.</p>
+      </div>
+      <div class="glass card-pad">
+        <div class="ichip royal" style="margin-bottom:11px;"><svg class="l"><use href="#i-bolt"/></svg></div>
+        <h3 style="font-size:12pt;margin-bottom:6px;">Mission</h3>
+        <p class="small muted" style="line-height:1.55;">Build a unified token economy that rewards participation, lowers the cost of trading automation, and aligns every stakeholder.</p>
+      </div>
+      <div class="glass card-pad">
+        <div class="ichip" style="margin-bottom:11px;"><svg class="l"><use href="#i-trend"/></svg></div>
+        <h3 style="font-size:12pt;margin-bottom:6px;">Future</h3>
+        <p class="small muted" style="line-height:1.55;">A cross-chain financial layer where AI, automation, and community converge into a self-sustaining trading intelligence network.</p>
+      </div>
+    </div>
+
+    <!-- Two column body -->
+    <div class="grid-2" style="gap:18px;align-items:start;">
+      <div>
+        <h3 style="font-size:11.5pt;color:var(--gold);margin-bottom:8px;">What is WFB Token?</h3>
+        <p>WFB is a <strong>BEP-20 utility token</strong> on the BNB Smart Chain, engineered as the economic backbone of the W Forex Bot platform. It unlocks subscriptions, governance, staking rewards, fee discounts, and marketplace access — creating a closed-loop value system where utility, liquidity, and community rewards reinforce one another.</p>
+        <p style="margin-top:9px;">The token is not a speculative instrument; it is <strong>functional capital</strong> — every interaction within the ecosystem settles, rewards, or is discounted in WFB.</p>
+      </div>
+      <div>
+        <h3 style="font-size:11.5pt;color:var(--royal-soft);margin-bottom:8px;">Why was it created?</h3>
+        <p>Trading automation today is fragmented, expensive, and opaque. Retail participants face recurring fiat subscriptions, limited transparency, and no stake in the platforms they rely on. WFB was created to <strong>realign incentives</strong> — turning users into stakeholders and converting friction into compounding value.</p>
+      </div>
+    </div>
+
+    <!-- Key metrics strip -->
+    <div class="glass card-pad-lg" style="margin-top:16px;">
+      <div class="row" style="gap:10px;align-items:center;">
+        <div class="grow center col">
+          <span class="stat-num">1B</span>
+          <span class="stat-label" style="margin-top:4px;">Max Supply · WFB</span>
+        </div>
+        <div style="width:1px;align-self:stretch;background:var(--paper-line-2);"></div>
+        <div class="grow center col">
+          <span class="stat-num royal">7.6T</span>
+          <span class="stat-label" style="margin-top:4px;">Daily Forex Market · USD</span>
+        </div>
+        <div style="width:1px;align-self:stretch;background:var(--paper-line-2);"></div>
+        <div class="grow center col">
+          <span class="stat-num">9</span>
+          <span class="stat-label" style="margin-top:4px;">Core Ecosystem Modules</span>
+        </div>
+        <div style="width:1px;align-self:stretch;background:var(--paper-line-2);"></div>
+        <div class="grow center col">
+          <span class="stat-num royal">BEP-20</span>
+          <span class="stat-label" style="margin-top:4px;">BNB Smart Chain</span>
+        </div>
+      </div>
+      <p class="tiny muted" style="text-align:center;margin-top:12px;">Figures are illustrative for presentation purposes. Forex volume source: BIS Triennial Survey (2022).</p>
+    </div>
+  </div>
+
+  <div class="page-foot">
+    <span class="mark"><svg class="l"><use href="#logo-wfb"/></svg> WFB Token</span>
+    <span>Executive Summary</span>
+    <span>03</span>
+  </div>
+</section>
+
+
+<!-- =====================================================================
+     PAGE 4 — THE PROBLEM
+     ===================================================================== -->
+<section class="page bg-grain" id="problem">
+  <div class="glow-royal" style="width:300px;height:300px;top:-100px;right:-80px;opacity:.7;"></div>
+
+  <div class="content">
+    <div class="sec-head row between" style="align-items:flex-end;">
+      <div>
+        <span class="eyebrow">Section 04</span>
+        <h2 class="h-section" style="margin-top:8px;">The <span class="accent">Problem</span></h2>
+        <p class="h-sub">The intersection of Forex, crypto, and automation is broken — dominated by high costs, hidden risks, and a lack of transparency. These are the friction points WFB was built to eliminate.</p>
+      </div>
+      <span class="k-num">04</span>
+    </div>
+
+    <div class="grid-3" style="gap:11px;margin-top:8px;">
+      <!-- Problem cards -->
+      <div class="glass card-pad relative">
+        <div class="ichip royal" style="margin-bottom:10px;"><svg class="l"><use href="#i-chart"/></svg></div>
+        <h3 style="font-size:11pt;margin-bottom:5px;color:#fff;">Forex Inaccessibility</h3>
+        <p class="small muted">The $7.6T daily FX market runs on legacy rails. Retail participants face latency, broker markups, and no direct exposure to algorithmic edge.</p>
+      </div>
+      <div class="glass card-pad relative">
+        <div class="ichip royal" style="margin-bottom:10px;"><svg class="l"><use href="#i-coin"/></svg></div>
+        <h3 style="font-size:11pt;margin-bottom:5px;color:#fff;">Crypto Volatility Trap</h3>
+        <p class="small muted">Digital-asset traders operate without institutional risk controls — navigating emotion-driven decisions and unprotected downside.</p>
+      </div>
+      <div class="glass card-pad relative">
+        <div class="ichip royal" style="margin-bottom:10px;"><svg class="l"><use href="#i-bot"/></svg></div>
+        <h3 style="font-size:11pt;margin-bottom:5px;color:#fff;">Broken Automation</h3>
+        <p class="small muted">Existing bots are black boxes. They require constant babysitting, break under regime change, and offer no transparency into logic or performance.</p>
+      </div>
+      <div class="glass card-pad relative">
+        <div class="ichip royal" style="margin-bottom:10px;"><svg class="l"><use href="#i-users"/></svg></div>
+        <h3 style="font-size:11pt;margin-bottom:5px;color:#fff;">Manual Trading Limits</h3>
+        <p class="small muted">Human traders cannot monitor 24/5 markets. Fatigue, bias, and slow execution systematically erode returns.</p>
+      </div>
+      <div class="glass card-pad relative">
+        <div class="ichip royal" style="margin-bottom:10px;"><svg class="l"><use href="#i-layers"/></svg></div>
+        <h3 style="font-size:11pt;margin-bottom:5px;color:#fff">Recurring Subscription Cost</h3>
+        <p class="small muted">Recurring fiat subscriptions drain capital with zero ownership. Users pay indefinitely but capture none of the platform's growth.</p>
+      </div>
+      <div class="glass card-pad relative">
+        <div class="ichip royal" style="margin-bottom:10px;"><svg class="l"><use href="#i-alert"/></svg></div>
+        <h3 style="font-size:11pt;margin-bottom:5px;color:#fff;">Risk &amp; Transparency Gaps</h3>
+        <p class="small muted">No unified risk engine. No on-chain settlement. No verifiable track record. Participants operate blind, trusting opaque intermediaries.</p>
+      </div>
+    </div>
+
+    <!-- Pull quote -->
+    <div class="glass glass-gold card-pad-lg" style="margin-top:16px;">
+      <p class="pullquote">"The market doesn't lack tools — it lacks <span class="gold-text">trustworthy, aligned, transparent</span> automation that puts participants on the same side as the platform."</p>
+    </div>
+
+    <!-- Cost breakdown bar -->
+    <div class="glass card-pad" style="margin-top:14px;">
+      <div class="row between" style="margin-bottom:8px;align-items:center;">
+        <span class="upper small" style="color:#fff;font-weight:600;">Where a retail trader's capital leaks</span>
+        <span class="tiny muted">Illustrative · annual</span>
+      </div>
+      <div style="display:flex;height:22px;border-radius:6px;overflow:hidden;border:1px solid var(--paper-line-2);">
+        <div style="flex:34;background:linear-gradient(90deg,#1565FF,#4E8BFF);" title="Recurring subscription fees"></div>
+        <div style="flex:26;background:linear-gradient(90deg,#0A3FAE,#1565FF);"></div>
+        <div style="flex:22;background:linear-gradient(90deg,#A8862A,#D4AF37);"></div>
+        <div style="flex:18;background:linear-gradient(90deg,#8A6A1E,#B8902A);"></div>
+      </div>
+      <div class="row" style="margin-top:8px;gap:14px;flex-wrap:wrap;">
+        <span class="tiny" style="color:var(--royal-soft);">■ Subscription fees 34%</span>
+        <span class="tiny" style="color:var(--royal-soft);opacity:.8;">■ Broker spreads 26%</span>
+        <span class="tiny" style="color:var(--gold-soft);">■ Slippage 22%</span>
+        <span class="tiny" style="color:var(--gold-soft);opacity:.8;">■ Manual-error losses 18%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-foot">
+    <span class="mark"><svg class="l"><use href="#logo-wfb"/></svg> WFB Token</span>
+    <span>The Problem</span>
+    <span>04</span>
+  </div>
+</section>
+
+
+<!-- =====================================================================
+     PAGE 5 — OUR SOLUTION
+     ===================================================================== -->
+<section class="page bg-grain bg-grid" id="solution">
+  <div class="glow-gold" style="width:260px;height:260px;bottom:-60px;left:30%;"></div>
+
+  <div class="content">
+    <div class="sec-head row between" style="align-items:flex-end;">
+      <div>
+        <span class="eyebrow">Section 05</span>
+        <h2 class="h-section" style="margin-top:8px;">Our <span class="accent">Solution</span></h2>
+        <p class="h-sub">W Forex Bot fuses AI, automation, and blockchain into a single transparent engine — turning the problems above into compounding advantages.</p>
+      </div>
+      <span class="k-num">05</span>
+    </div>
+
+    <div class="grid-2" style="gap:12px;align-items:start;">
+      <!-- Left: solution pillars -->
+      <div class="stack" style="gap:10px;">
+        <div class="glass card-pad">
+          <div class="row" style="align-items:flex-start;gap:12px;">
+            <div class="ichip"><svg class="l"><use href="#i-brain"/></svg></div>
+            <div class="grow">
+              <h3 style="font-size:10.5pt;">Artificial Intelligence</h3>
+              <p class="small muted" style="margin-top:3px;">Real-time signal generation across Forex and crypto pairs, adapting to market regime with continuous model retraining.</p>
+            </div>
+          </div>
+        </div>
+        <div class="glass card-pad">
+          <div class="row" style="align-items:flex-start;gap:12px;">
+            <div class="ichip royal"><svg class="l"><use href="#i-cpu"/></svg></div>
+            <div class="grow">
+              <h3 style="font-size:10.5pt;">Machine Learning</h3>
+              <p class="small muted" style="margin-top:3px;">Models trained on multi-year tick data learn from outcomes — improving entry timing, position sizing, and exit logic over time.</p>
+            </div>
+          </div>
+        </div>
+        <div class="glass card-pad">
+          <div class="row" style="align-items:flex-start;gap:12px;">
+            <div class="ichip"><svg class="l"><use href="#i-bot"/></svg></div>
+            <div class="grow">
+              <h3 style="font-size:10.5pt;">Automation</h3>
+              <p class="small muted" style="margin-top:3px;">Direct MetaTrader&nbsp;5 execution removes human latency. Strategies deploy 24/5 without supervision, with configurable control rails.</p>
+            </div>
+          </div>
+        </div>
+        <div class="glass card-pad">
+          <div class="row" style="align-items:flex-start;gap:12px;">
+            <div class="ichip royal"><svg class="l"><use href="#i-shield"/></svg></div>
+            <div class="grow">
+              <h3 style="font-size:10.5pt;">Risk Engine</h3>
+              <p class="small muted" style="margin-top:3px;">A unified risk layer enforces per-trade exposure, drawdown limits, and dynamic position sizing — protecting capital by design.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: analytics + blockchain + token economy -->
+      <div class="stack" style="gap:10px;">
+        <div class="glass card-pad">
+          <div class="row" style="align-items:flex-start;gap:12px;">
+            <div class="ichip"><svg class="l"><use href="#i-chart"/></svg></div>
+            <div class="grow">
+              <h3 style="font-size:10.5pt;">Smart Analytics</h3>
+              <p class="small muted" style="margin-top:3px;">A live dashboard surfaces performance, exposure, and risk metrics — turning opaque automation into auditable intelligence.</p>
+            </div>
+          </div>
+        </div>
+        <div class="glass card-pad">
+          <div class="row" style="align-items:flex-start;gap:12px;">
+            <div class="ichip royal"><svg class="l"><use href="#i-layers"/></svg></div>
+            <div class="grow">
+              <h3 style="font-size:10.5pt;">Blockchain Settlement</h3>
+              <p class="small muted" style="margin-top:3px;">On-chain transparency for subscriptions, rewards, and governance — verifiable, immutable, and borderless via BEP-20.</p>
+            </div>
+          </div>
+        </div>
+        <div class="glass card-pad">
+          <div class="row" style="align-items:flex-start;gap:12px;">
+            <div class="ichip"><svg class="l"><use href="#i-coin"/></svg></div>
+            <div class="grow">
+              <h3 style="font-size:10.5pt;">Token Economy</h3>
+              <p class="small muted" style="margin-top:3px;">WFB converts users into stakeholders — fee discounts, staking yield, and governance transform recurring cost into owned value.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mini dashboard mockup -->
+        <div class="glass glass-gold card-pad" style="margin-top:2px;">
+          <div class="row between" style="margin-bottom:10px;align-items:center;">
+            <span class="upper tiny" style="color:var(--gold);font-weight:600;">Live Intelligence · Preview</span>
+            <span class="pill gold tiny">+4.82% MTD</span>
+          </div>
+          <svg viewBox="0 0 280 70" style="width:100%;height:62px;">
+            <defs>
+              <linearGradient id="sol-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#D4AF37" stop-opacity="0.4"/><stop offset="100%" stop-color="#D4AF37" stop-opacity="0"/></linearGradient>
+            </defs>
+            <path d="M0 55 L25 48 L50 52 L75 40 L100 44 L125 30 L150 34 L175 22 L200 26 L225 16 L250 20 L280 8" fill="none" stroke="url(#g-gold)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M0 55 L25 48 L50 52 L75 40 L100 44 L125 30 L150 34 L175 22 L200 26 L225 16 L250 20 L280 8 L280 70 L0 70 Z" fill="url(#sol-area)"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- bottom claim -->
+    <div class="glass card-pad-lg" style="margin-top:14px;text-align:center;">
+      <p class="small" style="color:#fff;font-family:var(--font-display);font-style:italic;font-size:13pt;">
+        Seven systems. One outcome — <span class="gold-text">intelligent, transparent, aligned trading.</span>
+      </p>
+    </div>
+  </div>
+
+  <div class="page-foot">
+    <span class="mark"><svg class="l"><use href="#logo-wfb"/></svg> WFB Token</span>
+    <span>Our Solution</span>
+    <span>05</span>
+  </div>
+</section>
+
+<!-- =====================================================================
+     PAGE 6 — ECOSYSTEM
+     ===================================================================== -->
+<section class="page bg-grain" id="ecosystem">
+  <div class="glow-gold" style="width:320px;height:320px;top:50%;left:50%;transform:translate(-50%,-50%);opacity:.35;"></div>
+
+  <div class="content">
+    <div class="sec-head row between" style="align-items:flex-end;">
+      <div>
+        <span class="eyebrow">Section 06</span>
+        <h2 class="h-section" style="margin-top:8px;">The <span class="accent">Ecosystem</span></h2>
+        <p class="h-sub">Nine interconnected modules orbit WFB — each a product, each a value stream, all bound by one token.</p>
+      </div>
+      <span class="k-num">06</span>
+    </div>
+
+    <!-- Radial ecosystem diagram -->
+    <div class="relative center" style="height:168mm;margin-top:2px;">
+      <svg viewBox="0 0 560 560" style="width:100%;max-width:520px;height:auto;">
+        <defs>
+          <radialGradient id="eco-core" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#D4AF37" stop-opacity="0.5"/><stop offset="100%" stop-color="#D4AF37" stop-opacity="0"/></radialGradient>
+        </defs>
+        <!-- rings -->
+        <circle cx="280" cy="280" r="120" fill="none" stroke="#D4AF37" stroke-opacity="0.16" stroke-width="1" stroke-dasharray="3 5"/>
+        <circle cx="280" cy="280" r="200" fill="none" stroke="#1565FF" stroke-opacity="0.18" stroke-width="1"/>
+        <circle cx="280" cy="280" r="245" fill="none" stroke="#D4AF37" stroke-opacity="0.08" stroke-width="1"/>
+        <!-- connector lines -->
+        <g stroke="url(#g-gold)" stroke-width="1.2" stroke-opacity="0.5">
+          <line x1="280" y1="280" x2="280" y2="120"/>
+          <line x1="280" y1="280" x2="280" y2="440"/>
+          <line x1="280" y1="280" x2="120" y2="280"/>
+          <line x1="280" y1="280" x2="440" y2="280"/>
+          <line x1="280" y1="280" x2="167" y2="167"/>
+          <line x1="280" y1="280" x2="393" y2="167"/>
+          <line x1="280" y1="280" x2="167" y2="393"/>
+          <line x1="280" y1="280" x2="393" y2="393"/>
+        </g>
+        <!-- CORE -->
+        <circle cx="280" cy="280" r="92" fill="url(#eco-core)"/>
+        <circle cx="280" cy="280" r="62" fill="#0B0B0B" stroke="url(#g-gold)" stroke-width="2"/>
+        <text x="280" y="272" text-anchor="middle" font-family="Sora" font-weight="800" font-size="20" fill="url(#g-gold)">WFB</text>
+        <text x="280" y="294" text-anchor="middle" font-family="Sora" font-weight="500" font-size="9" fill="#E8C766" letter-spacing="1.5">TOKEN CORE</text>
+
+        <!-- Nodes: helper positions on r=200 ring (8 around) -->
+        <!-- N top -->
+        <g><circle cx="280" cy="80" r="34" fill="#0B0B0B" stroke="#D4AF37" stroke-width="1.5"/><g transform="translate(269,64)"><svg width="22" height="22" viewBox="0 0 24 24"><g fill="none" stroke="#E8C766" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 2h6"/></g></svg></g></g>
+        <text x="280" y="58" text-anchor="middle" font-family="Sora" font-weight="600" font-size="10" fill="#fff">Trading Bot</text>
+        <!-- N bottom -->
+        <g><circle cx="280" cy="480" r="34" fill="#0B0B0B" stroke="#1565FF" stroke-width="1.5"/><g transform="translate(269,464)"><svg width="22" height="22" viewBox="0 0 24 24"><g fill="none" stroke="#4E8BFF" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 14l3-3 3 2 5-6"/></g></svg></g></g>
+        <text x="280" y="528" text-anchor="middle" font-family="Sora" font-weight="600" font-size="10" fill="#fff">Dashboard</text>
+        <!-- N left -->
+        <g><circle cx="80" cy="280" r="34" fill="#0B0B0B" stroke="#D4AF37" stroke-width="1.5"/><g transform="translate(69,264)"><svg width="22" height="22" viewBox="0 0 24 24"><g fill="none" stroke="#E8C766" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 0 0-3 3 3 3 0 0 0-3 3v1a3 3 0 0 0 0 6 3 3 0 0 0 3 3 3 3 0 0 0 6 0 3 3 0 0 0 3-3 3 3 0 0 0 0-6v-1a3 3 0 0 0-3-3 3 3 0 0 0-3-3Z"/></g></svg></g></g>
+        <text x="80" y="332" text-anchor="middle" font-family="Sora" font-weight="600" font-size="10" fill="#fff">AI Assistant</text>
+        <!-- N right -->
+        <g><circle cx="480" cy="280" r="34" fill="#0B0B0B" stroke="#1565FF" stroke-width="1.5"/><g transform="translate(469,264)"><svg width="22" height="22" viewBox="0 0 24 24"><g fill="none" stroke="#4E8BFF" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></g></svg></g></g>
+        <text x="480" y="332" text-anchor="middle" font-family="Sora" font-weight="600" font-size="10" fill="#fff">Marketplace</text>
+        <!-- diagonal TL -->
+        <g><circle cx="139" cy="139" r="30" fill="#0B0B0B" stroke="#D4AF37" stroke-width="1.3"/><g transform="translate(130,125)"><svg width="18" height="18" viewBox="0 0 24 24"><g fill="none" stroke="#E8C766" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H4v8h16v-4M16 12h4"/><circle cx="8" cy="12" r="1.5" fill="#E8C766" stroke="none"/></g></svg></g></g>
+        <text x="139" y="100" text-anchor="middle" font-family="Sora" font-weight="600" font-size="9.5" fill="#fff">Wallet</text>
+        <!-- diagonal TR -->
+        <g><circle cx="421" cy="139" r="30" fill="#0B0B0B" stroke="#1565FF" stroke-width="1.3"/><g transform="translate(412,125)"><svg width="18" height="18" viewBox="0 0 24 24"><g fill="none" stroke="#4E8BFF" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10.5 18.5h3"/></g></svg></g></g>
+        <text x="421" y="100" text-anchor="middle" font-family="Sora" font-weight="600" font-size="9.5" fill="#fff">Mobile App</text>
+        <!-- diagonal BL -->
+        <g><circle cx="139" cy="421" r="30" fill="#0B0B0B" stroke="#D4AF37" stroke-width="1.3"/><g transform="translate(130,407)"><svg width="18" height="18" viewBox="0 0 24 24"><g fill="none" stroke="#E8C766" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6M12 3v13M7 8l5-5 5 5"/></g></svg></g></g>
+        <text x="139" y="468" text-anchor="middle" font-family="Sora" font-weight="600" font-size="9.5" fill="#fff">Referral</text>
+        <!-- diagonal BR -->
+        <g><circle cx="421" cy="421" r="30" fill="#0B0B0B" stroke="#1565FF" stroke-width="1.3"/><g transform="translate(412,407)"><svg width="18" height="18" viewBox="0 0 24 24"><g fill="none" stroke="#4E8BFF" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0M16 5.2a3 3 0 0 1 0 5.6M17 13.5a5.5 5.5 0 0 1 3.5 5.1"/></g></svg></g></g>
+        <text x="421" y="468" text-anchor="middle" font-family="Sora" font-weight="600" font-size="9.5" fill="#fff">Community</text>
+
+        <!-- subtle orbiting dots -->
+        <g fill="#D4AF37" opacity="0.6"><circle cx="280" cy="80" r="2"/></g>
+      </svg>
+    </div>
+
+    <p class="small muted center-text" style="margin-top:-6px;">Every module settles, rewards, or is discounted in <strong style="color:var(--gold-soft);">WFB</strong> — value flows inward and radiates outward.</p>
+  </div>
+
+  <div class="page-foot">
+    <span class="mark"><svg class="l"><use href="#logo-wfb"/></svg> WFB Token</span>
+    <span>Ecosystem</span>
+    <span>06</span>
+  </div>
+</section>
+
+
+<!-- =====================================================================
+     PAGE 7 — TOKEN UTILITY
+     ===================================================================== -->
+<section class="page bg-grain bg-grid" id="utility">
+  <div class="glow-royal" style="width:240px;height:240px;top:80px;right:-60px;"></div>
+
+  <div class="content">
+    <div class="sec-head row between" style="align-items:flex-end;">
+      <div>
+        <span class="eyebrow">Section 07</span>
+        <h2 class="h-section" style="margin-top:8px;">Token <span class="accent">Utility</span></h2>
+        <p class="h-sub">WFB is functional capital. Each use case below consumes, rewards, or discounts in token — creating continuous, diversified demand.</p>
+      </div>
+      <span class="k-num">07</span>
+    </div>
+
+    <div class="grid-2" style="gap:11px;margin-top:4px;">
+      <!-- 9 utility cards -->
+      <div class="glass card-pad">
+        <div class="row between" style="align-items:center;margin-bottom:6px;">
+          <div class="row" style="gap:10px;align-items:center;"><div class="ichip" style="width:36px;height:36px;"><svg class="l" style="width:18px;height:18px;"><use href="#i-wallet"/></svg></div>
+          <h3 style="font-size:10.5pt;">Subscription Payments</h3></div>
+          <span class="pill gold tiny">Core</span>
+        </div>
+        <p class="small muted">Pay bot &amp; platform subscriptions in WFB — on-chain, instant, with a native discount versus fiat.</p>
+      </div>
+      <div class="glass card-pad">
+        <div class="row between" style="align-items:center;margin-bottom:6px;">
+          <div class="row" style="gap:10px;align-items:center;"><div class="ichip royal" style="width:36px;height:36px;"><svg class="l" style="width:18px;height:18px;"><use href="#i-star"/></svg></div>
+          <h3 style="font-size:10.5pt;">Premium Membership</h3></div>
+          <span class="pill royal tiny">Tier</span>
+        </div>
+        <p class="small muted">Lock WFB to unlock advanced AI strategies, priority execution, and institutional-grade analytics.</p>
+      </div>
+      <div class="glass card-pad">
+        <div class="row between" style="align-items:center;margin-bottom:6px;">
+          <div class="row" style="gap:10px;align-items:center;"><div class="ichip" style="width:36px;height:36px;"><svg class="l" style="width:18px;height:18px;"><use href="#i-gift"/></svg></div>
+          <h3 style="font-size:10.5pt;">Marketplace Rewards</h3></div>
+          <span class="pill gold tiny">Earn</span>
+        </div>
+        <p class="small muted">Strategy creators and data providers earn WFB for contributions traded on the marketplace.</p>
+      </div>
+      <div class="glass card-pad">
+        <div class="row between" style="align-items:center;margin-bottom:6px;">
+          <div class="row" style="gap:10px;align-items:center;"><div class="ichip royal" style="width:36px;height:36px;"><svg class="l" style="width:18px;height:18px;"><use href="#i-link"/></svg></div>
+          <h3 style="font-size:10.5pt;">Referral Bonuses</h3></div>
+          <span class="pill royal tiny">Earn</span>
+        </div>
+        <p class="small muted">Multi-tier on-chain referrals pay WFB for every active participant you bring into the ecosystem.</p>
+      </div>
+      <div class="glass card-pad">
+        <div class="row between" style="align-items:center;margin-bottom:6px;">
+          <div class="row" style="gap:10px;align-items:center;"><div class="ichip" style="width:36px;height:36px;"><svg class="l" style="width:18px;height:18px;"><use href="#i-scale"/></svg></div>
+          <h3 style="font-size:10.5pt;">Governance</h3></div>
+          <span class="pill gold tiny">Vote</span>
+        </div>
+        <p class="small muted">WFB holders propose and vote on platform parameters, fee models, and treasury allocation.</p>
+      </div>
+      <div class="glass card-pad">
+        <div class="row between" style="align-items:center;margin-bottom:6px;">
+          <div class="row" style="gap:10px;align-items:center;"><div class="ichip royal" style="width:36px;height:36px;"><svg class="l" style="width:18px;height:18px;"><use href="#i-layers"/></svg></div>
+          <h3 style="font-size:10.5pt;">Staking</h3></div>
+          <span class="pill royal tiny">Yield</span>
+        </div>
+        <p class="small muted">Stake WFB to earn protocol yield, unlock higher tiers, and access early product releases.</p>
+      </div>
+      <div class="glass card-pad">
+        <div class="row between" style="align-items:center;margin-bottom:6px;">
+          <div class="row" style="gap:10px;align-items:center;"><div class="ichip" style="width:36px;height:36px;"><svg class="l" style="width:18px;height:18px;"><use href="#i-bolt"/></svg></div>
+          <h3 style="font-size:10.5pt;">Fee Discounts</h3></div>
+          <span class="pill gold tiny">Save</span>
+        </div>
+        <p class="small muted">Hold and transact in WFB to receive tiered discounts across the entire ecosystem fee schedule.</p>
+      </div>
+      <div class="glass card-pad">
+        <div class="row between" style="align-items:center;margin-bottom:6px;">
+          <div class="row" style="gap:10px;align-items:center;"><div class="ichip royal" style="width:36px;height:36px;"><svg class="l" style="width:18px;height:18px;"><use href="#i-users"/></svg></div>
+          <h3 style="font-size:10.5pt;">Community Incentives</h3></div>
+          <span class="pill royal tiny">Earn</span>
+        </div>
+        <p class="small muted">Bounties, ambassador rewards, and competition prizes are distributed in WFB to active members.</p>
+      </div>
+    </div>
+
+    <!-- 9th spans full width -->
+    <div class="glass glass-gold card-pad" style="margin-top:11px;">
+      <div class="row between" style="align-items:center;">
+        <div class="row" style="gap:12px;align-items:center;">
+          <div class="ichip"><svg class="l"><use href="#i-rocket"/></svg></div>
+          <div><h3 style="font-size:10.5pt;">Future Products</h3><p class="small muted" style="margin-top:2px;">WFB is the settlement layer for every future release — cross-chain wallet, institutional terminal, and AI products yet to ship.</p></div>
+        </div>
+        <span class="pill gold tiny">Roadmap</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-foot">
+    <span class="mark"><svg class="l"><use href="#logo-wfb"/></svg> WFB Token</span>
+    <span>Token Utility</span>
+    <span>07</span>
+  </div>
+</section>
+
+<!-- =====================================================================
+     PAGE 8 — TOKENOMICS
+     ===================================================================== -->
+<section class="page bg-grain" id="tokenomics">
+  <div class="glow-gold" style="width:260px;height:260px;top:-60px;left:20%;"></div>
+  <div class="glow-royal" style="width:200px;height:200px;bottom:-40px;right:-40px;"></div>
+
+  <div class="content">
+    <div class="sec-head row between" style="align-items:flex-end;">
+      <div>
+        <span class="eyebrow">Section 08</span>
+        <h2 class="h-section" style="margin-top:8px;">Tokenomics</h2>
+        <p class="h-sub">A fixed-supply, deflationary-leaning model engineered for utility, liquidity, and long-term alignment.</p>
+      </div>
+      <span class="k-num">08</span>
+    </div>
+
+    <!-- Top stats -->
+    <div class="grid-4" style="margin-bottom:12px;">
+      <div class="glass card-pad center col" style="text-align:center;">
+        <span class="stat-num">1,000,000,000</span>
+        <span class="stat-label" style="margin-top:5px;">Total Supply · WFB</span>
+      </div>
+      <div class="glass card-pad center col" style="text-align:center;">
+        <span class="stat-num royal">18</span>
+        <span class="stat-label" style="margin-top:5px;">Decimals · BEP-20</span>
+      </div>
+      <div class="glass card-pad center col" style="text-align:center;">
+        <span class="stat-num">BEP-20</span>
+        <span class="stat-label" style="margin-top:5px;">BNB Smart Chain</span>
+      </div>
+      <div class="glass card-pad center col" style="text-align:center;">
+        <span class="stat-num royal">7</span>
+        <span class="stat-label" style="margin-top:5px;">Allocation Buckets</span>
+      </div>
+    </div>
+
+    <div class="grid-2" style="gap:14px;align-items:start;">
+      <!-- LEFT: Donut chart -->
+      <div class="glass card-pad-lg">
+        <div class="row between" style="margin-bottom:8px;align-items:center;">
+          <span class="upper small" style="color:#fff;font-weight:600;">Allocation</span>
+          <span class="tiny muted">Illustrative · editable</span>
+        </div>
+        <div class="center col" style="margin:4px 0;">
+          <svg viewBox="0 0 200 200" style="width:160px;height:160px;">
+            <!-- donut segments using stroke-dasharray on r=80 circle, circumference=502.65 -->
+            <g transform="rotate(-90 100 100)" fill="none" stroke-width="34">
+              <!-- 30% Community = 150.8 -->
+              <circle cx="100" cy="100" r="80" stroke="#D4AF37" stroke-dasharray="150.8 502.65" stroke-dashoffset="0"/>
+              <!-- 20% Liquidity = 100.5, offset -150.8 -->
+              <circle cx="100" cy="100" r="80" stroke="#1565FF" stroke-dasharray="100.5 502.65" stroke-dashoffset="-150.8"/>
+              <!-- 15% Dev = 75.4, offset -251.3 -->
+              <circle cx="100" cy="100" r="80" stroke="#E8C766" stroke-dasharray="75.4 502.65" stroke-dashoffset="-251.3"/>
+              <!-- 10% Marketing = 50.3, offset -326.7 -->
+              <circle cx="100" cy="100" r="80" stroke="#4E8BFF" stroke-dasharray="50.3 502.65" stroke-dashoffset="-326.7"/>
+              <!-- 10% Team = 50.3, offset -377 -->
+              <circle cx="100" cy="100" r="80" stroke="#B8902A" stroke-dasharray="50.3 502.65" stroke-dashoffset="-377"/>
+              <!-- 10% Treasury = 50.3, offset -427.3 -->
+              <circle cx="100" cy="100" r="80" stroke="#0A3FAE" stroke-dasharray="50.3 502.65" stroke-dashoffset="-427.3"/>
+              <!-- 5% Strategic = 25.1, offset -477.6 -->
+              <circle cx="100" cy="100" r="80" stroke="#8A6A1E" stroke-dasharray="25.1 502.65" stroke-dashoffset="-477.6"/>
+            </g>
+            <text x="100" y="95" text-anchor="middle" font-family="Playfair Display" font-weight="800" font-size="26" fill="#fff">1B</text>
+            <text x="100" y="114" text-anchor="middle" font-family="Sora" font-weight="500" font-size="9" fill="#8A8A8A" letter-spacing="1.5">TOTAL WFB</text>
+          </svg>
+        </div>
+        <div class="grid-2" style="gap:5px 14px;">
+          <div class="row" style="align-items:center;gap:7px;"><span style="width:9px;height:9px;border-radius:2px;background:#D4AF37;"></span><span class="tiny" style="color:var(--txt-80);">Community 30%</span></div>
+          <div class="row" style="align-items:center;gap:7px;"><span style="width:9px;height:9px;border-radius:2px;background:#1565FF;"></span><span class="tiny" style="color:var(--txt-80);">Liquidity 20%</span></div>
+          <div class="row" style="align-items:center;gap:7px;"><span style="width:9px;height:9px;border-radius:2px;background:#E8C766;"></span><span class="tiny" style="color:var(--txt-80);">Development 15%</span></div>
+          <div class="row" style="align-items:center;gap:7px;"><span style="width:9px;height:9px;border-radius:2px;background:#4E8BFF;"></span><span class="tiny" style="color:var(--txt-80);">Marketing 10%</span></div>
+          <div class="row" style="align-items:center;gap:7px;"><span style="width:9px;height:9px;border-radius:2px;background:#B8902A;"></span><span class="tiny" style="color:var(--txt-80);">Team 10%</span></div>
+          <div class="row" style="align-items:center;gap:7px;"><span style="width:9px;height:9px;border-radius:2px;background:#0A3FAE;"></span><span class="tiny" style="color:var(--txt-80);">Treasury 10%</span></div>
+          <div class="row" style="align-items:center;gap:7px;"><span style="width:9px;height:9px;border-radius:2px;background:#8A6A1E;"></span><span class="tiny" style="color:var(--txt-80);">Strategic 5%</span></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Allocation table -->
+      <div class="glass card-pad-lg">
+        <div class="row between" style="margin-bottom:8px;align-items:center;">
+          <span class="upper small" style="color:#fff;font-weight:600;">Breakdown</span>
+          <span class="pill gold tiny">Vesting Applied</span>
+        </div>
+        <table class="lux">
+          <thead><tr><th>Bucket</th><th>%</th><th class="nowrap">Tokens (M)</th><th>Vesting</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Community &amp; Ecosystem</strong></td><td>30%</td><td class="mono">300.0</td><td class="small muted">Milestone release</td></tr>
+            <tr><td><strong>Liquidity</strong></td><td>20%</td><td class="mono">200.0</td><td class="small muted">DEX &amp; CEX pools</td></tr>
+            <tr class="featured"><td><strong>Development</strong></td><td>15%</td><td class="mono">150.0</td><td class="small muted">36-mo schedule</td></tr>
+            <tr><td><strong>Marketing</strong></td><td>10%</td><td class="mono">100.0</td><td class="small muted">Campaign-based</td></tr>
+            <tr><td><strong>Team</strong></td><td>10%</td><td class="mono">100.0</td><td class="small muted">12-cliff · 36-mo</td></tr>
+            <tr><td><strong>Treasury</strong></td><td>10%</td><td class="mono">100.0</td><td class="small muted">Multi-sig</td></tr>
+            <tr><td><strong>Strategic Reserve</strong></td><td>5%</td><td class="mono">50.0</td><td class="small muted">Partner-locked</td></tr>
+          </tbody>
+        </table>
+        <p class="tiny muted" style="margin-top:9px;">All figures illustrative and editable prior to final token generation event. Vesting terms subject to final confirmation.</p>
+      </div>
+    </div>
+
+    <!-- Unlock schedule concept -->
+    <div class="glass card-pad-lg" style="margin-top:12px;">
+      <div class="row between" style="margin-bottom:10px;align-items:center;">
+        <span class="upper small" style="color:#fff;font-weight:600;">Circulating Supply · Unlock Concept</span>
+        <span class="tiny muted">Months 0 → 48</span>
+      </div>
+      <svg viewBox="0 0 600 90" style="width:100%;height:80px;">
+        <defs>
+          <linearGradient id="unlock-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#D4AF37" stop-opacity="0.45"/><stop offset="100%" stop-color="#1565FF" stop-opacity="0.08"/></linearGradient>
+        </defs>
+        <!-- gridlines -->
+        <g stroke="#ffffff" stroke-opacity="0.06"><line x1="0" y1="20" x2="600" y2="20"/><line x1="0" y1="45" x2="600" y2="45"/><line x1="0" y1="70" x2="600" y2="70"/></g>
+        <!-- stepped unlock curve -->
+        <path d="M0 78 L60 70 L60 64 L130 64 L130 55 L210 55 L210 46 L290 46 L290 40 L370 40 L370 33 L450 33 L450 27 L540 27 L540 22 L600 22" fill="none" stroke="url(#g-gold)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M0 78 L60 70 L60 64 L130 64 L130 55 L210 55 L210 46 L290 46 L290 40 L370 40 L370 33 L450 33 L450 27 L540 27 L540 22 L600 22 L600 88 L0 88 Z" fill="url(#unlock-g)"/>
+        <!-- x-axis labels -->
+        <g font-family="Sora" font-size="8" fill="#6b6b6b"><text x="0" y="88">M0</text><text x="150" y="88">M12</text><text x="300" y="88">M24</text><text x="450" y="88">M36</text><text x="585" y="88">M48</text></g>
+      </svg>
+      <p class="tiny muted" style="margin-top:6px;">Team tokens cliff-locked 12 months, then linearly vest to month 36. Liquidity seeded at launch; ecosystem &amp; reserve released against roadmap milestones.</p>
+    </div>
+  </div>
+
+  <div class="page-foot">
+    <span class="mark"><svg class="l"><use href="#logo-wfb"/></svg> WFB Token</span>
+    <span>Tokenomics</span>
+    <span>08</span>
+  </div>
+</section>
+
+<!-- =====================================================================
+     PAGE 9 — REVENUE MODEL
+     ===================================================================== -->
+<section class="page bg-grain bg-grid" id="revenue">
+  <div class="glow-royal" style="width:260px;height:260px;top:120px;left:-70px;"></div>
+
+  <div class="content">
+    <div class="sec-head row between" style="align-items:flex-end;">
+      <div>
+        <span class="eyebrow">Section 09</span>
+        <h2 class="h-section" style="margin-top:8px;">Revenue <span class="accent">Model</span></h2>
+        <p class="h-sub">Seven diversified streams feed the ecosystem treasury — each denominated or settled in WFB, compounding token utility.</p>
+      </div>
+      <span class="k-num">09</span>
+    </div>
+
+    <!-- Flow diagram: Market -> Streams -> Treasury -> Buyback/Rewards -->
+    <div class="glass card-pad-lg" style="margin-bottom:12px;">
+      <div class="row" style="align-items:center;gap:10px;justify-content:space-between;">
+        <!-- node market -->
+        <div style="text-align:center;flex:1;">
+          <div class="ichip royal" style="margin:0 auto 6px;"><svg class="l"><use href="#i-globe"/></svg></div>
+          <div class="small" style="color:#fff;font-weight:600;">Global Market</div>
+          <div class="tiny muted">Users &amp; Partners</div>
+        </div>
+        <svg width="34" height="14" style="flex:0 0 auto;"><line x1="0" y1="7" x2="28" y2="7" stroke="url(#g-gold)" stroke-width="1.5"/><polygon points="28,3 34,7 28,11" fill="#D4AF37"/></svg>
+        <!-- node streams -->
+        <div style="text-align:center;flex:1.4;">
+          <div class="ichip" style="margin:0 auto 6px;"><svg class="l"><use href="#i-layers"/></svg></div>
+          <div class="small" style="color:#fff;font-weight:600;">7 Revenue Streams</div>
+          <div class="tiny muted">Multi-channel</div>
+        </div>
+        <svg width="34" height="14" style="flex:0 0 auto;"><line x1="0" y1="7" x2="28" y2="7" stroke="url(#g-gold)" stroke-width="1.5"/><polygon points="28,3 34,7 28,11" fill="#D4AF37"/></svg>
+        <!-- node treasury -->
+        <div style="text-align:center;flex:1;">
+          <div class="ichip royal" style="margin:0 auto 6px;"><svg class="l"><use href="#i-database"/></svg></div>
+          <div class="small" style="color:#fff;font-weight:600;">Treasury</div>
+          <div class="tiny muted">Multi-sig</div>
+        </div>
+        <svg width="34" height="14" style="flex:0 0 auto;"><line x1="0" y1="7" x2="28" y2="7" stroke="url(#g-gold)" stroke-width="1.5"/><polygon points="28,3 34,7 28,11" fill="#D4AF37"/></svg>
+        <!-- node rewards -->
+        <div style="text-align:center;flex:1;">
+          <div class="ichip" style="margin:0 auto 6px;"><svg class="l"><use href="#i-gift"/></svg></div>
+          <div class="small" style="color:#fff;font-weight:600">Buyback &amp; Rewards</div>
+          <div class="tiny muted">To WFB holders</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7 revenue streams -->
+    <div class="grid-3" style="gap:11px;">
+      <div class="glass card-pad">
+        <div class="row between" style="align-items:flex-start;"><div class="ichip" style="width:36px;height:36px;"><svg class="l" style="width:18px;height:18px;"><use href="#i-wallet"/></svg></div><span class="stat-num" style="font-size:18pt;">01</span></div>
+        <h3 style="font-size:10.5pt;margin:9px 0 4px;">Subscriptions</h3>
+        <p class="small muted">Tiered monthly &amp; annual plans for bot access, paid in WFB at a native discount.</p>
+      </div>
+      <div class="glass card-pad">
+        <div class="row between" style="align-items:flex-start;"><div class="ichip royal" style="width:36px;height:36px;"><svg class="l" style="width:18px;height:18px;"><use href="#i-grid"/></svg></div><span class="stat-num royal" style="font-size:18pt;">02</span></div>
+        <h3 style="font-size:10.5pt;margin:9px 0 4px;">Marketplace</h3>
+        <p class="small muted">Platform fee on every strategy, signal, and dataset sold between participants.</p>
+      </div>
+      <div class="glass card-pad">
+        <div class="row between" style="align-items:flex-start;"><div class="ichip" style="width:36px;height:36px;"><svg class="l" style="width:18px;height:18px;"><use href="#i-brain"/></svg></div><span class="stat-num" style="font-size:18pt;">03</span></div>
+        <h3 style="font-size:10.5pt;margin:9px 0 4px;">Premium AI Services</h3>
+        <p class="small muted">Advanced AI model access, custom strategy generation, and priority intelligence.</p>
+      </div>
+      <div class="glass card-pad">
+        <div class="row between" style="align-items:flex-start;"><div class="ichip royal" style="width:36px;height:36px;"><svg class="l" style="width:18px;height:18px;"><use href="#i-handshake"/></svg></div><span class="stat-num royal" style="font-size:18pt;">04</span></div>
+        <h3 style="font-size:10.5pt;margin:9px 0 4px;">Enterprise Licensing</h3>
+        <p class="small muted">White-label and institutional licenses for funds, brokers, and fintechs.</p>
+      </div>
+      <div class="glass card-pad">
+        <div class="row between" style="align-items:flex-start;"><div class="ichip" style="width:36px;height:36px;"><svg class="l" style="width:18px;height:18px;"><use href="#i-link"/></svg></div><span class="stat-num" style="font-size:18pt;">05</span></div>
+        <h3 style="font-size:10.5pt;margin:9px 0 4px;">Partnerships</h3>
+        <p class="small muted">Strategic integrations, co-marketing, and listed-venue revenue shares.</p>
+      </div>
+      <div class="glass card-pad">
+        <div class="row between" style="align-items:flex-start;"><div class="ichip royal" style="width:36px;height:36px;"><svg class="l" style="width:18px;height:18px;"><use href="#i-code"/></svg></div><span class="stat-num royal" style="font-size:18pt;">06</span></div>
+        <h3 style="font-size:10.5pt;margin:9px 0 4px;">API Services</h3>
+        <p class="small muted">Metered API &amp; data access for developers building on WFB intelligence.</p>
+      </div>
+    </div>
+
+    <!-- 7th + bar -->
+    <div class="glass glass-gold card-pad" style="margin-top:11px;">
+      <div class="row between" style="align-items:center;">
+        <div class="row" style="gap:12px;align-items:center;">
+          <div class="ichip" style="width:36px;height:36px;"><svg class="l" style="width:18px;height:18px;"><use href="#i-star"/></svg></div>
+          <div><h3 style="font-size:10.5pt;">07 · Education</h3><p class="small muted" style="margin-top:2px;">Premium courses, certifications, and trading academies — paid in WFB, rewarding graduates.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-foot">
+    <span class="mark"><svg class="l"><use href="#logo-wfb"/></svg> WFB Token</span>
+    <span>Revenue Model</span>
+    <span>09</span>
+  </div>
+</section>
+
+
+<!-- =====================================================================
+     PAGE 10 — ROADMAP
+     ===================================================================== -->
+<section class="page bg-grain" id="roadmap">
+  <div class="glow-gold" style="width:280px;height:280px;bottom:0;left:-80px;"></div>
+
+  <div class="content">
+    <div class="sec-head row between" style="align-items:flex-end;">
+      <div>
+        <span class="eyebrow">Section 10</span>
+        <h2 class="h-section" style="margin-top:8px;">Roadmap</h2>
+        <p class="h-sub">A four-phase journey from platform launch to global AI expansion. Indicative timeline — subject to market and development conditions.</p>
+      </div>
+      <span class="k-num">10</span>
+    </div>
+
+    <!-- Timeline -->
+    <div class="relative" style="margin-top:14px;">
+      <!-- vertical center line -->
+      <div style="position:absolute;left:18px;top:8px;bottom:8px;width:2px;background:linear-gradient(180deg,#D4AF37,#1565FF);border-radius:2px;"></div>
+
+      <!-- Phase 1 -->
+      <div class="row" style="margin-bottom:13px;align-items:stretch;">
+        <div style="position:relative;width:38px;flex:0 0 38px;">
+          <div style="position:absolute;left:11px;top:6px;width:16px;height:16px;border-radius:50%;background:var(--gold-grad);box-shadow:0 0 0 4px rgba(212,175,55,0.18);"></div>
+        </div>
+        <div class="glass glass-gold card-pad grow">
+          <div class="row between" style="align-items:center;margin-bottom:5px;">
+            <div class="row" style="gap:9px;align-items:center;"><span class="pill gold tiny">Phase 01</span><h3 style="font-size:12pt;color:#fff;">Platform Launch</h3></div>
+            <span class="tiny muted upper">Foundation</span>
+          </div>
+          <div class="row wrap" style="gap:6px;margin-top:6px;">
+            <span class="pill tiny">Website</span><span class="pill tiny">Dashboard</span><span class="pill tiny">Trading Bot</span><span class="pill tiny">Community</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 2 -->
+      <div class="row" style="margin-bottom:13px;align-items:stretch;">
+        <div style="position:relative;width:38px;flex:0 0 38px;">
+          <div style="position:absolute;left:11px;top:6px;width:16px;height:16px;border-radius:50%;background:#1565FF;box-shadow:0 0 0 4px rgba(21,101,255,0.18);"></div>
+        </div>
+        <div class="glass card-pad grow">
+          <div class="row between" style="align-items:center;margin-bottom:5px;">
+            <div class="row" style="gap:9px;align-items:center;"><span class="pill royal tiny">Phase 02</span><h3 style="font-size:12pt;color:#fff;">Token Launch</h3></div>
+            <span class="tiny muted upper">Liquidity</span>
+          </div>
+          <div class="row wrap" style="gap:6px;margin-top:6px;">
+            <span class="pill tiny">Token TGE</span><span class="pill tiny">DEX Listing</span><span class="pill tiny">Referral</span><span class="pill tiny">Staking</span><span class="pill tiny">Mobile App</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 3 -->
+      <div class="row" style="margin-bottom:13px;align-items:stretch;">
+        <div style="position:relative;width:38px;flex:0 0 38px;">
+          <div style="position:absolute;left:11px;top:6px;width:16px;height:16px;border-radius:50%;background:var(--gold-grad);box-shadow:0 0 0 4px rgba(212,175,55,0.18);"></div>
+        </div>
+        <div class="glass card-pad grow">
+          <div class="row between" style="align-items:center;margin-bottom:5px;">
+            <div class="row" style="gap:9px;align-items:center;"><span class="pill gold tiny">Phase 03</span><h3 style="font-size:12pt;color:#fff;">AI Expansion</h3></div>
+            <span class="tiny muted upper">Intelligence</span>
+          </div>
+          <div class="row wrap" style="gap:6px;margin-top:6px;">
+            <span class="pill tiny">Wallet</span><span class="pill tiny">Governance</span><span class="pill tiny">Marketplace</span><span class="pill tiny">Institutional Services</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 4 -->
+      <div class="row" style="margin-bottom:0;align-items:stretch;">
+        <div style="position:relative;width:38px;flex:0 0 38px;">
+          <div style="position:absolute;left:11px;top:6px;width:16px;height:16px;border-radius:50%;background:#1565FF;box-shadow:0 0 0 4px rgba(21,101,255,0.18);"></div>
+        </div>
+        <div class="glass card-pad grow" style="border-color:rgba(21,101,255,0.3);">
+          <div class="row between" style="align-items:center;margin-bottom:5px;">
+            <div class="row" style="gap:9px;align-items:center;"><span class="pill royal tiny">Phase 04</span><h3 style="font-size:12pt;color:#fff;">Global Expansion</h3></div>
+            <span class="tiny muted upper">Scale</span>
+          </div>
+          <div class="row wrap" style="gap:6px;margin-top:6px;">
+            <span class="pill tiny">Cross-chain</span><span class="pill tiny">Strategic Partnerships</span><span class="pill tiny">Advanced AI Products</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="glass glass-gold card-pad-lg" style="margin-top:18px;text-align:center;">
+      <p class="small" style="color:#fff;font-family:var(--font-display);font-style:italic;font-size:13pt;">From a single bot to a <span class="gold-text">global intelligent trading network.</span></p>
+    </div>
+  </div>
+
+  <div class="page-foot">
+    <span class="mark"><svg class="l"><use href="#logo-wfb"/></svg> WFB Token</span>
+    <span>Roadmap</span>
+    <span>10</span>
+  </div>
+</section>
+
+
+<!-- =====================================================================
+     PAGE 11 — TECHNOLOGY
+     ===================================================================== -->
+<section class="page bg-grain bg-grid" id="tech">
+  <div class="glow-royal" style="width:300px;height:300px;top:-80px;right:-80px;"></div>
+
+  <div class="content">
+    <div class="sec-head row between" style="align-items:flex-end;">
+      <div>
+        <span class="eyebrow">Section 11</span>
+        <h2 class="h-section" style="margin-top:8px;">Technology</h2>
+        <p class="h-sub">A modular stack where on-chain settlement, AI inference, and trading infrastructure operate as one coherent system.</p>
+      </div>
+      <span class="k-num">11</span>
+    </div>
+
+    <!-- Architecture stack diagram -->
+    <div class="glass card-pad-lg" style="margin-bottom:12px;">
+      <div class="upper small" style="color:var(--gold);font-weight:600;margin-bottom:10px;">System Architecture</div>
+      <div class="stack" style="gap:6px;">
+        <!-- layer 1 -->
+        <div style="display:flex;gap:6px;">
+          <div class="grow glass card-pad" style="text-align:center;border-color:rgba(212,175,55,0.3);"><div class="tiny upper" style="color:var(--gold);">Interface Layer</div><div class="small" style="color:#fff;margin-top:2px;">Dashboard · Mobile · API</div></div>
+        </div>
+        <div class="center"><svg width="14" height="10"><polygon points="0,0 14,0 7,9" fill="#D4AF37" opacity="0.6"/></svg></div>
+        <!-- layer 2 -->
+        <div style="display:flex;gap:6px;">
+          <div class="grow glass card-pad" style="text-align:center;"><div class="tiny upper" style="color:var(--royal-soft);">Intelligence Layer</div><div class="small" style="color:#fff;margin-top:2px;">AI Models · ML Pipeline · Risk Engine</div></div>
+        </div>
+        <div class="center"><svg width="14" height="10"><polygon points="0,0 14,0 7,9" fill="#1565FF" opacity="0.6"/></svg></div>
+        <!-- layer 3 -->
+        <div style="display:flex;gap:6px;">
+          <div class="grow glass card-pad" style="text-align:center;border-color:rgba(212,175,55,0.3);"><div class="tiny upper" style="color:var(--gold);">Execution Layer</div><div class="small" style="color:#fff;margin-top:2px;">MT5 Bridge · Order Router · Automation</div></div>
+        </div>
+        <div class="center"><svg width="14" height="10"><polygon points="0,0 14,0 7,9" fill="#D4AF37" opacity="0.6"/></svg></div>
+        <!-- layer 4 -->
+        <div style="display:flex;gap:6px;">
+          <div class="grow glass card-pad" style="text-align:center;"><div class="tiny upper" style="color:var(--royal-soft);">Settlement Layer</div><div class="small" style="color:#fff;margin-top:2px;">BEP-20 Smart Contract · Multi-sig Treasury</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6 tech cards -->
+    <div class="grid-3" style="gap:11px;">
+      <div class="glass card-pad"><div class="ichip" style="margin-bottom:8px;"><svg class="l"><use href="#i-code"/></svg></div><h3 style="font-size:10.5pt;margin-bottom:3px;">Smart Contract</h3><p class="small muted">BEP-20 standard, modular upgrade path, auditable logic for payments, staking, and governance.</p></div>
+      <div class="glass card-pad"><div class="ichip royal" style="margin-bottom:8px;"><svg class="l"><use href="#i-shield"/></svg></div><h3 style="font-size:10.5pt;margin-bottom:3px;">Security Principles</h3><p class="small muted">Least-privilege access, multi-sig controls, and continuous monitoring across all services.</p></div>
+      <div class="glass card-pad"><div class="ichip" style="margin-bottom:8px;"><svg class="l"><use href="#i-layers"/></svg></div><h3 style="font-size:10.5pt;margin-bottom:3px;">Scalability</h3><p class="small muted">Stateless services, horizontal scaling, and BNB Chain's high-throughput settlement.</p></div>
+      <div class="glass card-pad"><div class="ichip royal" style="margin-bottom:8px;"><svg class="l"><use href="#i-network"/></svg></div><h3 style="font-size:10.5pt;margin-bottom:3px;">Blockchain Architecture</h3><p class="small muted">Event-driven on-chain records for subscriptions, rewards, and governance votes.</p></div>
+      <div class="glass card-pad"><div class="ichip" style="margin-bottom:8px;"><svg class="l"><use href="#i-cpu"/></svg></div><h3 style="font-size:10.5pt;margin-bottom:3px;">AI Infrastructure</h3><p class="small muted">GPU-accelerated inference, feature stores, and automated model retraining pipelines.</p></div>
+      <div class="glass card-pad"><div class="ichip royal" style="margin-bottom:8px;"><svg class="l"><use href="#i-cloud"/></svg></div><h3 style="font-size:10.5pt;margin-bottom:3px;">Cloud &amp; Data Protection</h3><p class="small muted">Encrypted-at-rest storage, isolated environments, and granular data-access policies.</p></div>
+    </div>
+  </div>
+
+  <div class="page-foot">
+    <span class="mark"><svg class="l"><use href="#logo-wfb"/></svg> WFB Token</span>
+    <span>Technology</span>
+    <span>11</span>
+  </div>
+</section>
+
+<!-- =====================================================================
+     PAGE 12 — SECURITY
+     ===================================================================== -->
+<section class="page bg-grain" id="security">
+  <div class="glow-gold" style="width:280px;height:280px;top:-60px;right:-60px;"></div>
+
+  <div class="content">
+    <div class="sec-head row between" style="align-items:flex-end;">
+      <div>
+        <span class="eyebrow">Section 12</span>
+        <h2 class="h-section" style="margin-top:8px;">Security</h2>
+        <p class="h-sub">Security is engineered, not bolted on. These are the planned practices that govern the WFB ecosystem.</p>
+      </div>
+      <span class="k-num">12</span>
+    </div>
+
+    <!-- disclaimer banner -->
+    <div class="glass glass-gold card-pad" style="margin-bottom:14px;display:flex;gap:12px;align-items:flex-start;">
+      <svg class="l" width="20" height="20" style="color:var(--gold);flex:0 0 auto;margin-top:1px;"><use href="#i-alert"/></svg>
+      <p class="small" style="color:#fff;"><strong>Transparency note:</strong> Smart-contract audits are <strong>planned</strong>, not yet completed. This section describes the security practices we intend to implement. No audit has been finished unless explicitly stated and verified.</p>
+    </div>
+
+    <div class="grid-2" style="gap:11px;">
+      <div class="glass card-pad"><div class="row" style="gap:11px;align-items:flex-start;"><div class="ichip"><svg class="l"><use href="#i-fingerprint"/></svg></div><div><h3 style="font-size:10.5pt;">Smart Contract Audits</h3><p class="small muted" style="margin-top:3px;">Independent third-party review of the BEP-20 contract before and after deployment, with public reports.</p></div></div></div>
+      <div class="glass card-pad"><div class="row" style="gap:11px;align-items:flex-start;"><div class="ichip royal"><svg class="l"><use href="#i-key"/></svg></div><div><h3 style="font-size:10.5pt;">Multi-signature Treasury</h3><p class="small muted" style="margin-top:3px;">Treasury funds require multiple distributed signers — no single point of control or compromise.</p></div></div></div>
+      <div class="glass card-pad"><div class="row" style="gap:11px;align-items:flex-start;"><div class="ichip"><svg class="l"><use href="#i-lock"/></svg></div><div><h3 style="font-size:10.5pt;">Cold Storage</h3><p class="small muted" style="margin-top:3px;">The majority of reserve and treasury holdings maintained in offline, air-gapped cold storage.</p></div></div></div>
+      <div class="glass card-pad"><div class="row" style="gap:11px;align-items:flex-start;"><div class="ichip royal"><svg class="l"><use href="#i-shield"/></svg></div><div><h3 style="font-size:10.5pt;">Best Practices</h3><p class="small muted" style="margin-top:3px;">Principle of least privilege, encrypted secrets, dependency scanning, and continuous monitoring.</p></div></div></div>
+      <div class="glass card-pad" style="grid-column:span 2;"><div class="row" style="gap:11px;align-items:center;"><div class="ichip"><svg class="l"><use href="#i-eye"/></svg></div><div class="grow"><h3 style="font-size:10.5pt;">Transparency</h3><p class="small muted" style="margin-top:3px;">Public contract addresses, verifiable on-chain treasury, open reporting cadence, and a responsible-disclosure policy for the community.</p></div><span class="pill gold tiny">Planned</span></div></div>
+    </div>
+
+    <!-- security scorecard concept -->
+    <div class="glass card-pad-lg" style="margin-top:14px;">
+      <div class="row between" style="margin-bottom:10px;align-items:center;"><span class="upper small" style="color:#fff;font-weight:600;">Security Posture · Planned Controls</span><span class="tiny muted">Coverage map</span></div>
+      <div class="grid-4" style="gap:9px;">
+        <div class="center col" style="text-align:center;"><div class="stat-num" style="font-size:26pt;">6</div><span class="stat-label" style="margin-top:3px;">Control Domains</span></div>
+        <div class="center col" style="text-align:center;"><div class="stat-num royal" style="font-size:26pt;">M-of-N</div><span class="stat-label" style="margin-top:3px;">Multi-sig</span></div>
+        <div class="center col" style="text-align:center;"><div class="stat-num" style="font-size:26pt;">100%</div><span class="stat-label" style="margin-top:3px;">Encrypted At Rest</span></div>
+        <div class="center col" style="text-align:center;"><div class="stat-num royal" style="font-size:26pt;">24/7</div><span class="stat-label" style="margin-top:3px;">Monitoring</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-foot">
+    <span class="mark"><svg class="l"><use href="#logo-wfb"/></svg> WFB Token</span>
+    <span>Security</span>
+    <span>12</span>
+  </div>
+</section>
+
+
+<!-- =====================================================================
+     PAGE 13 — COMPETITIVE ADVANTAGES
+     ===================================================================== -->
+<section class="page bg-grain bg-grid" id="competition">
+  <div class="glow-royal" style="width:240px;height:240px;bottom:40px;left:-60px;"></div>
+
+  <div class="content">
+    <div class="sec-head row between" style="align-items:flex-end;">
+      <div>
+        <span class="eyebrow">Section 13</span>
+        <h2 class="h-section" style="margin-top:8px;">Competitive <span class="accent">Advantages</span></h2>
+        <p class="h-sub">A feature-level comparison across four categories of market participants. WFB is positioned on strengths — claims reflect intended capabilities, not guaranteed outcomes.</p>
+      </div>
+      <span class="k-num">13</span>
+    </div>
+
+    <div class="glass card-pad-lg">
+      <table class="lux">
+        <thead>
+          <tr>
+            <th>Capability</th>
+            <th class="center-text">Traditional<br>Platforms</th>
+            <th class="center-text">AI Trading<br>Platforms</th>
+            <th class="center-text">Crypto<br>Bots</th>
+            <th class="center-text" style="color:var(--gold);">WFB<br>Ecosystem</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Direct MT5 Execution</strong></td><td class="center-text dash">—</td><td class="center-text check">✓</td><td class="center-text cross">✕</td><td class="center-text check">✓</td></tr>
+          <tr><td><strong>AI + ML Signal Engine</strong></td><td class="center-text cross">✕</td><td class="center-text check">✓</td><td class="center-text dash">—</td><td class="center-text check">✓</td></tr>
+          <tr class="featured"><td><strong>Unified Risk Engine</strong></td><td class="center-text dash">—</td><td class="center-text dash">—</td><td class="center-text cross">✕</td><td class="center-text check">✓</td></tr>
+          <tr><td><strong>On-chain Transparency</strong></td><td class="center-text cross">✕</td><td class="center-text cross">✕</td><td class="center-text dash">—</td><td class="center-text check">✓</td></tr>
+          <tr><td><strong>Tokenized Ownership &amp; Rewards</strong></td><td class="center-text cross">✕</td><td class="center-text cross">✕</td><td class="center-text check">✓</td><td class="center-text check">✓</td></tr>
+          <tr class="featured"><td><strong>Governance &amp; Staking</strong></td><td class="center-text cross">✕</td><td class="center-text cross">✕</td><td class="center-text dash">—</td><td class="center-text check">✓</td></tr>
+          <tr><td><strong>Multi-asset (Forex + Crypto)</strong></td><td class="center-text dash">—</td><td class="center-text dash">—</td><td class="center-text cross">✕</td><td class="center-text check">✓</td></tr>
+          <tr><td><strong>Decentralized Marketplace</strong></td><td class="center-text cross">✕</td><td class="center-text cross">✕</td><td class="center-text dash">—</td><td class="center-text check">✓</td></tr>
+          <tr><td><strong>Community Incentive Layer</strong></td><td class="center-text cross">✕</td><td class="center-text dash">—</td><td class="center-text check">✓</td><td class="center-text check">✓</td></tr>
+        </tbody>
+      </table>
+      <div class="row" style="gap:16px;margin-top:10px;">
+        <span class="tiny" style="color:var(--gold);">✓ Supported &nbsp; · &nbsp; <span style="color:var(--txt-40);">— Partial / depends &nbsp; · &nbsp; ✕ Not available</span></span>
+      </div>
+    </div>
+
+    <div class="glass glass-gold card-pad-lg" style="margin-top:12px;">
+      <p class="small" style="color:#fff;font-family:var(--font-display);font-style:italic;font-size:12.5pt;text-align:center;">WFB's edge is convergence — <span class="gold-text">the only ecosystem unifying AI, MT5 execution, on-chain settlement, and tokenized rewards.</span></p>
+    </div>
+  </div>
+
+  <div class="page-foot">
+    <span class="mark"><svg class="l"><use href="#logo-wfb"/></svg> WFB Token</span>
+    <span>Competitive Advantages</span>
+    <span>13</span>
+  </div>
+</section>
+
+
+<!-- =====================================================================
+     PAGE 14 — COMMUNITY STRATEGY
+     ===================================================================== -->
+<section class="page bg-grain" id="community">
+  <div class="glow-gold" style="width:260px;height:260px;top:100px;right:-70px;"></div>
+
+  <div class="content">
+    <div class="sec-head row between" style="align-items:flex-end;">
+      <div>
+        <span class="eyebrow">Section 14</span>
+        <h2 class="h-section" style="margin-top:8px;">Community <span class="accent">Strategy</span></h2>
+        <p class="h-sub">A decentralized ecosystem succeeds only through an aligned, active community. These programs turn participants into evangelists.</p>
+      </div>
+      <span class="k-num">14</span>
+    </div>
+
+    <div class="grid-3" style="gap:11px;">
+      <div class="glass card-pad">
+        <div class="ichip" style="margin-bottom:9px;"><svg class="l"><use href="#i-star"/></svg></div>
+        <h3 style="font-size:11pt;margin-bottom:4px;">Ambassador Program</h3>
+        <p class="small muted">Regional ambassadors earn WFB for localizing, educating, and growing the ecosystem in their markets.</p>
+      </div>
+      <div class="glass card-pad">
+        <div class="ichip royal" style="margin-bottom:9px;"><svg class="l"><use href="#i-link"/></svg></div>
+        <h3 style="font-size:11pt;margin-bottom:4px;">Affiliate Program</h3>
+        <p class="small muted">Transparent, multi-tier on-chain affiliate payouts reward every active participant brought onboard.</p>
+      </div>
+      <div class="glass card-pad">
+        <div class="ichip" style="margin-bottom:9px;"><svg class="l"><use href="#i-trend"/></svg></div>
+        <h3 style="font-size:11pt;margin-bottom:4px;">Trading Competitions</h3>
+        <p class="small muted">Leaderboards and prize pools in WFB drive engagement, showcase the AI edge, and reward skill.</p>
+      </div>
+      <div class="glass card-pad">
+        <div class="ichip royal" style="margin-bottom:9px;"><svg class="l"><use href="#i-mail"/></svg></div>
+        <h3 style="font-size:11pt;margin-bottom:4px;">Educational Content</h3>
+        <p class="small muted">Academy, courses, and live sessions — paid in WFB, graduating skilled, loyal community members.</p>
+      </div>
+      <div class="glass card-pad">
+        <div class="ichip" style="margin-bottom:9px;"><svg class="l"><use href="#i-code"/></svg></div>
+        <h3 style="font-size:11pt;margin-bottom:4px;">Developer Community</h3>
+        <p class="small muted">Open APIs, bounties, and grants attract builders creating on WFB infrastructure.</p>
+      </div>
+      <div class="glass card-pad">
+        <div class="ichip royal" style="margin-bottom:9px;"><svg class="l"><use href="#i-globe"/></svg></div>
+        <h3 style="font-size:11pt;margin-bottom:4px;">Global Events</h3>
+        <p class="small muted">Meetups, conferences, and sponsored trading summits anchor WFB in the global fintech conversation.</p>
+      </div>
+    </div>
+
+    <!-- community growth chart -->
+    <div class="glass card-pad-lg" style="margin-top:14px;">
+      <div class="row between" style="margin-bottom:9px;align-items:center;">
+        <span class="upper small" style="color:#fff;font-weight:600;">Community Growth · Conceptual</span>
+        <span class="tiny muted">Illustrative trajectory</span>
+      </div>
+      <svg viewBox="0 0 600 80" style="width:100%;height:68px;">
+        <defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1565FF" stop-opacity="0.4"/><stop offset="100%" stop-color="#1565FF" stop-opacity="0"/></linearGradient></defs>
+        <path d="M0 72 C 100 70, 160 60, 220 52 S 360 30, 460 18 S 560 6, 600 4" fill="none" stroke="url(#g-royal)" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M0 72 C 100 70, 160 60, 220 52 S 360 30, 460 18 S 560 6, 600 4 L600 80 L0 80 Z" fill="url(#cg)"/>
+        <circle cx="600" cy="4" r="4" fill="#4E8BFF"/>
+      </svg>
+      <div class="row between" style="margin-top:6px;"><span class="tiny muted">Launch</span><span class="tiny muted">Token TGE</span><span class="tiny muted">AI Expansion</span><span class="tiny muted" style="color:var(--royal-soft);">Global Scale</span></div>
+    </div>
+  </div>
+
+  <div class="page-foot">
+    <span class="mark"><svg class="l"><use href="#logo-wfb"/></svg> WFB Token</span>
+    <span>Community Strategy</span>
+    <span>14</span>
+  </div>
+</section>
+
+
+<!-- =====================================================================
+     PAGE 15 — RISK FACTORS
+     ===================================================================== -->
+<section class="page bg-grain bg-grid" id="risk">
+  <div class="glow-royal" style="width:240px;height:240px;top:-50px;left:30%;"></div>
+
+  <div class="content">
+    <div class="sec-head row between" style="align-items:flex-end;">
+      <div>
+        <span class="eyebrow">Section 15</span>
+        <h2 class="h-section" style="margin-top:8px;">Risk <span class="accent">Factors</span></h2>
+        <p class="h-sub">Full transparency on the risks every participant must understand — and how the ecosystem intends to mitigate each.</p>
+      </div>
+      <span class="k-num">15</span>
+    </div>
+
+    <div class="stack" style="gap:9px;">
+      <div class="glass card-pad">
+        <div class="row between" style="align-items:flex-start;gap:12px;">
+          <div class="row" style="gap:11px;align-items:flex-start;flex:1;">
+            <div class="ichip royal" style="width:38px;height:38px;"><svg class="l" style="width:19px;height:19px;"><use href="#i-trend"/></svg></div>
+            <div><h3 style="font-size:10.5pt;">Market Risk</h3><p class="small muted" style="margin-top:3px;">Forex and crypto markets are volatile; trading can result in capital loss. <strong style="color:var(--gold-soft);">Mitigation:</strong> unified risk engine, configurable drawdown limits, position sizing.</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="glass card-pad">
+        <div class="row between" style="align-items:flex-start;gap:12px;">
+          <div class="row" style="gap:11px;align-items:flex-start;flex:1;">
+            <div class="ichip" style="width:38px;height:38px;"><svg class="l" style="width:19px;height:19px;"><use href="#i-cpu"/></svg></div>
+            <div><h3 style="font-size:10.5pt;">Technology Risk</h3><p class="small muted" style="margin-top:3px;">Software bugs, model drift, or infrastructure failure may occur. <strong style="color:var(--gold-soft);">Mitigation:</strong> audits, monitoring, redundancy, staged rollouts.</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="glass card-pad">
+        <div class="row between" style="align-items:flex-start;gap:12px;">
+          <div class="row" style="gap:11px;align-items:flex-start;flex:1;">
+            <div class="ichip royal" style="width:38px;height:38px;"><svg class="l" style="width:19px;height:19px;"><use href="#i-rocket"/></svg></div>
+            <div><h3 style="font-size:10.5pt;">Execution Risk</h3><p class="small muted" style="margin-top:3px;">Roadmap milestones may shift; not all features may ship as described. <strong style="color:var(--gold-soft);">Mitigation:</strong> phased delivery, transparent reporting, community governance.</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="glass card-pad">
+        <div class="row between" style="align-items:flex-start;gap:12px;">
+          <div class="row" style="gap:11px;align-items:flex-start;flex:1;">
+            <div class="ichip" style="width:38px;height:38px;"><svg class="l" style="width:19px;height:19px;"><use href="#i-scale"/></svg></div>
+            <div><h3 style="font-size:10.5pt;">Regulatory Risk</h3><p class="small muted" style="margin-top:3px;">Digital-asset regulation varies by jurisdiction and is evolving. <strong style="color:var(--gold-soft);">Mitigation:</strong> jurisdiction-aware design, legal counsel, compliance-first posture.</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="glass card-pad">
+        <div class="row between" style="align-items:flex-start;gap:12px;">
+          <div class="row" style="gap:11px;align-items:flex-start;flex:1;">
+            <div class="ichip royal" style="width:38px;height:38px;"><svg class="l" style="width:19px;height:19px;"><use href="#i-lock"/></svg></div>
+            <div><h3 style="font-size:10.5pt;">Cybersecurity Risk</h3><p class="small muted" style="margin-top:3px;">Smart contracts, keys, and infrastructure are targets for attack. <strong style="color:var(--gold-soft);">Mitigation:</strong> audits, multi-sig, cold storage, bug bounties, monitoring.</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="glass card-pad">
+        <div class="row between" style="align-items:flex-start;gap:12px;">
+          <div class="row" style="gap:11px;align-items:flex-start;flex:1;">
+            <div class="ichip" style="width:38px;height:38px;"><svg class="l" style="width:19px;height:19px;"><use href="#i-users"/></svg></div>
+            <div><h3 style="font-size:10.5pt;">Competition Risk</h3><p class="small muted" style="margin-top:3px;">The market is crowded; incumbents and new entrants compete for users. <strong style="color:var(--gold-soft);">Mitigation:</strong> convergence moat — AI + MT5 + on-chain + tokenized rewards.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-foot">
+    <span class="mark"><svg class="l"><use href="#logo-wfb"/></svg> WFB Token</span>
+    <span>Risk Factors</span>
+    <span>15</span>
+  </div>
+</section>
+
+
+<!-- =====================================================================
+     PAGE 16 — LEGAL DISCLAIMER
+     ===================================================================== -->
+<section class="page bg-grain" id="disclaimer">
+  <div class="glow-gold" style="width:280px;height:280px;bottom:-80px;right:-60px;"></div>
+
+  <div class="content">
+    <div class="sec-head row between" style="align-items:flex-end;">
+      <div>
+        <span class="eyebrow">Section 16</span>
+        <h2 class="h-section" style="margin-top:8px;">Legal <span class="accent">Disclaimer</span></h2>
+      </div>
+      <span class="k-num">16</span>
+    </div>
+
+    <div class="glass glass-gold card-pad-lg" style="margin-bottom:14px;display:flex;gap:13px;align-items:flex-start;">
+      <svg class="l" width="22" height="22" style="color:var(--gold);flex:0 0 auto;margin-top:1px;"><use href="#i-alert"/></svg>
+      <p class="small" style="color:#fff;"><strong>Important:</strong> Please read this disclaimer in full. By accessing this document you acknowledge and accept the terms below.</p>
+    </div>
+
+    <div class="glass card-pad-lg">
+      <div class="stack" style="gap:11px;">
+        <p class="small" style="color:var(--txt-80);">This document is provided for <strong>informational purposes only</strong>. It does not constitute investment, financial, legal, tax, or any other form of professional advice, and must not be relied upon as such.</p>
+        <p class="small" style="color:var(--txt-80);"><strong>Digital assets involve significant risk.</strong> Cryptocurrency markets are highly volatile, and you may lose some or all of the funds you commit. Past performance — whether of the W Forex Bot, its AI models, or any strategy — is <strong>not indicative of future results</strong>.</p>
+        <p class="small" style="color:var(--txt-80);"><strong>Regulations differ between jurisdictions.</strong> The legal status, tax treatment, and permissibility of digital assets vary widely. It is your responsibility to understand and comply with the laws applicable to you.</p>
+        <p class="small" style="color:var(--txt-80);"><strong>Forward-looking statements.</strong> This whitepaper contains descriptions of intended features, roadmap milestones, and capabilities. These are aspirational and subject to change. No guarantee is made that any described product or outcome will be delivered.</p>
+        <p class="small" style="color:var(--txt-80);"><strong>Conduct your own research.</strong> Readers should perform independent due diligence and consult qualified professional advisors before making any decision involving WFB or any digital asset.</p>
+        <hr class="rule" style="margin:4px 0;">
+        <p class="tiny muted">All figures, charts, and allocations in this document are illustrative and presented for conceptual purposes. Token parameters, vesting schedules, and product features are subject to change prior to and after the token generation event. This document may be updated or superseded without notice.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-foot">
+    <span class="mark"><svg class="l"><use href="#logo-wfb"/></svg> WFB Token</span>
+    <span>Legal Disclaimer</span>
+    <span>16</span>
+  </div>
+</section>
+
+
+<!-- =====================================================================
+     PAGE 17 — CLOSING / THANK YOU
+     ===================================================================== -->
+<section class="page bleed bg-grain" id="closing">
+  <div style="position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 35%, #15151c 0%, #0B0B0B 55%, #050506 100%);z-index:0;"></div>
+
+  <svg viewBox="0 0 595 842" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%;z-index:1;opacity:.7">
+    <defs>
+      <radialGradient id="cl-halo" cx="50%" cy="40%" r="32%"><stop offset="0%" stop-color="#D4AF37" stop-opacity="0.28"/><stop offset="100%" stop-color="#D4AF37" stop-opacity="0"/></radialGradient>
+    </defs>
+    <rect width="595" height="842" fill="url(#cl-halo)"/>
+    <g stroke="#1565FF" stroke-opacity="0.3" stroke-width="0.8" fill="none">
+      <ellipse cx="297" cy="300" rx="220" ry="80"/>
+      <ellipse cx="297" cy="300" rx="270" ry="105" transform="rotate(15 297 300)"/>
+    </g>
+  </svg>
+
+  <span class="hairline-corner hc-tl"></span>
+  <span class="hairline-corner hc-tr"></span>
+  <span class="hairline-corner hc-bl"></span>
+  <span class="hairline-corner hc-br"></span>
+
+  <div class="content" style="display:flex;flex-direction:column;justify-content:space-between;padding:22mm 20mm;">
+    <div class="row between" style="align-items:flex-start;">
+      <div class="wfb-badge" style="color:#fff;font-size:11pt;"><span class="glyph">W</span><span>W FOREX BOT</span></div>
+      <span class="pill gold">Thank You</span>
+    </div>
+
+    <div style="text-align:center;">
+      <div style="margin:0 auto 18px;width:80px;height:80px;">
+        <svg viewBox="0 0 100 100" style="width:80px;height:80px;"><use href="#logo-wfb"/></svg>
+      </div>
+      <div class="tiny upper" style="letter-spacing:.5em;color:var(--gold);margin-bottom:14px;">The Future Is Intelligent</div>
+      <h1 class="display" style="font-size:46pt;line-height:1.05;margin-bottom:14px;">
+        Building the Future<br>of <span class="gold-text">Intelligent Trading.</span>
+      </h1>
+      <div style="margin:18px auto 0;width:80px;" class="gold-rule"></div>
+      <p style="font-family:var(--font-display);font-style:italic;font-size:14pt;color:var(--txt-80);max-width:130mm;margin:18px auto 0;">
+        One Ecosystem · One Token · Unlimited Possibilities
+      </p>
+    </div>
+
+    <!-- Contact grid -->
+    <div>
+      <div class="upper tiny" style="color:var(--gold);text-align:center;letter-spacing:.3em;margin-bottom:12px;">Connect With Us</div>
+      <div class="grid-3" style="gap:9px;">
+        <div class="glass card-pad center col" style="text-align:center;gap:7px;">
+          <svg class="l" width="20" height="20" style="color:var(--gold-soft);"><use href="#i-globe"/></svg>
+          <span class="stat-label">Website</span>
+          <span class="small mono" style="color:#fff;">wforexbot.com</span>
+        </div>
+        <div class="glass card-pad center col" style="text-align:center;gap:7px;">
+          <svg class="l" width="20" height="20" style="color:var(--royal-soft);"><use href="#i-mail"/></svg>
+          <span class="stat-label">Email</span>
+          <span class="small mono" style="color:#fff;">hello@wforexbot.com</span>
+        </div>
+        <div class="glass card-pad center col" style="text-align:center;gap:7px;">
+          <svg class="l" width="20" height="20" style="color:var(--gold-soft);"><use href="#i-link"/></svg>
+          <span class="stat-label">Telegram</span>
+          <span class="small mono" style="color:#fff;">t.me/wforexbot</span>
+        </div>
+        <div class="glass card-pad center col" style="text-align:center;gap:7px;">
+          <svg class="l" width="20" height="20" style="color:var(--royal-soft);"><use href="#i-x"/></svg>
+          <span class="stat-label">X · Twitter</span>
+          <span class="small mono" style="color:#fff;">@wforexbot</span>
+        </div>
+        <div class="glass card-pad center col" style="text-align:center;gap:7px;">
+          <svg class="l" width="20" height="20" style="color:var(--gold-soft);"><use href="#i-users"/></svg>
+          <span class="stat-label">Discord</span>
+          <span class="small mono" style="color:#fff;">discord.gg/wfb</span>
+        </div>
+        <div class="glass card-pad center col" style="text-align:center;gap:7px;">
+          <svg class="l" width="20" height="20" style="color:var(--royal-soft);"><use href="#i-code"/></svg>
+          <span class="stat-label">GitHub</span>
+          <span class="small mono" style="color:#fff;">github.com/wforexbot</span>
+        </div>
+      </div>
+      <div class="row between" style="margin-top:16px;padding-top:12px;border-top:1px solid var(--paper-line-2);">
+        <span class="tiny muted">© 2026 W Forex Bot. All rights reserved.</span>
+        <span class="tiny muted">WFB Token · BEP-20 · BNB Smart Chain</span>
+        <span class="tiny muted">Whitepaper v1.0</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

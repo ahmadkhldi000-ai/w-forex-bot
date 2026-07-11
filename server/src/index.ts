@@ -18,6 +18,8 @@ import tradesRoutes from "@/routes/trades.js";
 import subsRoutes from "@/routes/subscriptions.js";
 import adminAuthRoutes from "@/routes/admin-auth.js";
 import adminRoutes from "@/routes/admin.js";
+import mt5AccountRoutes from "@/routes/mt5-accounts.js";
+import mt5UpdateRoutes from "@/routes/mt5-update.js";
 
 // ====================================================================
 //  W-FOREX-BOT · API SERVER
@@ -73,9 +75,46 @@ app.use(
   rateLimit({ windowMs: 15 * 60 * 1000, max: 10 })
 );
 
-// ---- Health check (Render needs this) ----
+// ---- Health checks ----
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+// Deep health check — verifies DB connectivity
+app.get("/health/ready", async (_req, res) => {
+  const checks: Record<string, "ok" | "fail"> = { server: "ok" };
+  let allOk = true;
+
+  // Database
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    checks.database = "ok";
+  } catch {
+    checks.database = "fail";
+    allOk = false;
+  }
+
+  // Redis (optional — warn only)
+  try {
+    if (config.redis.url) {
+      const { default: Redis } = await import("ioredis");
+      const redis = new Redis(config.redis.url, { connectTimeout: 2000 });
+      await redis.ping();
+      redis.disconnect();
+      checks.redis = "ok";
+    }
+  } catch {
+    checks.redis = "fail";
+  }
+
+  const httpStatus = allOk ? 200 : 503;
+  res.status(httpStatus).json({
+    status: allOk ? "ready" : "degraded",
+    checks,
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    version: "1.0.0",
+  });
 });
 
 app.get("/", (_req, res) => {
@@ -85,6 +124,7 @@ app.get("/", (_req, res) => {
     status: "running",
     docs: "/api",
     health: "/health",
+    ready: "/health/ready",
   });
 });
 
@@ -95,6 +135,8 @@ app.use("/api/trades", tradesRoutes);
 app.use("/api/subscriptions", subsRoutes);
 app.use("/api/admin", adminAuthRoutes);
 app.use("/api/management", adminRoutes);
+app.use("/api/management/mt5", mt5AccountRoutes);
+app.use("/api/mt5", mt5UpdateRoutes);
 
 // ---- Initialize MT5 WebSocket bridge ----
 initMT5Socket(server);

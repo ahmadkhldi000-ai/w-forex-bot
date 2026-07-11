@@ -97,14 +97,59 @@ Official channel: https://t.me/+iXalBkHABfBkYWQ0
 
 ---
 
-## ☁️ Deploy to Render
+## 🧪 Testing
 
-1. Push to GitHub
-2. Create Blueprint on Render (uses `render.yaml`)
-3. Set secret env vars (Paymento keys) in Render dashboard
-4. Auto-deploy on every push
+```bash
+# Run all tests against local server
+./scripts/tests/run-all-tests.sh http://localhost:3000
 
-**Default Admin:** `admin@wforexbot.com` (password printed on first deploy)
+# Individual test suites
+./scripts/tests/test-api.sh        # API endpoint tests
+./scripts/tests/test-security.sh   # Security headers, CORS, auth
+./scripts/tests/test-mt5.sh        # MT5 connection + constraints
+./scripts/tests/test-perf.sh       # Performance + load tests
+
+# Test production
+./scripts/tests/run-all-tests.sh https://api.wforexbot.com
+```
+
+---
+
+## ☁️ Deployment (100% Free Tier)
+
+| Component | Platform | Plan | Cost |
+|-----------|----------|------|------|
+| **Frontend** | [Vercel](https://vercel.com) | Hobby | Free (HTTPS + CDN) |
+| **Backend** | [Render](https://render.com) | Free | Free (WebSocket ✓) |
+| **Database** | [Neon](https://neon.tech) | Free | Free (0.5 GB PostgreSQL) |
+| **MT5 Bridge** | Home PC / VPS | — | Free |
+
+**📖 Full free-tier guide:** [`DEPLOYMENT.md`](DEPLOYMENT.md) — step-by-step from zero to live URL.
+
+**Quick summary:**
+```bash
+# 1. Push to GitHub
+git remote add origin https://github.com/YOU/w-forex-bot.git
+git push -u origin main
+
+# 2. Deploy (all free):
+#    - Neon    → create project, copy DATABASE_URL
+#    - Render  → import repo, set env vars, deploy backend
+#    - Vercel  → import repo, set NEXT_PUBLIC_API_URL, deploy frontend
+
+# 3. Set up production DB (run locally):
+./scripts/setup-prod-db.sh
+
+# 4. Connect MT5 bridge (local PC):
+cd mt5-bridge && cp .env.example .env  # fill in API_URL + API_KEY
+python mt5_bridge.py
+```
+
+**Live URLs (after deploy):**
+- Frontend: `https://wforexbot.vercel.app`
+- API: `https://w-forex-bot-api.onrender.com/health`
+
+**Default Admin:** `admin@wforexbot.com` (password printed on first seed)
 
 ---
 

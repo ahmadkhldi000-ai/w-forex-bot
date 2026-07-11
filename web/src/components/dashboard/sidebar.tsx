@@ -11,16 +11,18 @@ import {
   Newspaper,
   CircleHelp,
   Activity,
+  Radio,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LiveDot } from "@/components/ui/primitives";
 
 const nav = [
-  { label: "Dashboard", icon: LayoutDashboard, href: "/" },
-  { label: "Markets", icon: CandlestickChart, href: "/markets" },
+  { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
+  { label: "Live Trading", icon: Radio, href: "/live-trading" },
+  { label: "Analytics", icon: CandlestickChart, href: "/analytics" },
   { label: "Strategies", icon: Bot, href: "/strategies" },
   { label: "Trade History", icon: History, href: "/history" },
-  { label: "News Feed", icon: Newspaper, href: "/news" },
+  { label: "Subscription", icon: Newspaper, href: "/subscription" },
   { label: "Settings", icon: Settings2, href: "/settings" },
 ];
 
@@ -48,9 +50,9 @@ export function Sidebar() {
           Workspace
         </p>
         {nav.map((item) => {
-          const active =
-            item.href === "/"
-              ? pathname === "/"
+const active =
+            item.href === "/dashboard"
+              ? pathname === "/dashboard"
               : pathname.startsWith(item.href);
           const Icon = item.icon;
           return (

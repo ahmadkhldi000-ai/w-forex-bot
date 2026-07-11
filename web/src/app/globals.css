@@ -199,6 +199,11 @@ body {
   animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @keyframes float {
   0%,
   100% {
@@ -376,4 +381,78 @@ body {
 
 html {
   scroll-behavior: smooth;
+}
+
+/* ============================================================
+   PRINT / PDF EXPORT — /pitch/print
+   Each slide = one landscape 16:9 page, dark theme preserved.
+   ============================================================ */
+.pitch-print-root {
+  background: var(--bg);
+}
+
+.pitch-print-page {
+  width: 100vw;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+/* Force all scroll-reveal content visible immediately (IntersectionObserver
+   may not fire in headless print). */
+.pitch-print-root .reveal {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+@media print {
+  @page {
+    size: 297mm 167mm; /* 16:9 landscape, fits 1920×1080 ratio */
+    margin: 0;
+  }
+
+  html,
+  body {
+    background: var(--bg) !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .pitch-print-root {
+    display: block;
+    width: 100%;
+  }
+
+  .pitch-print-page {
+    width: 297mm;
+    height: 167mm;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    page-break-after: always;
+    break-after: page;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    overflow: hidden;
+  }
+
+  /* The slide shell is aspect-[16/9] w-full — force it to fill the fixed
+     page exactly so one slide lands per page. */
+  .pitch-print-page > div {
+    width: 297mm !important;
+    height: 167mm !important;
+    max-width: none !important;
+    aspect-ratio: auto !important;
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .pitch-print-page:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
 }

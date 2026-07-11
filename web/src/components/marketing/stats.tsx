@@ -1,37 +1,31 @@
-import { Reveal } from "@/components/ui/reveal";
+"use client";
 
-const stats = [
-  { value: "$12.4M+", label: "حجم التداول الشهري", gold: false },
-  { value: "87.3%", label: "نسبة الصفقات الرابحة", gold: true },
-  { value: "<40ms", label: "سرعة التنفيذ", gold: false },
-  { value: "24/7", label: "تداول بلا توقف", gold: true },
-];
+import { Reveal } from "@/components/ui/reveal";
+import { useI18n } from "@/lib/i18n/provider";
 
 export function MarketingStats() {
+  const { lang, t } = useI18n();
+  const stats = t.stats[lang];
+
   return (
-    <section
-      className="border-y border-[var(--border-subtle)] py-16"
-      style={{ background: "rgba(13,19,22,0.4)" }}
-    >
+    <section className="relative border-y border-[var(--border-subtle)] py-14">
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
-        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-3xl bg-[var(--border-subtle)] lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
           {stats.map((s, i) => (
-            <Reveal
-              key={s.label}
-              delay={i * 80}
-              className="px-6 py-10 text-center lg:py-12"
-              style={{ background: "var(--bg-surface)" }}
-            >
+            <Reveal key={i} delay={i * 80} className="text-center">
               <p
-                className="font-mono-nums text-4xl font-bold tracking-tight lg:text-5xl"
-                style={{
-                  background: s.gold
-                    ? "linear-gradient(120deg,#ffc870,#f5b14e 60%,#fcd34d)"
-                    : "linear-gradient(120deg,#2ee9a8,#19c98a 60%,#6ee7b7)",
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
+                className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl"
+                style={
+                  s.gold
+                    ? {
+                        background:
+                          "linear-gradient(120deg,#ffc870,#f5b14e 60%,#fcd34d)",
+                        WebkitBackgroundClip: "text",
+                        backgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                      }
+                    : undefined
+                }
               >
                 {s.value}
               </p>

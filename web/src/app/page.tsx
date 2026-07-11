@@ -7,9 +7,9 @@ import { MarketingStrategy } from "@/components/marketing/strategy";
 import { MarketingHow } from "@/components/marketing/how";
 import { MarketingPricing } from "@/components/marketing/pricing";
 import { MarketingTestimonials } from "@/components/marketing/testimonials";
-import { TelegramCTA } from "@/components/sections/telegram-cta";
+import { TelegramCTA } from "@/components/marketing/telegram-cta";
 import { MarketingCta } from "@/components/marketing/cta";
-import { RiskDisclaimer } from "@/components/sections/risk-disclaimer";
+import { RiskDisclaimer } from "@/components/marketing/risk-disclaimer";
 import { MarketingFooter } from "@/components/marketing/footer";
 
 export default function HomePage() {

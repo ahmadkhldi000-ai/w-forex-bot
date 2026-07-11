@@ -75,6 +75,22 @@ export async function ensureDefaultData(): Promise<void> {
       features: ["كل ميزات PRO", "حسابات متعددة", "API access", "مدير حساب مخصص"],
       sortOrder: 3,
     },
+    {
+      tier: "VIP" as const,
+      name: "VIP",
+      priceMonthly: 499, priceYearly: 4990,
+      maxAccounts: 20, maxLotSize: 10, maxLeverage: 200,
+      features: [
+        "كل ميزات Enterprise",
+        "أولوية قصوى في التنفيذ",
+        "استراتيجيات مخصصة بالكامل",
+        "مدير حساب مخصص 24/7",
+        "VPS احترافي مدمج",
+        "تقارير تحليلية شهرية مفصلة",
+        "دعوات لفعاليات حصرية",
+      ],
+      sortOrder: 4,
+    },
   ];
 
   for (const p of plans) {

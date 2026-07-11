@@ -1,0 +1,88 @@
+{
+  "family": "wforex-api",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "REPLACE_WITH_ECS_TASK_EXECUTION_ROLE_ARN",
+  "taskRoleArn": "REPLACE_WITH_ECS_TASK_ROLE_ARN",
+  "containerDefinitions": [
+    {
+      "name": "wforex-api",
+      "image": "REPLACE_WITH_ECR_IMAGE_URI",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "hostPort": 3000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        { "name": "NODE_ENV", "value": "production" },
+        { "name": "PORT", "value": "3000" },
+        { "name": "ADMIN_EMAIL", "value": "admin@wforexbot.com" },
+        { "name": "JWT_EXPIRES_IN", "value": "7d" },
+        { "name": "ADMIN_JWT_EXPIRES_IN", "value": "24h" },
+        { "name": "CORS_ORIGIN", "value": "https://wforexbot.com,https://www.wforexbot.com" },
+        { "name": "USDT_NETWORK", "value": "TRC20" },
+        { "name": "USDT_PAYMENT_WINDOW_MINUTES", "value": "60" },
+        { "name": "USDT_REQUIRED_CONFIRMATIONS", "value": "12" },
+        { "name": "USDT_DEV_AUTO_CONFIRM_SECONDS", "value": "0" },
+        { "name": "TELEGRAM_CHANNEL_URL", "value": "https://t.me/+iXalBkHABfBkYWQ0" }
+      ],
+      "secrets": [
+        {
+          "name": "DATABASE_URL",
+          "valueFrom": "REPLACE_WITH_SSM_PARAMETER_ARN/wforex/database-url"
+        },
+        {
+          "name": "REDIS_URL",
+          "valueFrom": "REPLACE_WITH_SSM_PARAMETER_ARN/wforex/redis-url"
+        },
+        {
+          "name": "JWT_SECRET",
+          "valueFrom": "REPLACE_WITH_SSM_PARAMETER_ARN/wforex/jwt-secret"
+        },
+        {
+          "name": "ADMIN_JWT_SECRET",
+          "valueFrom": "REPLACE_WITH_SSM_PARAMETER_ARN/wforex/admin-jwt-secret"
+        },
+        {
+          "name": "ENCRYPTION_KEY",
+          "valueFrom": "REPLACE_WITH_SSM_PARAMETER_ARN/wforex/encryption-key"
+        },
+        {
+          "name": "USDT_TRC20_WALLET",
+          "valueFrom": "REPLACE_WITH_SSM_PARAMETER_ARN/wforex/usdt-wallet"
+        }
+      ],
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "node -e \"fetch('http://localhost:3000/health').then(r=>{process.exit(r.ok?0:1)}).catch(()=>process.exit(1))\""
+        ],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 30
+      },
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/wforex-api",
+          "awslogs-region": "eu-central-1",
+          "awslogs-stream-prefix": "ecs",
+          "awslogs-create-group": "true"
+        }
+      },
+      "ulimits": [
+        {
+          "name": "nofile",
+          "softLimit": 65536,
+          "hardLimit": 65536
+        }
+      ]
+    }
+  ]
+}

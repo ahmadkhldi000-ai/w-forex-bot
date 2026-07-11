@@ -15,6 +15,7 @@ import {
   ArrowLeft,
   Check,
   AlertTriangle,
+  Send,
 } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
@@ -234,12 +235,22 @@ export default function AuthPage() {
             </div>
           </div>
 
-          {/* Mini risk footer */}
-          <div className="mt-5 flex items-start gap-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)]/50 p-3">
-            <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-[var(--danger)]" />
+          {/* Join Telegram Community */}
+          <a
+            href="https://t.me/+iXalBkHABfBkYWQ0"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-5 flex items-center justify-center gap-2 rounded-xl border border-[#229ED9]/30 bg-[#229ED9]/8 py-2.5 text-sm font-semibold text-[#229ED9] transition-smooth hover:bg-[#229ED9]/15"
+          >
+            <Send className="h-4 w-4" />
+            Join Telegram Community
+          </a>
+
+          {/* Risk disclaimer */}
+          <div className="mt-4 flex items-start gap-2 rounded-xl border border-[var(--gold)]/15 bg-[var(--gold)]/5 p-3">
+            <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-[var(--gold-bright)]" />
             <p className="text-[11px] leading-relaxed text-[var(--text-muted)]">
-              ينطوي تداول الفوركس على مخاطر عالية. قد تخسر جزءاً كبيراً من
-              استثمارك. الأداء السابق لا يضمن النتائج المستقبلية.
+              Trading in Forex and financial markets carries high risk and may result in the loss of capital. Past performance does not guarantee future results. W Forex Bot is a technology platform and does not guarantee profits.
             </p>
           </div>
         </div>

@@ -2,8 +2,10 @@
 
 import { ArrowLeft, Play, ShieldCheck, Zap, Star, Sparkles } from "lucide-react";
 import { LiveDot } from "@/components/ui/primitives";
+import { useI18n } from "@/lib/i18n/provider";
 
 export function MarketingHero() {
+  const { lang, t } = useI18n();
   return (
     <section className="relative overflow-hidden pt-36 pb-24 lg:pt-44 lg:pb-32">
       {/* Background grid */}
@@ -33,16 +35,16 @@ export function MarketingHero() {
         <div className="text-center lg:text-right">
           <div className="animate-fade-up inline-flex items-center gap-2 rounded-full border border-[var(--border-soft)] bg-[var(--accent-dim)] px-4 py-1.5 text-xs font-medium text-[var(--accent-bright)]">
             <LiveDot active />
-            متصل الآن · يتداول على 12 زوجًا
+              {t.hero.badge[lang]}
           </div>
 
           <h1
             className="animate-fade-up mt-6 text-balance text-5xl font-bold leading-[1.05] tracking-tight text-[var(--text-primary)] sm:text-6xl lg:text-7xl"
             style={{ animationDelay: "60ms" }}
           >
-            تداول الفوركس
+            {t.hero.title1[lang]}
             <br />
-            بذكاء{" "}
+            {t.hero.title2[lang]}{" "}
             <span
               style={{
                 background:
@@ -52,17 +54,16 @@ export function MarketingHero() {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              آلي
+              {t.hero.titleAccent[lang]}
             </span>{" "}
-            متقدم
+            {t.hero.titleSuffix[lang]}
           </h1>
 
           <p
             className="animate-fade-up mx-auto mt-7 max-w-xl text-lg leading-relaxed text-[var(--text-secondary)] lg:mr-0"
             style={{ animationDelay: "140ms" }}
           >
-            روبوت تداول مؤتمت بالكامل يحلل السوق على مدار الساعة، ينفّذ صفقات بدقّة
-            عالية، ويحمي رأس مالك بإدارة مخاطر صارمة. بدون عواطف، فقط نتائج.
+            {t.hero.subtitle[lang]}
           </p>
 
           <div
@@ -73,7 +74,7 @@ export function MarketingHero() {
               href="/dashboard"
               className="shine relative inline-flex h-14 w-full items-center justify-center gap-2.5 overflow-hidden rounded-xl bg-gradient-to-b from-[var(--accent-bright)] to-[var(--accent)] px-8 text-base font-semibold text-[#04130d] shadow-[0_14px_40px_-10px_rgba(25,201,138,0.7)] transition-smooth hover:-translate-y-0.5 sm:w-auto"
             >
-              جرّب لوحة التحكم مباشرة
+              {t.hero.ctaPrimary[lang]}
               <ArrowLeft className="h-5 w-5" />
             </a>
             <a
@@ -81,7 +82,7 @@ export function MarketingHero() {
               className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl border border-[var(--border-soft)] bg-white/[0.02] px-8 text-base font-medium text-[var(--text-primary)] backdrop-blur-sm transition-smooth hover:bg-white/5 hover:-translate-y-0.5 sm:w-auto"
             >
               <Play className="h-4 w-4 fill-current" />
-              شاهد العرض
+              {t.hero.ctaSecondary[lang]}
             </a>
           </div>
 
@@ -91,9 +92,9 @@ export function MarketingHero() {
             style={{ animationDelay: "300ms" }}
           >
             <TrustItem icon={<ShieldCheck className="h-4 w-4" />}>
-              أموالك مؤمّنة
+              {t.hero.trustSecured[lang]}
             </TrustItem>
-            <TrustItem icon={<Zap className="h-4 w-4" />}>تنفيذ فوري</TrustItem>
+            <TrustItem icon={<Zap className="h-4 w-4" />}>{t.hero.trustInstant[lang]}</TrustItem>
             <div className="flex items-center gap-2">
               <div className="flex -space-x-1.5">
                 {["A", "M", "S", "K", "R"].map((c, i) => (
@@ -108,7 +109,7 @@ export function MarketingHero() {
               <span className="flex items-center gap-1 text-sm text-[var(--text-secondary)]">
                 <Star className="h-4 w-4 fill-[var(--gold)] text-[var(--gold)]" />
                 <strong className="text-[var(--text-primary)]">4.9</strong> ·
-                2,400+ متداول
+                2,400+ {t.hero.trustRating[lang]}
               </span>
             </div>
           </div>
@@ -145,6 +146,7 @@ function TrustItem({
 
 /* ---- Floating preview that teases the dashboard ---- */
 function HeroPreview() {
+  const { lang, t } = useI18n();
   return (
     <div className="relative">
       {/* floating gold chip */}
@@ -155,7 +157,7 @@ function HeroPreview() {
           </span>
           <div>
             <p className="text-[11px] text-[var(--text-muted)]">
-              معدّل الربح الشهري
+              {t.hero.previewMonthlyProfit[lang]}
             </p>
             <p className="font-mono-nums text-sm font-bold text-[var(--gold-bright)]">
               +18.4%
@@ -175,7 +177,7 @@ function HeroPreview() {
           </span>
           <div>
             <p className="text-[11px] text-[var(--text-muted)]">
-              نسبة الصفقات الرابحة
+              {t.hero.previewWinrate[lang]}
             </p>
             <p className="font-mono-nums text-sm font-bold text-[var(--accent-bright)]">
               87.3%
@@ -216,13 +218,13 @@ function HeroPreview() {
         <div className="mb-5 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-base)]/60 p-4">
           <div className="flex items-end justify-between">
             <div>
-              <p className="text-xs text-[var(--text-muted)]">الرصيد الإجمالي</p>
+              <p className="text-xs text-[var(--text-muted)]">{t.hero.previewBalance[lang]}</p>
               <p className="font-mono-nums mt-1 text-3xl font-bold text-[var(--text-primary)]">
                 $48,920.55
               </p>
             </div>
             <div className="text-right">
-              <p className="text-xs text-[var(--text-muted)]">ربح اليوم</p>
+              <p className="text-xs text-[var(--text-muted)]">{t.hero.previewDailyProfit[lang]}</p>
               <p className="font-mono-nums mt-1 text-lg font-bold text-[var(--accent-bright)]">
                 +$1,284
               </p>
@@ -235,7 +237,7 @@ function HeroPreview() {
         {/* open positions peek */}
         <div className="space-y-1.5">
           <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">
-            الصفقات المفتوحة
+            {t.hero.previewOpenPositions[lang]}
           </p>
           {[
             { p: "EUR/USD", s: "BUY", v: "+142.5", up: true },
@@ -279,7 +281,7 @@ function HeroPreview() {
 
         {/* hover hint */}
         <div className="mt-4 flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-[var(--border-soft)] py-2.5 text-xs font-medium text-[var(--text-muted)] transition-smooth group-hover:border-[var(--accent)]/40 group-hover:text-[var(--accent-bright)]">
-          افتح لوحة التحكم الكاملة
+          {t.hero.previewOpenFull[lang]}
           <ArrowLeft className="h-3.5 w-3.5" />
         </div>
       </a>
