@@ -1,0 +1,12 @@
+User-Agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /live-trading
+Disallow: /markets
+Disallow: /strategies
+Disallow: /history
+Disallow: /settings
+Disallow: /admin
+Disallow: /copy-trading
+
+Sitemap: https://wforexbot.vercel.app/sitemap.xml
