@@ -21,7 +21,12 @@ import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
 import { GoogleIcon } from "@/components/ui/google-icon";
-import { GOOGLE_AUTH_URL } from "@/lib/auth/config";
+import {
+  isGoogleConfigured,
+  loadGoogleScript,
+  decodeGoogleCredential,
+  GOOGLE_CLIENT_ID,
+} from "@/lib/auth/google-gsi";
 
 type Mode = "login" | "register";
 
@@ -53,11 +58,41 @@ export default function AuthPage() {
     }
   }, []);
 
-  // Kick off Google OAuth — full-page redirect to the backend
-  const handleGoogleLogin = () => {
+  // Kick off Google sign-in via Google Identity Services (client-side)
+  const handleGoogleLogin = async () => {
     setGoogleLoading(true);
     setGoogleError(null);
-    window.location.href = `${GOOGLE_AUTH_URL}?mode=${mode}`;
+
+    if (!isGoogleConfigured()) {
+      setGoogleLoading(false);
+      setGoogleError("not_configured");
+      return;
+    }
+
+    try {
+      await loadGoogleScript();
+      window.google!.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: (response) => {
+          const profile = decodeGoogleCredential(response.credential);
+          if (!profile || !profile.email_verified) {
+            setGoogleLoading(false);
+            setGoogleError("email_not_verified");
+            return;
+          }
+          // Save the Google profile so the link-email page can use it
+          sessionStorage.setItem("wfb_pending_google", JSON.stringify(profile));
+          // Always go to the link-email page (as requested) with the profile
+          router.push("/auth/link-account");
+        },
+        cancel_on_tap_outside: true,
+      });
+      // Use One Tap / prompt to surface the account chooser
+      window.google!.accounts.id.prompt();
+    } catch {
+      setGoogleLoading(false);
+      setGoogleError("script_error");
+    }
   };
 
   // Form fields
@@ -249,11 +284,13 @@ export default function AuthPage() {
               <div className="mt-3 flex items-center gap-2 rounded-xl border border-[var(--gold)]/30 bg-[var(--gold)]/10 px-3 py-2.5 text-xs text-[var(--gold-bright)]">
                 <AlertTriangle className="h-4 w-4 shrink-0" />
                 <span>
-                  {googleError === "access_denied"
-                    ? "تم إلغاء تسجيل الدخول عبر جوجل."
+                  {googleError === "not_configured"
+                    ? "تسجيل الدخول عبر جوجل غير مُفعّل حالياً. استخدم البريد وكلمة المرور."
                     : googleError === "email_not_verified"
                       ? "لم يتم تأكيد بريدك الإلكتروني في جوجل."
-                      : "تعذّر تسجيل الدخول عبر جوجل. حاول مرة أخرى."}
+                      : googleError === "script_error"
+                        ? "تعذّر تحميل خدمة جوجل. تحقق من اتصالك وحاول مرة أخرى."
+                        : "تعذّر تسجيل الدخول عبر جوجل. حاول مرة أخرى."}
                 </span>
               </div>
             )}
