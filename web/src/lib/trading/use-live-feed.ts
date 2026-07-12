@@ -10,7 +10,7 @@ import {
   type TradeType,
   type CloseReason,
 } from "./types";
-import { INSTRUMENTS, getSpec, DEFAULT_SYMBOL } from "./instruments";
+import { INSTRUMENTS, getSpec, DEFAULT_SYMBOL, syncRealPrices } from "./instruments";
 
 // ====================================================================
 //  LIVE FEED HOOK
@@ -305,6 +305,17 @@ export function useLiveFeed() {
 
   // ---------- main tick loop ----------
   useEffect(() => {
+    // Sync real global prices first, then start the tick engine
+    syncRealPrices().then(() => {
+      // Re-seed prices with the now-real base values
+      const st = stateRef.current;
+      for (const s of INSTRUMENTS) {
+        st.prices[s.symbol] = s.base;
+        st.prevPrices[s.symbol] = s.base;
+        st.sessionOpen[s.symbol] = s.base;
+      }
+    });
+
     // connect quickly
     const t0 = setTimeout(() => setConnection((c) => ({ ...c, state: "live" })), 450);
     const interval = setInterval(step, TICK_MS);

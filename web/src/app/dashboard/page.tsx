@@ -10,6 +10,7 @@ import { EquityChart } from "@/components/dashboard/equity-chart";
 import { PositionsTable } from "@/components/dashboard/positions-table";
 import { RecentTrades } from "@/components/dashboard/recent-trades";
 import { AllocationDonut } from "@/components/dashboard/allocation-donut";
+import { LivePriceTicker } from "@/components/dashboard/live-price-ticker";
 import { useAuth } from "@/lib/auth/use-auth";
 import { formatMoney } from "@/lib/utils";
 
@@ -76,6 +77,9 @@ export default function DashboardPage() {
               </Link>
             </div>
           </section>
+
+          {/* ---- Live real-price ticker ---- */}
+          <LivePriceTicker />
 
           {/* ---- Stat cards ---- */}
           <StatCards stats={stats} />

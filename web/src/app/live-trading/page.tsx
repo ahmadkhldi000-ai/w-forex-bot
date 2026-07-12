@@ -8,6 +8,7 @@ import { SymbolHeader } from "@/components/trading/symbol-header";
 import { SymbolPicker } from "@/components/trading/symbol-picker";
 import { TradesPanel } from "@/components/trading/trades-panel";
 import { useLiveFeed } from "@/lib/trading/use-live-feed";
+import { LivePriceTicker } from "@/components/dashboard/live-price-ticker";
 import { Layers, Crosshair, TrendingUp, TrendingDown } from "lucide-react";
 
 export default function LiveTradingPage() {
@@ -22,6 +23,9 @@ export default function LiveTradingPage() {
       <Sidebar />
       <div className="flex min-w-0 flex-col">
         <Topbar />
+        <div className="px-4 pt-4 lg:px-6 lg:pt-6">
+          <LivePriceTicker />
+        </div>
         <main className="flex-1 overflow-hidden p-4 lg:p-6">
           <div className="grid h-full grid-cols-1 gap-4 xl:grid-cols-[260px_minmax(0,1fr)_360px]">
             {/* ===== Symbol watchlist ===== */}

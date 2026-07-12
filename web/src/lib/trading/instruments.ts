@@ -40,3 +40,63 @@ export function fmtPrice(price: number, symbol: string): string {
 export function toPips(diff: number, symbol: string): number {
   return diff / getSpec(symbol).pip;
 }
+
+// ----------------------------------------------------------------
+//  REAL-TIME PRICE SYNC
+//  Updates the `base` price of each instrument with real global
+//  market rates. Called once on page load.
+// ----------------------------------------------------------------
+
+let realSyncDone = false;
+
+export function isRealSyncDone() {
+  return realSyncDone;
+}
+
+export async function syncRealPrices(): Promise<void> {
+  if (realSyncDone) return;
+  try {
+    const [fxRes, cryptoRes, metalRes] = await Promise.all([
+      fetch("https://open.er-api.com/v6/latest/USD", { cache: "no-store" }).then((r) => r.json()).catch(() => null),
+      fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd", { cache: "no-store" }).then((r) => r.json()).catch(() => null),
+      Promise.all([
+        fetch("https://query1.finance.yahoo.com/v8/finance/chart/GC=F?interval=1d&range=1d", { headers: { "User-Agent": "Mozilla/5.0" }, cache: "no-store" }).then((r) => r.json()).catch(() => null),
+        fetch("https://query1.finance.yahoo.com/v8/finance/chart/SI=F?interval=1d&range=1d", { headers: { "User-Agent": "Mozilla/5.0" }, cache: "no-store" }).then((r) => r.json()).catch(() => null),
+      ]),
+    ]);
+
+    const r = fxRes?.rates || {};
+    const real: Record<string, number> = {};
+    if (r.EUR) real.EURUSD = 1 / r.EUR;
+    if (r.GBP) real.GBPUSD = 1 / r.GBP;
+    if (r.JPY) real.USDJPY = r.JPY;
+    if (r.CHF) real.USDCHF = r.CHF;
+    if (r.AUD) real.AUDUSD = 1 / r.AUD;
+    if (r.CAD) real.USDCAD = r.CAD;
+    if (r.NZD) real.NZDUSD = 1 / r.NZD;
+    if (r.EUR && r.GBP) real.EURGBP = r.GBP / r.EUR;
+    if (r.EUR && r.JPY) real.EURJPY = r.JPY / r.EUR;
+    if (r.GBP && r.JPY) real.GBPJPY = r.JPY / r.GBP;
+
+    if (cryptoRes?.bitcoin?.usd) real.BTCUSD = cryptoRes.bitcoin.usd;
+    if (cryptoRes?.ethereum?.usd) real.ETHUSD = cryptoRes.ethereum.usd;
+
+    const [gold, silver] = metalRes;
+    if (gold?.chart?.result?.[0]?.meta?.regularMarketPrice) real.XAUUSD = gold.chart.result[0].meta.regularMarketPrice;
+    if (silver?.chart?.result?.[0]?.meta?.regularMarketPrice) real.XAGUSD = silver.chart.result[0].meta.regularMarketPrice;
+
+    // Apply real prices to instruments
+    let updated = 0;
+    for (const inst of INSTRUMENTS) {
+      if (real[inst.symbol] && real[inst.symbol] > 0) {
+        inst.base = real[inst.symbol];
+        updated++;
+      }
+    }
+    realSyncDone = true;
+    console.log(`[instruments] Synced ${updated} real prices from global markets`);
+  } catch (err) {
+    console.warn("[instruments] Real price sync failed, using fallback prices", err);
+    realSyncDone = true;
+  }
+}
