@@ -39,6 +39,11 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
+  // Manual email entry (fallback when Google OAuth isn't configured)
+  const [showManualModal, setShowManualModal] = useState(false);
+  const [manualEmail, setManualEmail] = useState("");
+  const [manualError, setManualError] = useState<string | null>(null);
+
   // Surface errors returned from the Google OAuth callback (?google_error=...)
   const [googleError, setGoogleError] = useState<string | null>(null);
 
@@ -58,8 +63,10 @@ export default function AuthPage() {
     }
   }, []);
 
-  // Kick off Google sign-in via Google Identity Services (client-side)
-  const handleGoogleLogin = async () => {
+  // Kick off Google sign-in via Google Identity Services (client-side).
+  // `autoSelect=true` enables true automatic sign-in when the browser has a
+  // single signed-in Google session — the user never types an email or clicks.
+  const initGoogleSignIn = async (opts?: { autoSelect?: boolean }) => {
     setGoogleLoading(true);
     setGoogleError(null);
 
@@ -67,8 +74,10 @@ export default function AuthPage() {
     // so the user can still proceed to the account-linking flow.
     if (!isGoogleConfigured()) {
       setGoogleLoading(false);
-      setManualEmail("");
-      setShowManualModal(true);
+      if (opts?.autoSelect) {
+        setManualEmail("");
+        setShowManualModal(true);
+      }
       return;
     }
 
@@ -88,6 +97,7 @@ export default function AuthPage() {
           // Always go to the link-email page (as requested) with the profile
           router.push("/auth/link-account");
         },
+        auto_select: opts?.autoSelect ?? false,
         cancel_on_tap_outside: true,
       });
       // Use One Tap / prompt to surface the account chooser
@@ -98,10 +108,22 @@ export default function AuthPage() {
     }
   };
 
-  // Manual email entry (fallback when Google OAuth isn't configured)
-  const [showManualModal, setShowManualModal] = useState(false);
-  const [manualEmail, setManualEmail] = useState("");
-  const [manualError, setManualError] = useState<string | null>(null);
+  // Button-click handler (manual select → account chooser)
+  const handleGoogleLogin = () => initGoogleSignIn({ autoSelect: false });
+
+  // 🔁 AUTO-TRIGGER on page load: surface Google One Tap automatically so the
+  // user doesn't need to type an email or click anything. With auto_select,
+  // if the browser is signed into exactly one Google account, sign-in
+  // completes with zero interaction.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    // brief delay so the page paints before the One Tap UI animates in
+    const t = setTimeout(() => {
+      initGoogleSignIn({ autoSelect: true });
+    }, 600);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const proceedWithManualEmail = () => {
     setManualError(null);
