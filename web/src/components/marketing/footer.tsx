@@ -4,8 +4,33 @@ import { Send } from "lucide-react";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n/provider";
 import { Logo } from "@/components/ui/logo";
+import { SmartLogo } from "@/components/ui/smart-logo";
 
 type IconProps = { className?: string };
+
+/**
+ * Maps a footer link label to a real internal route when one exists.
+ * Returns null for links that still point to "#" (not yet built).
+ */
+function footerLinkFor(label: string, lang: "ar" | "en"): string | null {
+  const legal: Record<string, Record<string, string | null>> = {
+    ar: {
+      "الشروط": "/terms",
+      "الخصوصية": "/privacy",
+      "إخلاء المسؤولية": "/disclaimer",
+      "ملفات الارتباط": null,
+      "من نحن": "/about",
+    },
+    en: {
+      Terms: "/terms",
+      Privacy: "/privacy",
+      Disclaimer: "/disclaimer",
+      Cookies: null,
+      About: "/about",
+    },
+  };
+  return legal[lang]?.[label] ?? null;
+}
 
 const TelegramIcon = ({ className }: IconProps) => (
   <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
@@ -48,9 +73,7 @@ export function MarketingFooter() {
       <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10">
         <div className="grid grid-cols-2 gap-10 md:grid-cols-3 lg:grid-cols-6">
           <div className="col-span-2">
-                        <Link href="/" className="flex items-center gap-2.5">
-              <Logo height={34} priority />
-            </Link>
+            <SmartLogo height={34} priority />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-[var(--text-secondary)]">
               {t.footer.tagline[lang]}
             </p>
@@ -86,16 +109,28 @@ export function MarketingFooter() {
                 {col.title}
               </h4>
               <ul className="mt-4 space-y-2.5">
-                {col.links.map((l) => (
-                  <li key={l}>
-                    <a
-                      href="#"
-                      className="text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
-                    >
-                      {l}
-                    </a>
-                  </li>
-                ))}
+                {col.links.map((l) => {
+                  const href = footerLinkFor(l, lang);
+                  return (
+                    <li key={l}>
+                      {href ? (
+                        <Link
+                          href={href}
+                          className="text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+                        >
+                          {l}
+                        </Link>
+                      ) : (
+                        <a
+                          href="#"
+                          className="text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+                        >
+                          {l}
+                        </a>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ))}

@@ -27,7 +27,8 @@ type I18nContextValue = {
 
 const I18nContext = createContext<I18nContextValue | null>(null);
 
-const STORAGE_KEY = "w-forex-lang";
+/** Single shared storage key — kept in sync with the inline script in layout.tsx */
+export const STORAGE_KEY = "w-forex-lang";
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   // Default to Arabic (the site's primary language). Hydrate from storage on mount.

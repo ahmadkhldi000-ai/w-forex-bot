@@ -7,14 +7,31 @@ import { Providers } from "./providers";
  * Runs before hydration to set <html lang/dir> from persisted preference,
  * preventing a flash of the wrong language/direction on load.
  */
+const LANG_STORAGE_KEY = "w-forex-lang";
+
+/**
+ * Runs before hydration to:
+ *  1. Restore a previously-chosen language from localStorage (user preference wins)
+ *  2. Otherwise auto-detect the device/browser language on the very first visit
+ *     — Arabic devices get Arabic, everyone else gets English.
+ * This prevents a flash of the wrong language/direction on load.
+ */
 const setInitialLang = `
 (function(){
   try {
-    var l = localStorage.getItem('lang');
-    if (l) {
-      document.documentElement.lang = l;
-      document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';
+    var KEY = ${JSON.stringify(LANG_STORAGE_KEY)};
+    var stored = localStorage.getItem(KEY);
+    var l;
+    if (stored === 'ar' || stored === 'en') {
+      l = stored;
+    } else {
+      // First visit — auto-detect device language
+      var nav = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
+      l = nav.indexOf('ar') === 0 ? 'ar' : 'en';
+      localStorage.setItem(KEY, l);
     }
+    document.documentElement.lang = l;
+    document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';
   } catch (e) {}
 })();
 `;
@@ -35,23 +52,23 @@ const siteUrl =
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "WForexBot — تداول الفوركس بالذكاء الاصطناعي",
+    default: "WForexBot — AI-Powered Forex Trading Bot",
     template: "%s · WForexBot",
   },
   description:
-    "روبوت تداول آلي مؤتمت يحلّل سوق الفوركس على مدار الساعة وينفّذ صفقات بدقّة عالية مع إدارة مخاطر صارمة. عوائد ثابتة بدون عواطف.",
+    "WForexBot is an automated AI trading bot that analyzes the forex market around the clock and executes trades with precision and strict risk management.",
   applicationName: "WForexBot",
   keywords: [
     "WForexBot",
+    "Forex Bot",
+    "AI Trading Bot",
+    "Automated Trading",
+    "MetaTrader 5",
+    "MT5",
+    "Smart Money Concepts",
+    "Copy Trading",
     "فوركس",
     "روبوت تداول",
-    "EA",
-    "ذكاء اصطناعي",
-    "تداول آلي",
-    "MT5",
-    "Forex Bot",
-    "Smart Money Concepts",
-    "Automated Trading",
   ],
   authors: [{ name: "WForexBot" }],
   creator: "WForexBot",
@@ -65,18 +82,18 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    locale: "ar_SA",
+    locale: "en_US",
     url: siteUrl,
     siteName: "WForexBot",
-    title: "WForexBot — تداول الفوركس بالذكاء الاصطناعي",
+    title: "WForexBot — AI-Powered Forex Trading Bot",
     description:
-      "روبوت تداول آلي مؤتمت يحلّل سوق الفوركس على مدار الساعة وينفّذ صفقات بدقّة عالية مع إدارة مخاطر صارمة.",
+      "Trade forex on autopilot with WForexBot. An AI-powered trading bot that analyzes the market 24/7 and executes high-precision trades with strict risk management.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "WForexBot — تداول الفوركس بالذكاء الاصطناعي",
+    title: "WForexBot — AI-Powered Forex Trading Bot",
     description:
-      "روبوت تداول آلي مؤتمت يحلّل سوق الفوركس على مدار الساعة وينفّذ صفقات بدقّة عالية مع إدارة مخاطر صارمة.",
+      "Trade forex on autopilot with WForexBot. An AI-powered trading bot that analyzes the market 24/7 and executes high-precision trades with strict risk management.",
   },
   robots: {
     index: true,

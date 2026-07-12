@@ -8,6 +8,7 @@ import { withBase } from "@/lib/path";
 import { useI18n } from "@/lib/i18n/provider";
 import { LangToggle } from "./lang-toggle";
 import { Logo } from "@/components/ui/logo";
+import { SmartLogo } from "@/components/ui/smart-logo";
 
 export function MarketingNav() {
   const { lang, t } = useI18n();
@@ -32,10 +33,8 @@ export function MarketingNav() {
       )}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-10">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5">
-          <Logo height={34} priority />
-        </Link>
+        {/* Logo — jumps to /dashboard when logged in, else / */}
+        <SmartLogo height={34} priority />
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-1 lg:flex">

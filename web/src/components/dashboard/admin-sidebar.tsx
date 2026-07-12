@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/ui/logo";
+import { SmartLogo } from "@/components/ui/smart-logo";
 
 export type AdminTab = "overview" | "accounts" | "security" | "logs";
 
@@ -55,8 +56,8 @@ export function AdminSidebar({
     >
       {/* Brand */}
       <div className="flex h-[68px] items-center gap-3 border-b border-[var(--border-subtle)] px-5">
-        {!collapsed && <Logo height={30} priority />}
-        {collapsed && <Logo variant="icon" height={32} priority />}
+        {!collapsed && <SmartLogo height={30} priority />}
+        {collapsed && <SmartLogo variant="icon" height={32} priority />}
         {!collapsed && (
           <div className="min-w-0">
             <p className="truncate text-xs font-medium text-[var(--text-muted)]">

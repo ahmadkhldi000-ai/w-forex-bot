@@ -1,9 +1,9 @@
 import Image, { type ImageProps } from "next/image";
 import { cn } from "@/lib/utils";
 
-type LogoVariant = "full" | "compact" | "icon";
+export type LogoVariant = "full" | "compact" | "icon";
 
-interface LogoProps {
+export interface LogoProps {
   /** Visual variant of the logo */
   variant?: LogoVariant;
   /** Pixel height — width auto-scales to preserve aspect ratio */

@@ -605,6 +605,50 @@ export const dictionary = {
       },
     },
   },
+
+  /* ---------- Dashboard / Topbar ---------- */
+  topbar: {
+    connected: { ar: "متصل", en: "Connected" },
+    notifications: { ar: "الإشعارات", en: "Notifications" },
+    logout: { ar: "تسجيل الخروج", en: "Log out" },
+    guest: { ar: "زائر", en: "Guest" },
+    user: { ar: "مستخدم", en: "User" },
+    tradingTerminal: { ar: "غرفة التداول", en: "Trading Terminal" },
+  },
+
+  /* ---------- Legal pages ---------- */
+  legal: {
+    backHome: { ar: "العودة للرئيسية", en: "Back to home" },
+    lastUpdated: { ar: "آخر تحديث", en: "Last updated" },
+    terms: {
+      title: { ar: "شروط الخدمة", en: "Terms of Service" },
+      intro: {
+        ar: "يرجى قراءة هذه الشروط بعناية قبل استخدام منصة WForexBot. باستخدامك للموقع أو الخدمات فإنك توافق على الالتزام بهذه الشروط كاملةً.",
+        en: "Please read these terms carefully before using the WForexBot platform. By accessing the website or services you agree to be fully bound by these terms.",
+      },
+    },
+    privacy: {
+      title: { ar: "سياسة الخصوصية", en: "Privacy Policy" },
+      intro: {
+        ar: "نحن في WForexBot نحترم خصوصيتك ونلتزم بحماية بياناتك الشخصية. توضّح هذه السياسة المعلومات التي نجمعها وكيفية استخدامها وحمايتها.",
+        en: "At WForexBot we respect your privacy and are committed to protecting your personal data. This policy explains what information we collect and how we use and safeguard it.",
+      },
+    },
+    disclaimer: {
+      title: { ar: "إخلاء المسؤولية", en: "Risk Disclaimer" },
+      intro: {
+        ar: "ينطوي التداول في الفوركس والأسواق المالية على مستوى عالٍ من المخاطر وقد لا يكون مناسباً لجميع المستثمرين.",
+        en: "Trading in forex and financial markets involves a high level of risk and may not be suitable for all investors.",
+      },
+    },
+    about: {
+      title: { ar: "من نحن", en: "About Us" },
+      intro: {
+        ar: "WForexBot هي منصة تداول ذكية تعمل بالذكاء الاصطناعي، صُمّمت لتمكين المتداولين من تحقيق نتائج ثابتة في سوق الفوركس.",
+        en: "WForexBot is an AI-powered smart trading platform designed to help traders achieve consistent results in the forex market.",
+      },
+    },
+  },
 } as const;
 
 export type Dictionary = typeof dictionary;

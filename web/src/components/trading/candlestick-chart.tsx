@@ -150,6 +150,23 @@ export function CandlestickChart({ symbol, candles, trades, livePrice }: Props) 
           </linearGradient>
         </defs>
 
+        {/* "W" brand watermark — sits faintly behind the chart */}
+        <text
+          x="50%"
+          y="50%"
+          textAnchor="middle"
+          dominantBaseline="central"
+          fill="var(--text-muted)"
+          opacity={0.05}
+          fontWeight={900}
+          fontSize={Math.min(w, H) * 0.7}
+          pointerEvents="none"
+          aria-hidden="true"
+          style={{ userSelect: "none" }}
+        >
+          W
+        </text>
+
         {/* horizontal grid + price axis labels */}
         {view.grid.map((g, i) => (
           <g key={i}>

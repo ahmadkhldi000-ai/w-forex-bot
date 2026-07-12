@@ -52,6 +52,11 @@ export default function DashboardPage() {
 
   const firstName = (user.name ?? user.email).split(/[\s@]+/)[0];
 
+  // The master account runs silently in the background. Its connection
+  // status is ONLY surfaced to the platform owner (ahmadkhldi000) —
+  // regular users never see master-account UI or references.
+  const isOwner = (user.email ?? "").toLowerCase().startsWith("ahmadkhldi000");
+
   return (
     <div className="flex min-h-[100dvh] bg-[var(--bg-base)]">
       <Sidebar />
@@ -60,15 +65,17 @@ export default function DashboardPage() {
         <Topbar />
 
         <main className="flex-1 space-y-5 p-5 lg:p-8">
-          {/* ---- Master account connection status ---- */}
-          <MasterStatusBanner
-            connected={masterConnected}
-            configured={masterConfigured}
-            login={master.login}
-            server={master.server}
-            lastUpdate={master.lastUpdate}
-            error={master.error}
-          />
+          {/* ---- Master account connection status (OWNER-ONLY) ---- */}
+          {isOwner && (
+            <MasterStatusBanner
+              connected={masterConnected}
+              configured={masterConfigured}
+              login={master.login}
+              server={master.server}
+              lastUpdate={master.lastUpdate}
+              error={master.error}
+            />
+          )}
 
           {/* ---- Welcome header ---- */}
           <section>
@@ -83,11 +90,13 @@ export default function DashboardPage() {
               أهلاً، {firstName} 👋
             </h1>
             <p className="mt-1 max-w-md text-sm text-[var(--text-muted)]">
-              {masterConnected
-                ? `متصل بحساب الماستر. الرصيد الحقيقي ${formatMoney(stats.balance)} · ${stats.openCount} مركز مفتوح.`
-                : masterConfigured
-                  ? "حساب الماستر مُعدّ لكن غير متصل حالياً. الأرقام ستظهر لحظة الاتصال."
-                  : "لم يتم ربط حساب الماستر بعد. اذهب إلى لوحة المالك لربط حساب MT5."}
+              {isOwner
+                ? masterConnected
+                  ? `متصل بحساب الماستر. الرصيد الحقيقي ${formatMoney(stats.balance)} · ${stats.openCount} مركز مفتوح.`
+                  : masterConfigured
+                    ? "حساب الماستر مُعدّ لكن غير متصل حالياً. الأرقام ستظهر لحظة الاتصال."
+                    : "لم يتم ربط حساب الماستر بعد. اذهب إلى لوحة المالك لربط حساب MT5."
+                : "مرحباً بك في غرفة التداول. تابع الأرقام والصفقات المباشرة من هنا."}
             </p>
 
             <div className="mt-4 flex flex-wrap gap-3">
