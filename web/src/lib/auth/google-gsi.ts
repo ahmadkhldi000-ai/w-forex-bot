@@ -14,7 +14,41 @@
  *   4. Set NEXT_PUBLIC_GOOGLE_CLIENT_ID in Vercel env vars
  */
 
-export const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "";
+// Env var fallback (set in Vercel). Can be left empty and configured
+// at runtime via the owner vault (setGoogleClientId()).
+const ENV_GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "";
+
+const LS_KEY = "wfb_google_client_id";
+
+/** Read the Google Client ID — localStorage first, then env var. */
+export function getGoogleClientId(): string {
+  if (typeof window !== "undefined") {
+    try {
+      const stored = window.localStorage.getItem(LS_KEY);
+      if (stored && stored.trim()) return stored.trim();
+    } catch {
+      /* ignore */
+    }
+  }
+  return ENV_GOOGLE_CLIENT_ID;
+}
+
+/** Backwards-compatible constant (evaluated at module load). */
+export const GOOGLE_CLIENT_ID = ENV_GOOGLE_CLIENT_ID;
+
+/** Persist a Client ID at runtime so Google Sign-In works without redeploy. */
+export function setGoogleClientId(id: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    if (id && id.trim()) {
+      window.localStorage.setItem(LS_KEY, id.trim());
+    } else {
+      window.localStorage.removeItem(LS_KEY);
+    }
+  } catch {
+    /* ignore */
+  }
+}
 
 export interface GoogleProfile {
   sub: string; // stable google id
@@ -97,7 +131,7 @@ export function decodeGoogleCredential(credential: string): GoogleProfile | null
   }
 }
 
-/** Is Google Sign-In configured (client ID present)? */
+/** Is Google Sign-In configured (client ID present in LS or env)? */
 export function isGoogleConfigured(): boolean {
-  return Boolean(GOOGLE_CLIENT_ID);
+  return Boolean(getGoogleClientId());
 }

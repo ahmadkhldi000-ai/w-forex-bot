@@ -11,7 +11,7 @@ import {
   isGoogleConfigured,
   loadGoogleScript,
   decodeGoogleCredential,
-  GOOGLE_CLIENT_ID,
+  getGoogleClientId,
 } from "@/lib/auth/google-gsi";
 import { upsertGoogleAccount, setSession } from "@/lib/auth/account-store";
 
@@ -59,7 +59,7 @@ export default function AuthPage() {
     try {
       await loadGoogleScript();
       window.google!.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
+        client_id: getGoogleClientId(),
         callback: (response) => {
           const profile = decodeGoogleCredential(response.credential);
           if (!profile || !profile.email_verified) {
