@@ -129,6 +129,15 @@ router.post("/login", async (req, res) => {
       throw new AppError(401, "بيانات الدخول غير صحيحة");
     }
 
+    // OAuth-only accounts (Google) have no password — guide them to Google sign-in
+    if (!user.passwordHash || user.provider !== "LOCAL") {
+      await auditLog(req, { action: "FAILED_LOGIN", details: { email: input.email, reason: "oauth_account" } });
+      throw new AppError(
+        401,
+        "هذا الحساب مسجّل عبر جوجل. الرجاء تسجيل الدخول باستخدام زر جوجل."
+      );
+    }
+
     const ok = await verifyPassword(input.password, user.passwordHash);
     if (!ok) {
       await auditLog(req, { action: "FAILED_LOGIN", details: { email: input.email } });

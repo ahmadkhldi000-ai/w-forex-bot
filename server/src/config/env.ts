@@ -45,6 +45,19 @@ export const config = {
     email: optional("ADMIN_EMAIL", "admin@wforexbot.com"),
   },
 
+  google: {
+    clientId: optional("GOOGLE_CLIENT_ID"),
+    clientSecret: optional("GOOGLE_CLIENT_SECRET"),
+    // Where Google sends the user back after consent.
+    // Production: https://wforexbot.vercel.app  Backend: https://api.wforexbot.com
+    redirectUrl: optional(
+      "GOOGLE_REDIRECT_URL",
+      "http://localhost:4000/api/auth/google/callback"
+    ),
+    // Frontend URL to redirect to after issuing the JWT (with ?token=...)
+    frontendUrl: optional("FRONTEND_URL", "http://localhost:3000"),
+  },
+
   encryption: {
     key: optional("ENCRYPTION_KEY", randomBytes(32).toString("hex")),
   },

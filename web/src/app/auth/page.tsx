@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -15,10 +15,13 @@ import {
   Check,
   AlertTriangle,
   Send,
+  Loader2,
 } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
+import { GoogleIcon } from "@/components/ui/google-icon";
+import { GOOGLE_AUTH_URL } from "@/lib/auth/config";
 
 type Mode = "login" | "register";
 
@@ -29,6 +32,33 @@ export default function AuthPage() {
   const [accepted, setAccepted] = useState(false);
   const [showRiskModal, setShowRiskModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  // Surface errors returned from the Google OAuth callback (?google_error=...)
+  const [googleError, setGoogleError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const gerr = params.get("google_error");
+      if (gerr) {
+        setGoogleError(gerr);
+        // Clean the URL so the error doesn't persist on refresh
+        params.delete("google_error");
+        const clean = params.toString()
+          ? `${window.location.pathname}?${params.toString()}`
+          : window.location.pathname;
+        window.history.replaceState({}, "", clean);
+      }
+    }
+  }, []);
+
+  // Kick off Google OAuth — full-page redirect to the backend
+  const handleGoogleLogin = () => {
+    setGoogleLoading(true);
+    setGoogleError(null);
+    window.location.href = `${GOOGLE_AUTH_URL}?mode=${mode}`;
+  };
 
   // Form fields
   const [name, setName] = useState("");
@@ -214,15 +244,39 @@ export default function AuthPage() {
               <div className="h-px flex-1 bg-[var(--border-subtle)]" />
             </div>
 
-            {/* Social auth */}
-            <div className="grid grid-cols-2 gap-3">
-              <button className="flex items-center justify-center gap-2 rounded-xl border border-[var(--border-soft)] bg-[var(--bg-elevated)] py-2.5 text-sm font-medium text-[var(--text-secondary)] transition-smooth hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]">
-                Google
-              </button>
-              <button className="flex items-center justify-center gap-2 rounded-xl border border-[var(--border-soft)] bg-[var(--bg-elevated)] py-2.5 text-sm font-medium text-[var(--text-secondary)] transition-smooth hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]">
-                GitHub
-              </button>
-            </div>
+            {/* Social auth — Google */}
+            {googleError && (
+              <div className="mt-3 flex items-center gap-2 rounded-xl border border-[var(--gold)]/30 bg-[var(--gold)]/10 px-3 py-2.5 text-xs text-[var(--gold-bright)]">
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                <span>
+                  {googleError === "access_denied"
+                    ? "تم إلغاء تسجيل الدخول عبر جوجل."
+                    : googleError === "email_not_verified"
+                      ? "لم يتم تأكيد بريدك الإلكتروني في جوجل."
+                      : "تعذّر تسجيل الدخول عبر جوجل. حاول مرة أخرى."}
+                </span>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              disabled={googleLoading}
+              className="mt-1 flex w-full items-center justify-center gap-3 rounded-xl border border-[var(--border-soft)] bg-white py-3 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:border-gray-300 hover:bg-gray-50 hover:shadow active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {googleLoading ? (
+                <Loader2 className="h-5 w-5 animate-spin text-gray-500" />
+              ) : (
+                <GoogleIcon className="h-5 w-5" />
+              )}
+              <span>
+                {googleLoading
+                  ? "جارٍ التحويل إلى جوجل..."
+                  : mode === "register"
+                    ? "التسجيل باستخدام جوجل"
+                    : "تسجيل الدخول عبر جوجل"}
+              </span>
+            </button>
           </div>
 
           {/* Join Telegram Community */}

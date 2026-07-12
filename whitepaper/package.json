@@ -4,8 +4,12 @@
   "private": true,
   "description": "WFB Token — The AI-Powered Utility Token. Luxury whitepaper PDF.",
   "scripts": {
+    "build": "node build.js",
+    "html": "node build.js --no-pdf",
     "pdf": "node build-pdf.js",
-    "serve": "node serve.js"
+    "serve": "node serve.js",
+    "preview": "node preview.js",
+    "check": "node check.js"
   },
   "dependencies": {
     "puppeteer": "^23.0.0"

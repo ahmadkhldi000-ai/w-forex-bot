@@ -13,6 +13,7 @@ import { initMT5Socket } from "@/services/mt5-socket.js";
 import { ensureDefaultAdmin } from "@/utils/bootstrap.js";
 
 import authRoutes from "@/routes/auth.js";
+import googleRoutes from "@/routes/google.js";
 import paymentsRoutes from "@/routes/payments.js";
 import tradesRoutes from "@/routes/trades.js";
 import subsRoutes from "@/routes/subscriptions.js";
@@ -130,6 +131,7 @@ app.get("/", (_req, res) => {
 
 // ---- Routes ----
 app.use("/api/auth", authRoutes);
+app.use("/api/auth", googleRoutes); // /google + /google/callback
 app.use("/api/payments", paymentsRoutes);
 app.use("/api/trades", tradesRoutes);
 app.use("/api/subscriptions", subsRoutes);

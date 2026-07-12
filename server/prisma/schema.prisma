@@ -29,6 +29,12 @@ enum UserStatus {
   PENDING
 }
 
+// How a user authenticates (email/password vs. OAuth providers)
+enum AccountProvider {
+  LOCAL     // email + password
+  GOOGLE    // Google OAuth
+}
+
 enum SubscriptionTier {
   FREE
   BASIC
@@ -139,10 +145,15 @@ enum LogAction {
 model User {
   id           String  @id @default(cuid())
   email        String  @unique
-  passwordHash String
+  passwordHash String? // nullable for OAuth-only accounts
   name         String?
   phone        String?
   avatarUrl    String?
+
+  // OAuth / identity provider
+  provider    AccountProvider @default(LOCAL)
+  providerId  String?         // Google sub id
+  @@unique([provider, providerId])
 
   role   UserRole   @default(USER)
   status UserStatus @default(PENDING)
