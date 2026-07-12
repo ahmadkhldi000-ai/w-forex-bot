@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  TrendingUp,
   Mail,
   Lock,
   User,
@@ -19,6 +18,7 @@ import {
 } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/ui/logo";
 
 type Mode = "login" | "register";
 
@@ -75,18 +75,8 @@ export default function AuthPage() {
           </Link>
 
           {/* Logo */}
-          <div className="mb-8 flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--accent)] to-[var(--accent-bright)] shadow-[0_4px_14px_-2px_rgba(25,201,138,0.5)]">
-              <TrendingUp className="h-5 w-5 text-[var(--bg-base)]" />
-            </div>
-            <div>
-              <span className="text-lg font-bold text-[var(--text-primary)]">
-                W-Forex
-              </span>
-              <span className="text-lg font-bold text-[var(--accent-bright)]">
-                Bot
-              </span>
-            </div>
+          <div className="mb-8">
+            <Logo height={44} priority />
           </div>
 
           {/* Card */}

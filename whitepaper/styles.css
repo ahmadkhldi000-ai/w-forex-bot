@@ -72,7 +72,7 @@ html, body {
   position: relative;
   width: 210mm;
   height: 297mm;
-  padding: 22mm 20mm 20mm 20mm;
+  padding: 20mm 20mm 18mm 20mm;
   background: var(--ink-grad);
   overflow: hidden;
   page-break-after: always;
@@ -119,7 +119,7 @@ html, body {
 .content { position: relative; z-index: 2; height: 100%; }
 
 /* ---------- Section header (per page) ---------- */
-.sec-head { margin-bottom: 22px; }
+.sec-head { margin-bottom: 18px; }
 .eyebrow {
   display: inline-flex; align-items: center; gap: 8px;
   font-family: var(--font-ui); font-weight: 600; font-size: 8.5pt;
@@ -139,11 +139,11 @@ h1, h2, h3, h4 { font-family: var(--font-ui); font-weight: 700; line-height: 1.0
   font-family: var(--font-display); font-weight: 800; line-height: 1.02; letter-spacing: -0.02em;
 }
 .h-section {
-  font-family: var(--font-display); font-weight: 700; font-size: 30pt;
+  font-family: var(--font-display); font-weight: 700; font-size: 27pt;
   line-height: 1.04; letter-spacing: -0.02em; color: var(--txt-100);
 }
 .h-section .accent { color: var(--gold); font-style: italic; font-weight: 500; }
-.h-sub { font-family: var(--font-ui); font-weight: 400; font-size: 11pt; color: var(--txt-60); line-height: 1.55; margin-top: 10px; max-width: 150mm; }
+.h-sub { font-family: var(--font-ui); font-weight: 400; font-size: 10.5pt; color: var(--txt-60); line-height: 1.5; margin-top: 8px; max-width: 150mm; }
 
 .lede { font-size: 12pt; line-height: 1.7; color: var(--txt-80); }
 p { color: var(--txt-80); font-size: 10pt; line-height: 1.68; }

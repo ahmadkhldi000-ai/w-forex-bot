@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  ShieldCheck,
   Mail,
   Lock,
   KeyRound,
@@ -14,6 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
+import { Logo } from "@/components/ui/logo";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -61,17 +61,10 @@ export default function AdminLoginPage() {
 
           {/* Logo — gold accent for admin */}
           <div className="mb-8 flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--gold)] to-[var(--gold-bright)] shadow-[0_4px_14px_-2px_rgba(245,177,78,0.5)]">
-              <ShieldCheck className="h-5 w-5 text-[var(--bg-base)]" />
-            </div>
-            <div>
-              <span className="text-lg font-bold text-[var(--text-primary)]">
-                W-Forex
-              </span>
-              <span className="ml-1 rounded-md bg-[var(--gold-dim)] bg-[var(--gold)]/15 px-1.5 py-0.5 text-xs font-bold text-[var(--gold-bright)]">
-                ADMIN
-              </span>
-            </div>
+            <Logo height={44} priority />
+            <span className="ml-1 rounded-md bg-[var(--gold-dim)] bg-[var(--gold)]/15 px-1.5 py-0.5 text-xs font-bold text-[var(--gold-bright)]">
+              ADMIN
+            </span>
           </div>
 
           {/* Step indicator */}

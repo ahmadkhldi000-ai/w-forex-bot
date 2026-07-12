@@ -57,10 +57,10 @@ export default function CopyTradingPage() {
     riskPercent > HIGH_RISK_THRESHOLD || maxLeverage > HIGH_LEVERAGE_THRESHOLD;
 
   return (
-    <div className="flex min-h-screen bg-[var(--bg-base)]">
+    <div className="min-h-screen bg-[var(--bg-base)] lg:pr-[252px]">
       <Sidebar />
 
-      <div className="flex-1">
+      <div className="flex min-w-0 flex-col">
         <Topbar />
 
         <main className="px-8 py-6">

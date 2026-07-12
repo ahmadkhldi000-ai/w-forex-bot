@@ -58,3 +58,23 @@ test-results/
 next.config.ts.bak
 next.config.github.ts
 .env.github
+
+# Original raw logo (processed versions live in web/public/)
+IMG_*.png
+
+# Static export / build outputs (not source)
+web/wforexbot/
+
+# Whitepaper build artifacts & heavy binaries
+whitepaper/.build/
+whitepaper/previews/
+whitepaper/WFB_Whitepaper.pdf
+whitepaper/_*.js
+whitepaper/_assemble.js
+whitepaper/build*.js
+whitepaper/check.js
+whitepaper/preview*.js
+whitepaper/preview_p*.png
+
+# Misc temp
+*.tsbuildinfo

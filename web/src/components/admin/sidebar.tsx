@@ -13,12 +13,12 @@ import {
   FileText,
   BarChart3,
   ScrollText,
-  ShieldCheck,
   LogOut,
   ChevronLeft,
   Server,
   Lock,
 } from "lucide-react";
+import { Logo } from "@/components/ui/logo";
 
 const navItems = [
   { label: "نظرة عامة", href: "/admin", icon: LayoutDashboard },
@@ -45,16 +45,15 @@ export function AdminSidebar() {
     >
       {/* Logo header */}
       <div className="flex h-16 items-center gap-2.5 border-b border-[var(--border-subtle)] px-5">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--gold)] to-[var(--gold-bright)] shadow-[0_4px_14px_-2px_rgba(245,177,78,0.5)]">
-          <ShieldCheck className="h-5 w-5 text-[var(--bg-base)]" />
-        </div>
+        {!collapsed ? (
+          <Logo height={30} priority />
+        ) : (
+          <Logo variant="icon" height={32} priority />
+        )}
         {!collapsed && (
-          <div className="overflow-hidden">
-            <div className="text-sm font-bold text-[var(--text-primary)]">
-              W-Forex Admin
-            </div>
-            <div className="text-[10px] text-[var(--gold)]">Control Center</div>
-          </div>
+          <span className="mr-auto rounded-md bg-[var(--gold)]/15 px-1.5 py-0.5 text-[10px] font-bold text-[var(--gold-bright)]">
+            ADMIN
+          </span>
         )}
       </div>
 

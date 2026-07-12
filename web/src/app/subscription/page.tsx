@@ -115,9 +115,9 @@ export default function SubscriptionPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-[var(--bg)]">
+      <div className="min-h-screen bg-[var(--bg)] lg:pr-[252px]">
         <Sidebar />
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex min-w-0 flex-col">
           <Topbar />
           <main className="flex flex-1 items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-[var(--emerald)]" />
@@ -128,9 +128,9 @@ export default function SubscriptionPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[var(--bg)]">
+    <div className="min-h-screen bg-[var(--bg)] lg:pr-[252px]">
       <Sidebar />
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-col">
         <Topbar />
         <main className="flex-1 space-y-6 overflow-y-auto p-4 lg:p-6">
           {/* Header */}

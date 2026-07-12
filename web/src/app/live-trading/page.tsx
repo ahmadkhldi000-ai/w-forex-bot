@@ -18,9 +18,9 @@ export default function LiveTradingPage() {
   );
 
   return (
-    <div className="flex min-h-screen bg-[var(--bg)]">
+    <div className="min-h-screen bg-[var(--bg)] lg:pr-[252px]">
       <Sidebar />
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-col">
         <Topbar />
         <main className="flex-1 overflow-hidden p-4 lg:p-6">
           <div className="grid h-full grid-cols-1 gap-4 xl:grid-cols-[260px_minmax(0,1fr)_360px]">

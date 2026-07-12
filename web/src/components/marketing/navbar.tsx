@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { withBase } from "@/lib/path";
 import { useI18n } from "@/lib/i18n/provider";
 import { LangToggle } from "./lang-toggle";
+import { Logo } from "@/components/ui/logo";
 
 export function MarketingNav() {
   const { lang, t } = useI18n();
@@ -32,37 +34,7 @@ export function MarketingNav() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-10">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5">
-          <span className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--accent-bright)] to-[var(--accent)] shadow-[0_6px_20px_-6px_rgba(25,201,138,0.6)]">
-            <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
-              <path
-                d="M3 17l5-6 4 4 5-8 4 5"
-                stroke="#04130d"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </span>
-          <span className="flex items-baseline gap-1">
-            <span className="text-lg font-bold tracking-tight text-[var(--text-primary)]">
-              W
-            </span>
-            <span
-              className="text-lg font-bold tracking-tight"
-              style={{
-                background:
-                  "linear-gradient(120deg,#2ee9a8,#19c98a 60%,#6ee7b7)",
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              Forex
-            </span>
-            <span className="text-sm font-medium text-[var(--text-muted)]">
-              Bot
-            </span>
-          </span>
+          <Logo height={34} priority />
         </Link>
 
         {/* Desktop nav */}

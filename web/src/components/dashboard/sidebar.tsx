@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LiveDot } from "@/components/ui/primitives";
+import { Logo } from "@/components/ui/logo";
 
 const nav = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
@@ -30,18 +31,11 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 hidden w-[252px] flex-col border-r border-[var(--border-subtle)] bg-[var(--bg-surface)]/60 backdrop-blur-xl lg:flex">
+    <aside className="fixed inset-y-0 right-0 z-40 hidden w-[252px] flex-col border-l border-[var(--border-subtle)] bg-[var(--bg-surface)]/60 backdrop-blur-xl lg:flex">
       {/* Brand */}
       <div className="flex items-center gap-3 px-6 py-6">
-        <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--accent)] to-[#0f8f5f] shadow-lg shadow-[var(--accent)]/20">
-          <Activity className="h-5 w-5 text-black" strokeWidth={2.5} />
-        </div>
-        <div>
-          <p className="text-[15px] font-semibold leading-tight tracking-tight">
-            W-Forex<span className="text-[var(--accent-bright)]">Bot</span>
-          </p>
-          <p className="text-[11px] text-[var(--text-muted)]">Trading Terminal</p>
-        </div>
+        <Logo height={32} priority />
+        <p className="text-[11px] text-[var(--text-muted)]">Trading Terminal</p>
       </div>
 
       {/* Nav */}

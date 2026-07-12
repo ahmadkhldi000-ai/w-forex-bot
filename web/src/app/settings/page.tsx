@@ -41,9 +41,9 @@ export default function SettingsPage() {
   const [tab, setTab] = useState<Tab>("profile");
 
   return (
-    <div className="flex min-h-screen bg-[var(--bg)]">
+    <div className="min-h-screen bg-[var(--bg)] lg:pr-[252px]">
       <Sidebar />
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-col">
         <Topbar />
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">
           <div className="mx-auto max-w-4xl space-y-6">

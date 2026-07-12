@@ -31,7 +31,7 @@ const nextConfig: NextConfig = {
 export default nextConfig;
 EOF
 cp next.config.gh.ts next.config.ts
-npm run build
+NEXT_PUBLIC_BASE_PATH=/w-forex-bot npm run build
 cp next.config.ts.bak next.config.ts
 rm -f next.config.gh.ts next.config.ts.bak
 

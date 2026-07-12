@@ -11,6 +11,7 @@ import {
   Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/ui/logo";
 
 export type AdminTab = "overview" | "accounts" | "security" | "logs";
 
@@ -54,15 +55,11 @@ export function AdminSidebar({
     >
       {/* Brand */}
       <div className="flex h-[68px] items-center gap-3 border-b border-[var(--border-subtle)] px-5">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--accent-bright)] to-[var(--accent)] shadow-[0_6px_20px_-6px_rgba(25,201,138,0.6)]">
-          <Lock className="h-5 w-5 text-[#04130d]" strokeWidth={2.5} />
-        </span>
+        {!collapsed && <Logo height={30} priority />}
+        {collapsed && <Logo variant="icon" height={32} priority />}
         {!collapsed && (
           <div className="min-w-0">
-            <p className="truncate text-sm font-bold text-[var(--text-primary)]">
-              لوحة الإدارة
-            </p>
-            <p className="truncate text-[11px] text-[var(--text-muted)]">
+            <p className="truncate text-xs font-medium text-[var(--text-muted)]">
               Master Account System
             </p>
           </div>

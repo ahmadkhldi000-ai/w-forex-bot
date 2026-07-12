@@ -19,9 +19,25 @@ const OUT = path.join(ROOT, 'WFB_Whitepaper.pdf');
     process.exit(1);
   }
 
+  // Resolve a usable Chrome executable.
+  // On macOS, Puppeteer's bundled Chromium can be blocked by Gatekeeper (err -88),
+  // so we prefer a system-installed Chrome / Edge / Chromium when present.
+  const fsSync = require('fs');
+  const candidates = [
+    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
+    '/Applications/Chromium.app/Contents/MacOS/Chromium',
+    '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser',
+  ];
+  let executablePath = null;
+  for (const c of candidates) {
+    try { if (fsSync.existsSync(c)) { executablePath = c; break; } } catch (_) {}
+  }
+
   console.log('\n  WFB Whitepaper — building PDF...');
   const browser = await puppeteer.launch({
     headless: 'new',
+    executablePath,
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--font-render-hinting=none'],
   });
 

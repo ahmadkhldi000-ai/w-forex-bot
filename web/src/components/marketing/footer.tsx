@@ -1,8 +1,9 @@
 "use client";
 
-import { TrendingUp, Send } from "lucide-react";
+import { Send } from "lucide-react";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n/provider";
+import { Logo } from "@/components/ui/logo";
 
 type IconProps = { className?: string };
 
@@ -47,33 +48,8 @@ export function MarketingFooter() {
       <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10">
         <div className="grid grid-cols-2 gap-10 md:grid-cols-3 lg:grid-cols-6">
           <div className="col-span-2">
-            <Link href="/" className="flex items-center gap-2.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--accent-bright)] to-[var(--accent)]">
-                <TrendingUp
-                  className="h-5 w-5 text-[#04130d]"
-                  strokeWidth={2.5}
-                />
-              </span>
-              <span className="flex items-baseline gap-1">
-                <span className="text-lg font-bold text-[var(--text-primary)]">
-                  W
-                </span>
-                <span
-                  className="text-lg font-bold"
-                  style={{
-                    background:
-                      "linear-gradient(120deg,#2ee9a8,#19c98a 60%,#6ee7b7)",
-                    WebkitBackgroundClip: "text",
-                    backgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                  }}
-                >
-                  Forex
-                </span>
-                <span className="text-sm font-medium text-[var(--text-muted)]">
-                  Bot
-                </span>
-              </span>
+                        <Link href="/" className="flex items-center gap-2.5">
+              <Logo height={34} priority />
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-[var(--text-secondary)]">
               {t.footer.tagline[lang]}
