@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>W-Forex Bot — منصة التداول الذكي بالذكاء الاصطناعي</title>
+<meta name="description" content="منصة تداول فوركس متكاملة بالذكاء الاصطناعي — اتصال مباشر بـ MetaTrader 5، نسخ صفقات احترافي، إشارات حية، ورمز WFB. انضم لقناتنا الرسمية على تيليجرام." />
+<meta name="keywords" content="W-Forex Bot, تداول فوركس, ذكاء اصطناعي, MetaTrader 5, نسخ صفقات, WFB Token, copy trading, forex signals" />
+<meta property="og:title" content="W-Forex Bot — التداول الذكي بالمستقبل" />
+<meta property="og:description" content="منصة فوركس بالذكاء الاصطناعي + MetaTrader 5 + نسخ صفقات. انضم لمجتمعنا العالمي." />
+<meta property="og:type" content="website" />
+<meta property="og:image" content="logo_embed.webp" />
+<meta name="theme-color" content="#0B0B0B" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,500&family=Sora:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ===== Noise / Grain Overlay ===== -->
+<div class="grain" aria-hidden="true"></div>
+
+<!-- ===== Cursor Glow ===== -->
+<div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+
+<!-- ===== Top Progress Bar ===== -->
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- ===== Navigation ===== -->
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="#top" class="brand">
+      <span class="brand-mark">
+        <svg viewBox="0 0 40 40" width="34" height="34" aria-hidden="true">
+          <defs>
+            <linearGradient id="navGold" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#F4E4A6"/><stop offset="50%" stop-color="#D4AF37"/><stop offset="100%" stop-color="#A8862A"/>
+            </linearGradient>
+          </defs>
+          <rect x="2" y="2" width="36" height="36" rx="10" fill="none" stroke="url(#navGold)" stroke-width="1.5"/>
+          <path d="M12 26 L12 14 L20 22 L28 14 L28 26" fill="none" stroke="url(#navGold)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <span class="brand-text">W-Forex<span class="dot">.</span>Bot</span>
+    </a>
+    <div class="nav-links">
+      <a href="#features" data-i18n="nav_features">المميزات</a>
+      <a href="#how" data-i18n="nav_how">كيف يعمل</a>
+      <a href="#pricing" data-i18n="nav_pricing">الباقات</a>
+      <a href="#token" data-i18n="nav_token">الرمز</a>
+      <a href="#roadmap" data-i18n="nav_roadmap">خارطة الطريق</a>
+    </div>
+    <div class="nav-actions">
+      <button class="lang-toggle" id="langToggle" aria-label="Language">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
+        <span id="langLabel">EN</span>
+      </button>
+      <a href="https://t.me/W_Forex_Bot" class="btn-cta btn-sm" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3l-3.3 15.6c-.2 1.1-.9 1.4-1.8.9l-5-3.7-2.4 2.3c-.3.3-.5.5-1 .5l.4-5.1L17.9 7c.4-.3-.1-.5-.6-.2L7.5 13l-4.9-1.5c-1.1-.3-1.1-1 .2-1.5l19.2-7.4c.9-.3 1.7.2 1.4 1.7z"/></svg>
+        <span data-i18n="nav_join">انضم الآن</span>
+      </a>
+      <button class="nav-burger" id="navBurger" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<header class="hero" id="top">
+  <div class="hero-glow hero-glow-1"></div>
+  <div class="hero-glow hero-glow-2"></div>
+  <div class="hero-grid" aria-hidden="true"></div>
+
+  <div class="hero-content">
+    <div class="hero-badge reveal" data-i18n="hero_badge">🟢 منصة تداول الجيل القادم • مدعومة بالذكاء الاصطناعي</div>
+
+    <h1 class="hero-title reveal" style="--d:.1s">
+      <span data-i18n="hero_t1">تداول بذكاء.</span>
+      <span class="accent-gold" data-i18n="hero_t2"> اربح بثقة.</span>
+    </h1>
+
+    <p class="hero-sub reveal" style="--d:.2s" data-i18n="hero_sub">
+      منصة فوركس متكاملة بالذكاء الاصطناعي — اتصال مباشر بـ MetaTrader 5، نسخ صفقات احترافي، إشارات حية لحظية، ورمز WFB. كل ما تحتاجه لتصبح متداولًا محترفًا في مكان واحد.
+    </p>
+
+    <div class="hero-ctas reveal" style="--d:.3s">
+      <a href="https://t.me/W_Forex_Bot" class="btn-cta btn-lg pulse-glow" target="_blank" rel="noopener">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3l-3.3 15.6c-.2 1.1-.9 1.4-1.8.9l-5-3.7-2.4 2.3c-.3.3-.5.5-1 .5l.4-5.1L17.9 7c.4-.3-.1-.5-.6-.2L7.5 13l-4.9-1.5c-1.1-.3-1.1-1 .2-1.5l19.2-7.4c.9-.3 1.7.2 1.4 1.7z"/></svg>
+        <span data-i18n="hero_cta1">انضم لمجتمعنا على تيليجرام</span>
+      </a>
+      <a href="#features" class="btn-ghost btn-lg">
+        <span data-i18n="hero_cta2">اكتشف المنصة</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path class="arrow-down" d="M12 5v14M5 12l7 7 7-7"/></svg>
+      </a>
+    </div>
+
+    <!-- Live stats strip -->
+    <div class="hero-stats reveal" style="--d:.4s">
+      <div class="stat">
+        <div class="stat-num" data-count="7.5" data-suffix="T">$</div>
+        <div class="stat-label" data-i18n="stat_volume">حجم سوق الفوركس اليومي</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <div class="stat-num" data-count="120" data-suffix="+K"></div>
+        <div class="stat-label" data-i18n="stat_members">عضو في مجتمعنا</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <div class="stat-num" data-count="24" data-suffix="/7"></div>
+        <div class="stat-label" data-i18n="stat_uptime">تشغيل متواصل</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <div class="stat-num" data-count="0.01" data-suffix="s"></div>
+        <div class="stat-label" data-i18n="stat_latency">سرعة تنفيذ</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating trading card mockup -->
+  <div class="hero-visual reveal" style="--d:.35s">
+    <div class="trade-card" id="tradeCard">
+      <div class="trade-card-head">
+        <span class="trade-pair">EUR/USD</span>
+        <span class="trade-live"><span class="live-dot"></span> LIVE</span>
+      </div>
+      <div class="trade-price-row">
+        <span class="trade-price" id="tradePrice">1.0842</span>
+        <span class="trade-change up" id="tradeChange">+0.34%</span>
+      </div>
+      <div class="trade-spark" id="tradeSpark"></div>
+      <div class="trade-foot">
+        <div class="trade-signal buy">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H9M17 7v8"/></svg>
+          <span data-i18n="trade_buy">إشارة شراء</span>
+        </div>
+        <div class="trade-conf">AI <span data-i18n="trade_conf">ثقة</span> 94%</div>
+      </div>
+    </div>
+    <div class="float-chip chip-1">
+      <span class="chip-emoji">🤖</span>
+      <span data-i18n="chip_ai">تحليل AI لحظي</span>
+    </div>
+    <div class="float-chip chip-2">
+      <span class="chip-emoji">⚡</span>
+      <span data-i18n="chip_exec">تنفيذ فوري</span>
+    </div>
+    <div class="float-chip chip-3">
+      <span class="chip-emoji">📈</span>
+      <span data-i18n="chip_profit">أرباح مضمونة المراقبة</span>
+    </div>
+  </div>
+</header>
+
+<!-- ===== Logos / Trust Bar ===== -->
+<section class="trust-bar reveal-on-scroll">
+  <div class="trust-inner">
+    <span class="trust-label" data-i18n="trust_label">مدعوم بأفضل التقنيات</span>
+    <div class="trust-logos">
+      <div class="trust-logo">MetaTrader 5</div>
+      <div class="trust-logo">TradingView</div>
+      <div class="trust-logo">Paymento</div>
+      <div class="trust-logo">USDT · BTC · ETH</div>
+      <div class="trust-logo">AES-256</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FEATURES ===== -->
+<section class="section" id="features">
+  <div class="section-head reveal-on-scroll">
+    <span class="eyebrow" data-i18n="feat_eyebrow">لماذا W-Forex Bot؟</span>
+    <h2 class="section-title" data-i18n="feat_title">قوة التداول في <span class="accent-gold">متصفك</span></h2>
+    <p class="section-sub" data-i18n="feat_sub">أدوات مؤسسية، ذكاء اصطناعي، ونسخ صفقات — كلها في منصة واحدة مصممة لتنقل تداولك إلى المستوى التالي.</p>
+  </div>
+
+  <div class="features-grid">
+    <article class="feature-card reveal-on-scroll" style="--d:.0s">
+      <div class="feature-icon gold">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg>
+      </div>
+      <h3 data-i18n="f1_t">ذكاء اصطناعي تحليلي</h3>
+      <p data-i18n="f1_d">خوارزميات AI تلتقط الأنماط في ملايين نقاط البيانات لحظيًا، وتمنحك إشارات دقيقة مع نسبة ثقة لكل صفقة.</p>
+      <ul class="feature-list">
+        <li data-i18n="f1_l1">تحليل فني متقدم آليًا</li>
+        <li data-i18n="f1_l2">كشف الاتجاهات قبل حدوثها</li>
+        <li data-i18n="f1_l3">إدارة مخاطر ذكية</li>
+      </ul>
+    </article>
+
+    <article class="feature-card reveal-on-scroll" style="--d:.1s">
+      <div class="feature-icon royal">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 3h5v5"/><path d="M21 3l-7 7"/><path d="M8 21H3v-5"/><path d="M3 21l7-7"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+      </div>
+      <h3 data-i18n="f2_t">اتصال مباشر بـ MetaTrader 5</h3>
+      <p data-i18n="f2_d">اربط حساب MT5 الخاص بك بنقرة، وتابع ونفّذ صفقاتك من لوحة موحدة دون مغادرة المنصة.</p>
+      <ul class="feature-list">
+        <li data-i18n="f2_l1">مزامنة لحظية للحساب</li>
+        <li data-i18n="f2_l2">تشفير AES-256-GCM لكلمات المرور</li>
+        <li data-i18n="f2_l3">دعم بروكرات MT5 المتعددة</li>
+      </ul>
+    </article>
+
+    <article class="feature-card reveal-on-scroll" style="--d:.2s">
+      <div class="feature-icon gold">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+      </div>
+      <h3 data-i18n="f3_t">نسخ صفقات احترافي</h3>
+      <p data-i18n="f3_d">انسخ صفقات كبار المتداولين تلقائيًا، أو اصنع استراتيجيتك ودع الآخرين ينسخونك ويكافأونك.</p>
+      <ul class="feature-list">
+        <li data-i18n="f3_l1">نسخ فوري بنسبة 100%</li>
+        <li data-i18n="f3_l2">لوحة أداء شفافة لكل متداول</li>
+        <li data-i18n="f3_l3">برنامج مكافآت للقادة</li>
+      </ul>
+    </article>
+
+    <article class="feature-card reveal-on-scroll" style="--d:.3s">
+      <div class="feature-icon royal">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 6-6"/></svg>
+      </div>
+      <h3 data-i18n="f4_t">إشارات حية لحظية</h3>
+      <p data-i18n="f4_d">إشارات تداول فورية مع نقاط الدخول والخروج ووقف الخسارة، تصلك مباشرة على تيليجرام.</p>
+      <ul class="feature-list">
+        <li data-i18n="f4_l1">تنبيهات تيليجرام فورية</li>
+        <li data-i18n="f4_l2">تحليل المخاطر لكل صفقة</li>
+        <li data-i18n="f4_l3">سجل أداء كامل وشفاف</li>
+      </ul>
+    </article>
+
+    <article class="feature-card reveal-on-scroll" style="--d:.4s">
+      <div class="feature-icon gold">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l9 4v6c0 5-3.8 9.7-9 11-5.2-1.3-9-6-9-11V6l9-4z"/><path d="M9 12l2 2 4-4"/></svg>
+      </div>
+      <h3 data-i18n="f5_t">أمان بمستوى المؤسسات</h3>
+      <p data-i18n="f5_d">تشفير كامل، تحقق بخطوتين، سجلات تدقيق لكل إجراء، وحدود للمعدلات على كل نقطة وصول.</p>
+      <ul class="feature-list">
+        <li data-i18n="f5_l1">2FA + RBAC صارم</li>
+        <li data-i18n="f5_l2">تشفير AES-256-GCM</li>
+        <li data-i18n="f5_l3">تحقق HMAC لكل عملية دفع</li>
+      </ul>
+    </article>
+
+    <article class="feature-card reveal-on-scroll" style="--d:.5s">
+      <div class="feature-icon royal">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/></svg>
+      </div>
+      <h3 data-i18n="f6_t">مجتمع عالمي</h3>
+      <p data-i18n="f6_d">انضم لآلاف المتداولين من كل العالم، شارك التحليلات، تعلّم من المحترفين، وابنِ شبكتك.</p>
+      <ul class="feature-list">
+        <li data-i18n="f6_l1">دردشة حية 24/7</li>
+        <li data-i18n="f6_l2">دعم متعدد اللغات</li>
+        <li data-i18n="f6_l3">ندوات تعليمية أسبوعية</li>
+      </ul>
+    </article>
+  </div>
+</section>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section class="section section-alt" id="how">
+  <div class="section-head reveal-on-scroll">
+    <span class="eyebrow" data-i18n="how_eyebrow">ابدأ في 3 خطوات</span>
+    <h2 class="section-title" data-i18n="how_title">من الصفر إلى <span class="accent-gold">أول صفقة</span> في دقائق</h2>
+  </div>
+
+  <div class="steps">
+    <div class="step reveal-on-scroll" style="--d:.0s">
+      <div class="step-num">01</div>
+      <div class="step-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21.9 4.3l-3.3 15.6c-.2 1.1-.9 1.4-1.8.9l-5-3.7-2.4 2.3c-.3.3-.5.5-1 .5l.4-5.1L17.9 7c.4-.3-.1-.5-.6-.2L7.5 13l-4.9-1.5c-1.1-.3-1.1-1 .2-1.5l19.2-7.4c.9-.3 1.7.2 1.4 1.7z"/></svg>
+      </div>
+      <h3 data-i18n="s1_t">انضم لقناتنا</h3>
+      <p data-i18n="s1_d">اضغط زر الانضمام وادخل مجتمع W-Forex Bot على تيليجرام مجانًا. استقبل الإشارات والتحليلات فورًا.</p>
+    </div>
+    <div class="step-connector reveal-on-scroll" style="--d:.1s"></div>
+    <div class="step reveal-on-scroll" style="--d:.2s">
+      <div class="step-num">02</div>
+      <div class="step-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 15h4"/></svg>
+      </div>
+      <h3 data-i18n="s2_t">اربط حساب MT5</h3>
+      <p data-i18n="s2_d">امنح منصتك هوية المتداول واربط حساب MetaTrader 5 الخاص بك بأمان كامل لبدء التداول الذكي.</p>
+    </div>
+    <div class="step-connector reveal-on-scroll" style="--d:.3s"></div>
+    <div class="step reveal-on-scroll" style="--d:.4s">
+      <div class="step-num">03</div>
+      <div class="step-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 6-6"/><path d="M21 8h0M21 8v0"/></svg>
+      </div>
+      <h3 data-i18n="s3_t">تداول واربح</h3>
+      <p data-i18n="s3_d">تابع الإشارات، انسخ أفضل المتداولين، أو دع الذكاء الاصطناعي يقود قراراتك. كل شيء يحدث تلقائيًا.</p>
+    </div>
+  </div>
+
+  <div class="how-cta reveal-on-scroll">
+    <a href="https://t.me/W_Forex_Bot" class="btn-cta btn-lg" target="_blank" rel="noopener">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3l-3.3 15.6c-.2 1.1-.9 1.4-1.8.9l-5-3.7-2.4 2.3c-.3.3-.5.5-1 .5l.4-5.1L17.9 7c.4-.3-.1-.5-.6-.2L7.5 13l-4.9-1.5c-1.1-.3-1.1-1 .2-1.5l19.2-7.4c.9-.3 1.7.2 1.4 1.7z"/></svg>
+      <span data-i18n="how_cta">ابدأ رحلتك الآن — مجانًا</span>
+    </a>
+  </div>
+</section>
+
+<!-- ===== PRICING ===== -->
+<section class="section" id="pricing">
+  <div class="section-head reveal-on-scroll">
+    <span class="eyebrow" data-i18n="price_eyebrow">باقات مرنة</span>
+    <h2 class="section-title" data-i18n="price_title">اختر <span class="accent-gold">خطتك</span></h2>
+    <p class="section-sub" data-i18n="price_sub">ابدأ مجانًا، وارتقِ حسب احتياجك. كل الباقات تشمل الوصول لمجتمع تيليجرام.</p>
+  </div>
+
+  <div class="pricing-grid">
+    <article class="price-card reveal-on-scroll" style="--d:.0s">
+      <div class="price-head">
+        <h3 data-i18n="p1_name">FREE</h3>
+        <p data-i18n="p1_desc">للمبتدئين والاستكشاف</p>
+      </div>
+      <div class="price-amount">
+        <span class="cur">$</span><span class="amt">0</span>
+        <span class="per" data-i18n="price_per">/شهر</span>
+      </div>
+      <ul class="price-features">
+        <li data-i18n="p1_f1">إشارات تيليجرام الأساسية</li>
+        <li data-i18n="p1_f2">وصول لمجتمع عام</li>
+        <li data-i18n="p1_f3">تحليل سوق أسبوعي</li>
+      </ul>
+      <a href="https://t.me/W_Forex_Bot" class="btn-outline btn-block" target="_blank" rel="noopener" data-i18n="p1_cta">ابدأ مجانًا</a>
+    </article>
+
+    <article class="price-card featured reveal-on-scroll" style="--d:.1s">
+      <div class="price-badge" data-i18n="p_popular">الأكثر شعبية</div>
+      <div class="price-head">
+        <h3 data-i18n="p2_name">PRO</h3>
+        <p data-i18n="p2_desc">للمتداولين الجادين</p>
+      </div>
+      <div class="price-amount">
+        <span class="cur">$</span><span class="amt">49</span>
+        <span class="per" data-i18n="price_per">/شهر</span>
+      </div>
+      <ul class="price-features">
+        <li data-i18n="p2_f1">كل مزايا FREE</li>
+        <li data-i18n="p2_f2">إشارات AI لحظية</li>
+        <li data-i18n="p2_f3">ربط حساب MT5</li>
+        <li data-i18n="p2_f4">نسخ صفقات محدود</li>
+        <li data-i18n="p2_f5">دعم أولوية</li>
+      </ul>
+      <a href="https://t.me/W_Forex_Bot" class="btn-cta btn-block" target="_blank" rel="noopener" data-i18n="p2_cta">اشترك الآن</a>
+    </article>
+
+    <article class="price-card reveal-on-scroll" style="--d:.2s">
+      <div class="price-head">
+        <h3 data-i18n="p3_name">VIP</h3>
+        <p data-i18n="p3_desc">للمحترفين والمؤسسات</p>
+      </div>
+      <div class="price-amount">
+        <span class="cur">$</span><span class="amt">199</span>
+        <span class="per" data-i18n="price_per">/شهر</span>
+      </div>
+      <ul class="price-features">
+        <li data-i18n="p3_f1">كل مزايا PRO</li>
+        <li data-i18n="p3_f2">نسخ صفقات غير محدود</li>
+        <li data-i18n="p3_f3">API مخصص</li>
+        <li data-i18n="p3_f4">مدير حساب خاص</li>
+        <li data-i18n="p3_f5">إشارات حصرية VIP</li>
+      </ul>
+      <a href="https://t.me/W_Forex_Bot" class="btn-gold btn-block" target="_blank" rel="noopener" data-i18n="p3_cta">ترقية لـ VIP</a>
+    </article>
+  </div>
+</section>
+
+<!-- ===== TOKEN ===== -->
+<section class="section section-dark" id="token">
+  <div class="token-glow"></div>
+  <div class="section-head reveal-on-scroll">
+    <span class="eyebrow" data-i18n="tok_eyebrow">WFB Token</span>
+    <h2 class="section-title" data-i18n="tok_title">العملة التي <span class="accent-gold">تشغّل</span> المنصة</h2>
+    <p class="section-sub" data-i18n="tok_sub">WFB ليس مجرد رمز — إنه طبقة التسوية لكل خدمة، خصم، ومكافأة داخل منظومة W-Forex Bot.</p>
+  </div>
+
+  <div class="token-grid">
+    <div class="token-chart reveal-on-scroll" style="--d:.0s">
+      <div class="donut">
+        <svg viewBox="0 0 200 200" width="200" height="200">
+          <circle cx="100" cy="100" r="80" fill="none" stroke="#1a1a22" stroke-width="28"/>
+          <circle cx="100" cy="100" r="80" fill="none" stroke="#D4AF37" stroke-width="28" stroke-dasharray="181 503" stroke-dashoffset="0" transform="rotate(-90 100 100)" class="donut-seg seg-1"/>
+          <circle cx="100" cy="100" r="80" fill="none" stroke="#1565FF" stroke-width="28" stroke-dasharray="141 503" stroke-dashoffset="-181" transform="rotate(-90 100 100)" class="donut-seg seg-2"/>
+          <circle cx="100" cy="100" r="80" fill="none" stroke="#4E8BFF" stroke-width="28" stroke-dasharray="100 503" stroke-dashoffset="-322" transform="rotate(-90 100 100)" class="donut-seg seg-3"/>
+          <circle cx="100" cy="100" r="80" fill="none" stroke="#E8C766" stroke-width="28" stroke-dasharray="80 503" stroke-dashoffset="-422" transform="rotate(-90 100 100)" class="donut-seg seg-4"/>
+        </svg>
+        <div class="donut-center">
+          <span class="donut-supply">1B</span>
+          <span data-i18n="tok_supply">إجمالي العرض</span>
+        </div>
+      </div>
+      <div class="donut-legend">
+        <div class="legend-item"><span class="dot gold"></span><span data-i18n="leg_liquidity">السيولة 36%</span></div>
+        <div class="legend-item"><span class="dot royal"></span><span data-i18n="leg_ecosystem">المنظومة 28%</span></div>
+        <div class="legend-item"><span class="dot royal-soft"></span><span data-i18n="leg_team">الفريق 20%</span></div>
+        <div class="legend-item"><span class="dot gold-soft"></span><span data-i18n="leg_treasury">الخزينة 16%</span></div>
+      </div>
+    </div>
+
+    <div class="token-benefits reveal-on-scroll" style="--d:.2s">
+      <div class="token-benefit">
+        <span class="tb-icon">↘</span>
+        <div><strong data-i18n="tb1_t">خصومات على الرسوم</strong><p data-i18n="tb1_d">وفّر حتى 30% على كل اشتراك عند الدفع بـ WFB.</p></div>
+      </div>
+      <div class="token-benefit">
+        <span class="tb-icon">⚡</span>
+        <div><strong data-i18n="tb2_t">وصول مبكر</strong><p data-i18n="tb2_d">حاملو WFB يحصلون أولًا على كل ميزة وطرح جديد.</p></div>
+      </div>
+      <div class="token-benefit">
+        <span class="tb-icon">◎</span>
+        <div><strong data-i18n="tb3_t">حوكمة</strong><p data-i18n="tb3_d">صوّت على قرارات المنصة وميزاتها القادمة.</p></div>
+      </div>
+      <div class="token-benefit">
+        <span class="tb-icon">∞</span>
+        <div><strong data-i18n="tb4_t">مكافآت المتداولين</strong><p data-i18n="tb4_d">اكسب WFB عند قيادتك لاستراتيجيات ناجحة ينسخها الآخرون.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ROADMAP ===== -->
+<section class="section" id="roadmap">
+  <div class="section-head reveal-on-scroll">
+    <span class="eyebrow" data-i18n="rm_eyebrow">خارطة الطريق</span>
+    <h2 class="section-title" data-i18n="rm_title">من <span class="accent-gold">اليوم</span> إلى المستقبل</h2>
+  </div>
+
+  <div class="timeline">
+    <div class="tl-item done reveal-on-scroll" style="--d:.0s">
+      <div class="tl-dot"></div>
+      <div class="tl-card">
+        <span class="tl-phase" data-i18n="rm1_q">Q3–Q4 2025</span>
+        <h4 data-i18n="rm1_t">المرحلة 1 — الإطلاق</h4>
+        <p data-i18n="rm1_d">إطلاق المنصة، تكامل MT5، واجهة PWA، تحليل AI، ومجتمع تيليجرام.</p>
+      </div>
+    </div>
+    <div class="tl-item done reveal-on-scroll" style="--d:.1s">
+      <div class="tl-dot"></div>
+      <div class="tl-card">
+        <span class="tl-phase" data-i18n="rm2_q">Q1–Q2 2026</span>
+        <h4 data-i18n="rm2_t">المرحلة 2 — النمو</h4>
+        <p data-i18n="rm2_d">نسخ الصفقات الكامل، تطبيقات iOS/Android، وتوسيع عالمي للمجتمع.</p>
+      </div>
+    </div>
+    <div class="tl-item active reveal-on-scroll" style="--d:.2s">
+      <div class="tl-dot"></div>
+      <div class="tl-card">
+        <span class="tl-phase" data-i18n="rm3_q">الآن — H2 2026</span>
+        <h4 data-i18n="rm3_t">المرحلة 3 — WFB Token</h4>
+        <p data-i18n="rm3_d">إطلاق رمز WFB، التداول بالرمز، برامج المكافآت، والشراكات المؤسسية.</p>
+      </div>
+    </div>
+    <div class="tl-item reveal-on-scroll" style="--d:.3s">
+      <div class="tl-dot"></div>
+      <div class="tl-card">
+        <span class="tl-phase" data-i18n="rm4_q">2027+</span>
+        <h4 data-i18n="rm4_t">المرحلة 4 — المنظومة</h4>
+        <p data-i18n="rm4_d">محفظة متعددة السلاسل، طرفية مؤسسية، ومنتجات AI جديدة كليًا.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TESTIMONIALS ===== -->
+<section class="section section-alt">
+  <div class="section-head reveal-on-scroll">
+    <span class="eyebrow" data-i18n="test_eyebrow">قالوا عنّا</span>
+    <h2 class="section-title" data-i18n="test_title">قصص <span class="accent-gold">نجاح</span> حقيقية</h2>
+  </div>
+  <div class="testimonials">
+    <figure class="testimonial reveal-on-scroll" style="--d:.0s">
+      <blockquote data-i18n="t1_q">"إشارات AI غيّرت طريقة تداولي تمامًا. الدخول والخروج دقيق بشكل لا يصدق."</blockquote>
+      <figcaption><strong>Khalid M.</strong><span data-i18n="t1_r">متداول، الإمارات</span></figcaption>
+    </figure>
+    <figure class="testimonial reveal-on-scroll" style="--d:.1s">
+      <blockquote data-i18n="t2_q">"ميزة نسخ الصفقات ممتازة. أتابع أفضل المتداولين وأتلقى نتائجهم مباشرة."</blockquote>
+      <figcaption><strong>Sara L.</strong><span data-i18n="t2_r">مستثمرة، لندن</span></figcaption>
+    </figure>
+    <figure class="testimonial reveal-on-scroll" style="--d:.2s">
+      <blockquote data-i18n="t3_q">"المجتمع على تيليجرام هو الأفضل. دعم، تحليلات، وتعلم مستمر 24/7."</blockquote>
+      <figcaption><strong>Yusuf A.</strong><span data-i18n="t3_r">متداول مبتدئ، تركيا</span></figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ===== FINAL CTA ===== -->
+<section class="cta-final">
+  <div class="cta-final-glow"></div>
+  <div class="cta-final-content reveal-on-scroll">
+    <h2 data-i18n="cta_title">جاهز لتصبح <span class="accent-gold">متداولًا ذكيًا؟</span></h2>
+    <p data-i18n="cta_sub">انضم لأكثر من 120,000 متداول حول العالم. مجتمعنا ينتظرك على تيليجرام — مجانًا، إلى الأبد.</p>
+    <a href="https://t.me/W_Forex_Bot" class="btn-cta btn-xl pulse-glow" target="_blank" rel="noopener">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3l-3.3 15.6c-.2 1.1-.9 1.4-1.8.9l-5-3.7-2.4 2.3c-.3.3-.5.5-1 .5l.4-5.1L17.9 7c.4-.3-.1-.5-.6-.2L7.5 13l-4.9-1.5c-1.1-.3-1.1-1 .2-1.5l19.2-7.4c.9-.3 1.7.2 1.4 1.7z"/></svg>
+      <span data-i18n="cta_btn">انضم لقناة W-Forex Bot</span>
+    </a>
+    <div class="cta-trust">
+      <span data-i18n="cta_t1">✓ مجاني للأبد</span>
+      <span data-i18n="cta_t2">✓ بدون التزام</span>
+      <span data-i18n="cta_t3">✓ إشارات فورية</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <span class="brand-mark">
+        <svg viewBox="0 0 40 40" width="30" height="30"><rect x="2" y="2" width="36" height="36" rx="10" fill="none" stroke="#D4AF37" stroke-width="1.5"/><path d="M12 26 L12 14 L20 22 L28 14 L28 26" fill="none" stroke="#D4AF37" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <div>
+        <strong>W-Forex Bot</strong>
+        <p data-i18n="foot_tag">التداول الذكي بالمستقبل</p>
+      </div>
+    </div>
+    <div class="footer-links">
+      <a href="https://t.me/W_Forex_Bot" target="_blank" rel="noopener" data-i18n="foot_telegram">تيليجرام</a>
+      <a href="#features" data-i18n="nav_features">المميزات</a>
+      <a href="#pricing" data-i18n="nav_pricing">الباقات</a>
+      <a href="#token" data-i18n="nav_token">الرمز</a>
+    </div>
+    <div class="footer-social">
+      <a href="https://t.me/W_Forex_Bot" target="_blank" rel="noopener" aria-label="Telegram">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3l-3.3 15.6c-.2 1.1-.9 1.4-1.8.9l-5-3.7-2.4 2.3c-.3.3-.5.5-1 .5l.4-5.1L17.9 7c.4-.3-.1-.5-.6-.2L7.5 13l-4.9-1.5c-1.1-.3-1.1-1 .2-1.5l19.2-7.4c.9-.3 1.7.2 1.4 1.7z"/></svg>
+      </a>
+      <a href="#" aria-label="X"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.2 2h3.3l-7.2 8.3L23 22h-6.6l-5.2-6.8L5.3 22H2l7.7-8.8L1.5 2h6.8l4.7 6.2L18.2 2zm-1.2 18h1.8L7.1 3.9H5.2L17 20z"/></svg></a>
+    </div>
+  </div>
+  <div class="footer-risk reveal-on-scroll">
+    <p data-i18n="risk_warning">⚠️ تحذير المخاطر: التداول في الأسواق المالية ينطوي على مخاطر عالية وقد يؤدي إلى فقدان رأس المال. لا تداول أبدًا بأموال لا يمكنك تحمّل خسارتها. هذه المنصة لا تقدم نصائح مالية. تداول بمسؤولية.</p>
+    <p class="copyright">© 2026 W-Forex Bot. جميع الحقوق محفوظة.</p>
+  </div>
+</footer>
+
+<!-- ===== Floating Telegram Button ===== -->
+<a href="https://t.me/W_Forex_Bot" class="float-telegram" target="_blank" rel="noopener" aria-label="Join Telegram">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3l-3.3 15.6c-.2 1.1-.9 1.4-1.8.9l-5-3.7-2.4 2.3c-.3.3-.5.5-1 .5l.4-5.1L17.9 7c.4-.3-.1-.5-.6-.2L7.5 13l-4.9-1.5c-1.1-.3-1.1-1 .2-1.5l19.2-7.4c.9-.3 1.7.2 1.4 1.7z"/></svg>
+  <span class="ft-badge" data-i18n="float_join">انضم</span>
+</a>
+
+<script src="app.js"></script>
+</body>
+</html>

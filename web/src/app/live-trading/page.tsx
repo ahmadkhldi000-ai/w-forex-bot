@@ -41,6 +41,41 @@ export default function LiveTradingPage() {
             <section className="flex min-w-0 flex-col rounded-2xl border border-[var(--border)] bg-[var(--surface)]/40 p-4">
               <SymbolHeader tick={feed.tick} connection={feed.connection} />
 
+              {/* ===== Timeframe selector ===== */}
+              <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                <span className="flex items-center gap-1 text-[11px] font-medium text-[var(--fg-muted)]">
+                  <Layers className="h-3 w-3" /> الفريم
+                </span>
+                {feed.timeframes.map((tf) => (
+                  <button
+                    key={tf.id}
+                    onClick={() => feed.setTimeframe(tf.id)}
+                    className={`rounded-md px-2.5 py-1 text-[11px] font-semibold transition-smooth ${
+                      feed.timeframe === tf.id
+                        ? "bg-[var(--accent)] text-[var(--bg)]"
+                        : "bg-[var(--surface)]/60 text-[var(--fg-muted)] hover:bg-[var(--surface)] hover:text-[var(--fg)]"
+                    }`}
+                  >
+                    {tf.label}
+                  </button>
+                ))}
+                <span className="mx-2 h-3 w-px bg-[var(--border)]" />
+                <span className="text-[11px] text-[var(--fg-dim)]">
+                  {feed.masterConnected ? (
+                    <span className="flex items-center gap-1 text-[var(--emerald)]">
+                      <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--emerald)]" />
+                      متصل بحساب الماستر
+                      {feed.masterLogin ? ` #${feed.masterLogin}` : ""}
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1 text-amber-400">
+                      <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400" />
+                      بانتظار حساب الماستر — لا توجد صفقات وهمية
+                    </span>
+                  )}
+                </span>
+              </div>
+
               <div className="mt-3 flex flex-wrap items-center gap-1.5 border-b border-[var(--border)] pb-3 text-[11px]">
                 <ChartLegend color="var(--emerald)" label="Bullish" />
                 <ChartLegend color="var(--danger)" label="Bearish" />
