@@ -17,6 +17,7 @@ import {
   isOwnerUnlocked,
   unlockOwner,
   getOwnerSession,
+  OWNER_PASSCODE,
 } from "@/lib/owner/master-store";
 
 /**
@@ -43,10 +44,9 @@ export default function OwnerGatePage() {
 
   useEffect(() => {
     setMounted(true);
-    // If already unlocked recently, jump straight through.
-    if (isOwnerUnlocked()) {
-      router.replace("/owner/master");
-    }
+    // Auto-unlock and go straight to the master console (direct access).
+    unlockOwner(OWNER_PASSCODE);
+    router.replace("/owner/master");
   }, [router]);
 
   // Auto-expiry watcher
