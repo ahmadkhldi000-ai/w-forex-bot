@@ -27,6 +27,7 @@ import {
   decodeGoogleCredential,
   GOOGLE_CLIENT_ID,
 } from "@/lib/auth/google-gsi";
+import { upsertGoogleAccount, setSession } from "@/lib/auth/account-store";
 
 type Mode = "login" | "register";
 
@@ -63,21 +64,23 @@ export default function AuthPage() {
     }
   }, []);
 
-  // Kick off Google sign-in via Google Identity Services (client-side).
-  // `autoSelect=true` enables true automatic sign-in when the browser has a
-  // single signed-in Google session — the user never types an email or clicks.
-  const initGoogleSignIn = async (opts?: { autoSelect?: boolean }) => {
+  // ============================================================
+  //  Google Sign-In
+  //  Flow: click "Continue with Google" → Google account chooser
+  //  appears → user picks an email → we register/sign-in them
+  //  AUTOMATICALLY and jump straight to the dashboard. No extra
+  //  password page, no manual email typing.
+  // ============================================================
+  const handleGoogleLogin = async () => {
     setGoogleLoading(true);
     setGoogleError(null);
 
-    // If Google OAuth isn't configured yet, fall back to manual email entry
-    // so the user can still proceed to the account-linking flow.
+    // Fallback when Google OAuth isn't configured: let the user type
+    // their email manually so they can still proceed.
     if (!isGoogleConfigured()) {
       setGoogleLoading(false);
-      if (opts?.autoSelect) {
-        setManualEmail("");
-        setShowManualModal(true);
-      }
+      setManualEmail("");
+      setShowManualModal(true);
       return;
     }
 
@@ -92,38 +95,22 @@ export default function AuthPage() {
             setGoogleError("email_not_verified");
             return;
           }
-          // Save the Google profile so the link-email page can use it
-          sessionStorage.setItem("wfb_pending_google", JSON.stringify(profile));
-          // Always go to the link-email page (as requested) with the profile
-          router.push("/auth/link-account");
+          // ✅ AUTO-REGISTER: create or update the account from the
+          // Google profile and start a session immediately.
+          const { account } = upsertGoogleAccount(profile);
+          setSession(account);
+          // → straight to the dashboard
+          router.push("/dashboard");
         },
-        auto_select: opts?.autoSelect ?? false,
         cancel_on_tap_outside: true,
       });
-      // Use One Tap / prompt to surface the account chooser
+      // Surface the Google account chooser (One Tap)
       window.google!.accounts.id.prompt();
     } catch {
       setGoogleLoading(false);
       setGoogleError("script_error");
     }
   };
-
-  // Button-click handler (manual select → account chooser)
-  const handleGoogleLogin = () => initGoogleSignIn({ autoSelect: false });
-
-  // 🔁 AUTO-TRIGGER on page load: surface Google One Tap automatically so the
-  // user doesn't need to type an email or click anything. With auto_select,
-  // if the browser is signed into exactly one Google account, sign-in
-  // completes with zero interaction.
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    // brief delay so the page paints before the One Tap UI animates in
-    const t = setTimeout(() => {
-      initGoogleSignIn({ autoSelect: true });
-    }, 600);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const proceedWithManualEmail = () => {
     setManualError(null);
@@ -133,7 +120,8 @@ export default function AuthPage() {
       setManualError("بريد إلكتروني غير صالح");
       return;
     }
-    // Build a synthetic Google profile so the link-account page works unchanged
+    // Build a synthetic Google profile, register + start session, and
+    // go straight to the dashboard (same auto-register flow as Google).
     const profile = {
       sub: "manual_" + btoa(email).replace(/=/g, ""),
       email,
@@ -141,9 +129,10 @@ export default function AuthPage() {
       name: email.split("@")[0],
       picture: "",
     };
-    sessionStorage.setItem("wfb_pending_google", JSON.stringify(profile));
+    const { account } = upsertGoogleAccount(profile);
+    setSession(account);
     setShowManualModal(false);
-    router.push("/auth/link-account");
+    router.push("/dashboard");
   };
 
   // Form fields
