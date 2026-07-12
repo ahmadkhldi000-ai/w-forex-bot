@@ -79,3 +79,7 @@ whitepaper/preview_p*.png
 # Misc temp
 *.tsbuildinfo
 wp_text.txt
+whitepaper/*.bak
+whitepaper/*.preRewrite
+whitepaper/logo*.png
+whitepaper/logo*.webp

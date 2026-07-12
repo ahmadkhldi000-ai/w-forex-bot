@@ -1,90 +1,96 @@
 "use client";
 
-import { History, ArrowUp, ArrowDown } from "lucide-react";
+import { History, ArrowUp, ArrowDown, Inbox } from "lucide-react";
 import { cn, formatMoney } from "@/lib/utils";
+import type { Trade } from "@/lib/trading/profile";
 
-type Trade = {
-  id: string;
-  pair: string;
-  side: "BUY" | "SELL";
-  pnl: number;
-  time: string;
-};
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "الآن";
+  if (mins < 60) return `قبل ${mins} دقيقة`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `قبل ${hrs} ساعة`;
+  const days = Math.floor(hrs / 24);
+  return `قبل ${days} يوم`;
+}
 
-const trades: Trade[] = [
-  { id: "t1", pair: "EUR/USD", side: "BUY", pnl: 340.5, time: "2m ago" },
-  { id: "t2", pair: "USD/JPY", side: "SELL", pnl: -120.0, time: "14m ago" },
-  { id: "t3", pair: "XAU/USD", side: "BUY", pnl: 612.8, time: "38m ago" },
-  { id: "t4", pair: "GBP/JPY", side: "SELL", pnl: 88.2, time: "1h ago" },
-  { id: "t5", pair: "AUD/CAD", side: "BUY", pnl: -54.0, time: "2h ago" },
-  { id: "t6", pair: "EUR/GBP", side: "SELL", pnl: 205.0, time: "3h ago" },
-];
+export function RecentTrades({ trades }: { trades: Trade[] }) {
+  const recent = trades.slice(0, 8);
 
-export function RecentTrades() {
   return (
     <div className="card p-5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <History className="h-[18px] w-[18px] text-[var(--accent-bright)]" />
-          <h3 className="text-base font-semibold tracking-tight">Recent Trades</h3>
+          <h3 className="text-base font-semibold tracking-tight">آخر الصفقات</h3>
         </div>
-        <button className="text-xs font-medium text-[var(--text-muted)] transition-smooth hover:text-[var(--accent-bright)]">
-          View all
-        </button>
+        <span className="rounded-full bg-[var(--bg-elevated)] px-2.5 py-1 text-xs font-medium text-[var(--text-muted)]">
+          {trades.length}
+        </span>
       </div>
 
-      <div className="mt-4 space-y-1">
-        {trades.map((t, i) => {
-          const positive = t.pnl >= 0;
-          return (
-            <div
-              key={t.id}
-              className="group flex items-center gap-3 rounded-xl px-2 py-2.5 transition-smooth hover:bg-white/[0.03] animate-fade-up"
-              style={{ animationDelay: `${i * 50}ms` }}
-            >
+      {recent.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--bg-elevated)]">
+            <Inbox className="h-5 w-5 text-[var(--text-muted)]" />
+          </div>
+          <p className="mt-3 text-sm font-medium text-[var(--text-secondary)]">
+            لا توجد صفقات بعد
+          </p>
+          <p className="mt-1 text-xs text-[var(--text-muted)]">
+            ستظهر الصفقات المنفّذة هنا فور حدوثها.
+          </p>
+        </div>
+      ) : (
+        <div className="mt-4 space-y-1">
+          {recent.map((t) => {
+            const positive = t.pnl >= 0;
+            return (
               <div
-                className={cn(
-                  "flex h-8 w-8 items-center justify-center rounded-lg",
-                  positive
-                    ? "bg-[var(--accent-dim)] text-[var(--accent-bright)]"
-                    : "bg-[var(--danger-dim)] text-[var(--danger)]"
-                )}
+                key={t.id}
+                className="flex items-center justify-between rounded-xl px-2.5 py-2.5 transition-colors hover:bg-[var(--bg-elevated)]/60"
               >
-                {positive ? (
-                  <ArrowUp className="h-4 w-4" strokeWidth={2.5} />
-                ) : (
-                  <ArrowDown className="h-4 w-4" strokeWidth={2.5} />
-                )}
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">{t.pair}</span>
-                  <span
+                <div className="flex items-center gap-3">
+                  <div
                     className={cn(
-                      "rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide",
-                      t.side === "BUY"
-                        ? "bg-[var(--accent-dim)] text-[var(--accent-bright)]"
-                        : "bg-[var(--danger-dim)] text-[var(--danger)]"
+                      "flex h-8 w-8 items-center justify-center rounded-lg",
+                      positive
+                        ? "bg-[var(--accent)]/12 text-[var(--accent-bright)]"
+                        : "bg-[var(--danger)]/12 text-[var(--danger)]"
                     )}
                   >
-                    {t.side}
-                  </span>
+                    {t.side === "BUY" ? (
+                      <ArrowUp className="h-4 w-4" />
+                    ) : (
+                      <ArrowDown className="h-4 w-4" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[var(--text-primary)]">
+                      {t.symbol}
+                    </p>
+                    <p className="text-[11px] text-[var(--text-muted)]">
+                      {t.side} · {t.volume.toFixed(2)} لوت · {timeAgo(t.closeTime ?? t.openTime)}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-[11px] text-[var(--text-muted)]">{t.time}</p>
+                <span
+                  className={cn(
+                    "font-mono text-sm font-semibold tabular-nums",
+                    positive
+                      ? "text-[var(--accent-bright)]"
+                      : "text-[var(--danger)]"
+                  )}
+                >
+                  {positive ? "+" : ""}
+                  {formatMoney(t.pnl, 0)}
+                </span>
               </div>
-              <span
-                className={cn(
-                  "font-mono-nums text-sm font-semibold tabular-nums",
-                  positive ? "text-[var(--accent-bright)]" : "text-[var(--danger)]"
-                )}
-              >
-                {positive ? "+" : ""}
-                {formatMoney(t.pnl, 0)}
-              </span>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

@@ -71,7 +71,7 @@ export function MarketingHero() {
             style={{ animationDelay: "220ms" }}
           >
             <a
-              href="/dashboard"
+              href="/auth"
               className="shine relative inline-flex h-14 w-full items-center justify-center gap-2.5 overflow-hidden rounded-xl bg-gradient-to-b from-[var(--accent-bright)] to-[var(--accent)] px-8 text-base font-semibold text-[#04130d] shadow-[0_14px_40px_-10px_rgba(25,201,138,0.7)] transition-smooth hover:-translate-y-0.5 sm:w-auto"
             >
               {t.hero.ctaPrimary[lang]}
@@ -188,7 +188,7 @@ function HeroPreview() {
 
       {/* main mini-terminal */}
       <a
-        href="/dashboard"
+        href="/auth"
         className="card group block cursor-pointer p-5 transition-smooth hover:-translate-y-1"
         style={{
           boxShadow: "0 40px 90px -30px rgba(0,0,0,0.9)",

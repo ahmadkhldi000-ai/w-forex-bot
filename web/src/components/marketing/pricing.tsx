@@ -150,7 +150,7 @@ function PricingCta({
   if (variant === "primary" || featured) {
     return (
       <a
-        href="/dashboard"
+        href="/auth"
         className={cn(
           base,
           "shine relative overflow-hidden bg-gradient-to-b from-[var(--accent-bright)] to-[var(--accent)] text-[#04130d] shadow-[0_10px_30px_-8px_rgba(25,201,138,0.6)]",
@@ -175,7 +175,7 @@ function PricingCta({
   }
   return (
     <a
-      href="/dashboard"
+      href="/auth"
       className={cn(
         base,
         "border border-[var(--border-soft)] bg-white/[0.02] text-[var(--text-primary)] hover:bg-white/5",

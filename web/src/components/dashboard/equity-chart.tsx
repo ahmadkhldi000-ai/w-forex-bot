@@ -1,14 +1,14 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { randomWalk } from "@/lib/utils";
 import { cn, formatMoney } from "@/lib/utils";
+import type { EquityPoint } from "@/lib/trading/profile";
 
 const RANGES = ["1H", "4H", "1D", "1W", "1M", "ALL"] as const;
 type Range = (typeof RANGES)[number];
 
-export function EquityChart() {
-  const [range, setRange] = useState<Range>("1D");
+export function EquityChart({ history }: { history: EquityPoint[] }) {
+  const [range, setRange] = useState<Range>("ALL");
   const [hover, setHover] = useState<{ x: number; y: number; v: number; i: number } | null>(
     null
   );
@@ -20,24 +20,11 @@ export function EquityChart() {
   const padY = 24;
 
   const data = useMemo(() => {
-    const seedMap: Record<Range, number> = {
-      "1H": 101,
-      "4H": 202,
-      "1D": 303,
-      "1W": 404,
-      "1M": 505,
-      ALL: 606,
-    };
-    const ptsMap: Record<Range, number> = {
-      "1H": 60,
-      "4H": 80,
-      "1D": 96,
-      "1W": 70,
-      "1M": 64,
-      ALL: 90,
-    };
-    return randomWalk(seedMap[range], ptsMap[range], 46000, 0.006, 0.0012);
-  }, [range]);
+    // Use the REAL equity history; fall back to a single zero point if empty.
+    const values = history.map((p) => p.equity);
+    if (values.length === 0) return [0];
+    return values;
+  }, [history]);
 
   const min = Math.min(...data);
   const max = Math.max(...data);

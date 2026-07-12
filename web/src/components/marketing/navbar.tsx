@@ -53,13 +53,13 @@ export function MarketingNav() {
         <div className="hidden items-center gap-2 lg:flex">
           <LangToggle variant="compact" />
           <a
-            href="/dashboard"
+            href="/auth"
             className="rounded-lg px-3.5 py-2 text-sm font-medium text-[var(--text-secondary)] transition-smooth hover:text-[var(--text-primary)]"
           >
             {t.nav.signin[lang]}
           </a>
           <a
-            href="/dashboard"
+            href="/auth"
             className="shine relative inline-flex h-10 items-center gap-1.5 overflow-hidden rounded-xl bg-gradient-to-b from-[var(--accent-bright)] to-[var(--accent)] px-5 text-sm font-semibold text-[#04130d] shadow-[0_8px_24px_-8px_rgba(25,201,138,0.6)] transition-smooth hover:-translate-y-0.5"
           >
             {t.nav.dashboard[lang]}
@@ -99,7 +99,7 @@ export function MarketingNav() {
             </a>
           ))}
           <a
-            href="/dashboard"
+            href="/auth"
             onClick={() => setOpen(false)}
             className="mt-2 inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-b from-[var(--accent-bright)] to-[var(--accent)] text-sm font-semibold text-[#04130d]"
           >

@@ -8,9 +8,11 @@ import {
   Target,
   ArrowUpRight,
   ArrowDownRight,
+  Activity,
 } from "lucide-react";
 import { Sparkline } from "@/components/ui/primitives";
-import { cn, formatMoney, formatPct, randomWalk } from "@/lib/utils";
+import { cn, formatMoney, formatPct } from "@/lib/utils";
+import type { TradingStats } from "@/lib/trading/profile";
 
 type Stat = {
   id: string;
@@ -24,158 +26,188 @@ type Stat = {
   seed: number;
 };
 
-const initial: Stat[] = [
-  {
-    id: "balance",
-    label: "Account Balance",
-    value: 48750.32,
-    prefix: "$",
-    changePct: 4.2,
-    positive: true,
-    icon: Wallet,
-    seed: 7,
-  },
-  {
-    id: "pnl",
-    label: "Today's P&L",
-    value: 1284.56,
-    prefix: "$",
-    changePct: 2.7,
-    positive: true,
-    icon: TrendingUp,
-    seed: 12,
-  },
-  {
-    id: "winrate",
-    label: "Win Rate",
-    value: 68.4,
-    suffix: "%",
-    changePct: 1.3,
-    positive: true,
-    icon: Target,
-    seed: 21,
-  },
-  {
-    id: "drawdown",
-    label: "Max Drawdown",
-    value: 8.2,
-    suffix: "%",
-    changePct: -0.6,
-    positive: false,
-    icon: TrendingDown,
-    seed: 33,
-  },
-];
+/** Build stat cards from REAL trading stats (no hardcoded numbers). */
+function buildStats(s: TradingStats | null): Stat[] {
+  const safe = s ?? {
+    balance: 0,
+    todayPnl: 0,
+    winRate: 0,
+    profitFactor: 0,
+    totalTrades: 0,
+    openCount: 0,
+    equity: 0,
+    floatingPnl: 0,
+    totalPnl: 0,
+  };
 
-export function StatCards() {
+  return [
+    {
+      id: "balance",
+      label: "رصيد الحساب",
+      value: safe.balance,
+      prefix: "$",
+      changePct: safe.todayPnl !== 0 ? (safe.todayPnl / Math.max(safe.balance - safe.todayPnl, 1)) * 100 : 0,
+      positive: safe.todayPnl >= 0,
+      icon: Wallet,
+      seed: 7,
+    },
+    {
+      id: "pnl",
+      label: "ربح/خسارة اليوم",
+      value: safe.todayPnl,
+      prefix: "$",
+      changePct: safe.totalTrades > 0 ? (safe.todayPnl / Math.max(Math.abs(safe.totalPnl), 1)) * 100 : 0,
+      positive: safe.todayPnl >= 0,
+      icon: TrendingUp,
+      seed: 12,
+    },
+    {
+      id: "winrate",
+      label: "نسبة النجاح",
+      value: safe.winRate,
+      suffix: "%",
+      changePct: 0,
+      positive: safe.winRate >= 50,
+      icon: Target,
+      seed: 21,
+    },
+    {
+      id: "pf",
+      label: "عامل الربح",
+      value: safe.profitFactor >= 99 ? 99 : safe.profitFactor,
+      changePct: safe.totalTrades > 0 ? safe.profitFactor * 10 : 0,
+      positive: safe.profitFactor >= 1,
+      icon: Activity,
+      seed: 33,
+    },
+  ];
+}
+
+export function StatCards({ stats }: { stats: TradingStats | null }) {
+  const cards = buildStats(stats);
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      {initial.map((s, i) => (
+      {cards.map((s, i) => (
         <StatCard key={s.id} stat={s} index={i} />
       ))}
     </div>
   );
 }
 
+// --------------------------------------------------------------------
+//  Single animated card
+// --------------------------------------------------------------------
 function StatCard({ stat, index }: { stat: Stat; index: number }) {
-  const [value, setValue] = useState(stat.value);
-  const [wentUp, setWentUp] = useState(true);
-  const [spark, setSpark] = useState<number[]>(() =>
-    randomWalk(stat.seed, 24, 100, 0.03, stat.positive ? 0.004 : -0.004)
-  );
-  const prevRef = useRef(value);
+  const [display, setDisplay] = useState(0);
+  const frameRef = useRef<number | null>(null);
 
+  // Count-up animation when the value changes
   useEffect(() => {
-    const t = setInterval(() => {
-      const delta = (Math.random() - 0.45) * (stat.value * 0.0025);
-      setValue((v) => {
-        const next = +(v + delta).toFixed(stat.suffix === "%" ? 1 : 2);
-        setWentUp(next >= prevRef.current);
-        prevRef.current = next;
-        return next;
-      });
-      setSpark((prev) => {
-        const next = [...prev.slice(1), prev[prev.length - 1] * (1 + (Math.random() - 0.48) * 0.04)];
-        return next;
-      });
-    }, 3500);
-    return () => clearInterval(t);
-  }, [stat.value, stat.suffix]);
+    const start = performance.now();
+    const from = 0;
+    const to = stat.value;
+    const duration = 900 + index * 120;
 
-  const Icon = stat.icon;
-  const ChangeIcon = stat.positive ? ArrowUpRight : ArrowDownRight;
+    const tick = (now: number) => {
+      const t = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+      setDisplay(from + (to - from) * eased);
+      if (t < 1) frameRef.current = requestAnimationFrame(tick);
+    };
+    frameRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (frameRef.current) cancelAnimationFrame(frameRef.current);
+    };
+  }, [stat.value, index]);
 
-  const display =
-    stat.suffix === "%"
-      ? value.toFixed(1)
-      : formatMoney(value, stat.suffix ? 0 : 2).replace("$", "");
+  const formatted =
+    stat.prefix === "$"
+      ? formatMoney(display, 2)
+      : stat.suffix === "%"
+        ? display.toFixed(1) + "%"
+        : display.toFixed(2);
+
+  const wentUp = stat.changePct >= 0;
+  const spark = Array.from({ length: 24 }, (_, i) => {
+    // Derive a subtle sparkline from the seed + value direction
+    const base = stat.seed * 3 + i * 7;
+    const noise = (Math.sin(base) * 0.5 + 0.5) * 8;
+    const trend = wentUp ? i * 0.6 : -i * 0.6;
+    return 50 + noise + trend;
+  });
 
   return (
     <div
-      className="card group p-5 animate-fade-up transition-smooth hover:border-[var(--border-strong)]"
-      style={{ animationDelay: `${index * 80}ms` }}
+      className="group relative overflow-hidden rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5 transition-all duration-300 hover:border-[var(--border-strong)] hover:shadow-lg"
+      style={{ animation: `cardIn 0.5s ${index * 80}ms both` }}
     >
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <div
-            className={cn(
-              "flex h-10 w-10 items-center justify-center rounded-xl border",
-              stat.positive
-                ? "border-[var(--accent)]/25 bg-[var(--accent-dim)]"
-                : "border-[var(--danger)]/25 bg-[var(--danger-dim)]"
-            )}
-          >
-            <Icon
-              className={cn(
-                "h-5 w-5",
-                stat.positive ? "text-[var(--accent-bright)]" : "text-[var(--danger)]"
-              )}
-              strokeWidth={2}
-            />
-          </div>
-          <div>
-            <p className="text-xs font-medium text-[var(--text-muted)]">
-              {stat.label}
-            </p>
-            <div className="mt-0.5 flex items-center gap-1.5">
-              <span
-                className={cn(
-                  "inline-flex items-center gap-0.5 text-[11px] font-semibold",
-                  stat.positive
-                    ? "text-[var(--accent-bright)]"
-                    : "text-[var(--danger)]"
-                )}
-              >
-                <ChangeIcon className="h-3 w-3" />
-                {formatPct(stat.changePct)}
-              </span>
-            </div>
-          </div>
+      {/* hover glow */}
+      <div
+        className={cn(
+          "pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full blur-2xl transition-opacity duration-300",
+          wentUp
+            ? "bg-[var(--accent)]/10 opacity-0 group-hover:opacity-100"
+            : "bg-[var(--danger)]/10 opacity-0 group-hover:opacity-100"
+        )}
+      />
+
+      <div className="relative flex items-center justify-between">
+        <div
+          className={cn(
+            "flex h-10 w-10 items-center justify-center rounded-xl",
+            wentUp
+              ? "bg-[var(--accent-dim)] text-[var(--accent-bright)]"
+              : "bg-[var(--danger)]/10 text-[var(--danger)]"
+          )}
+        >
+          <stat.icon className="h-5 w-5" />
         </div>
-        <div className="overflow-visible">
-          <Sparkline points={spark} positive={stat.positive} width={88} height={34} />
+
+        <div
+          className={cn(
+            "flex items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold",
+            wentUp
+              ? "bg-[var(--accent)]/10 text-[var(--accent-bright)]"
+              : "bg-[var(--danger)]/10 text-[var(--danger)]"
+          )}
+        >
+          {wentUp ? (
+            <ArrowUpRight className="h-3 w-3" />
+          ) : (
+            <ArrowDownRight className="h-3 w-3" />
+          )}
+          {formatPct(stat.changePct, 1)}
         </div>
       </div>
 
-      <div className="mt-4 flex items-baseline gap-1">
-        {stat.prefix && (
-          <span className="text-lg font-medium text-[var(--text-muted)]">
-            {stat.prefix}
+      <div className="relative mt-4">
+        <p className="text-xs font-medium text-[var(--text-muted)]">
+          {stat.label}
+        </p>
+        <div className="mt-1.5 flex items-baseline gap-1">
+          <span
+            className={cn(
+              "text-2xl font-bold tabular-nums tracking-tight transition-colors duration-500",
+              wentUp
+                ? "text-[var(--accent-bright)]"
+                : "text-[var(--text-primary)]"
+            )}
+          >
+            {formatted}
           </span>
-        )}
-        <span
-          className={cn(
-            "font-mono-nums text-[30px] font-semibold leading-none tracking-tight transition-colors duration-500",
-            wentUp ? "text-[var(--accent-bright)]" : "text-[var(--text-primary)]"
+          {stat.suffix && stat.prefix !== "$" && (
+            <span className="text-lg font-medium text-[var(--text-muted)]">
+              {stat.suffix}
+            </span>
           )}
-        >
-          {display}
-        </span>
-        {stat.suffix && (
-          <span className="text-lg font-medium text-[var(--text-muted)]">
-            {stat.suffix}
-          </span>
-        )}
+        </div>
+      </div>
+
+      <div className="relative mt-3 h-8">
+        <Sparkline
+          points={spark}
+          positive={wentUp}
+        />
       </div>
     </div>
   );

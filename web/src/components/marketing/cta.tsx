@@ -42,7 +42,7 @@ export function MarketingCta() {
 
               <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <a
-                  href="/dashboard"
+                  href="/auth"
                   className="shine relative inline-flex h-14 w-full items-center justify-center gap-2.5 overflow-hidden rounded-xl bg-gradient-to-b from-[var(--accent-bright)] to-[var(--accent)] px-8 text-base font-semibold text-[#04130d] shadow-[0_14px_40px_-10px_rgba(25,201,138,0.7)] transition-smooth hover:-translate-y-0.5 sm:w-auto"
                 >
                   {t.cta.ctaButton[lang]}
