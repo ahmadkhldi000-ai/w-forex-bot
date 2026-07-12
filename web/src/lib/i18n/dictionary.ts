@@ -531,6 +531,80 @@ export const dictionary = {
       en: "Trading in Forex and financial markets carries high risk and may result in the loss of capital. Past performance does not guarantee future results. W Forex Bot is a technology platform and does not guarantee profits.",
     },
   },
+
+  /* ---------- Auth (login / register) ---------- */
+  auth: {
+    backHome: { ar: "العودة للرئيسية", en: "Back to home" },
+    registerTab: { ar: "حساب جديد", en: "Sign up" },
+    loginTab: { ar: "تسجيل الدخول", en: "Sign in" },
+    registerTitle: { ar: "أنشئ حسابك المجاني", en: "Create your free account" },
+    loginTitle: { ar: "أهلاً بعودتك", en: "Welcome back" },
+    registerSubtitle: {
+      ar: "ابدأ التداول الذكي خلال أقل من دقيقة",
+      en: "Start smart trading in under a minute",
+    },
+    loginSubtitle: {
+      ar: "سجّل دخولك للوصول إلى لوحة التحكم",
+      en: "Sign in to access your dashboard",
+    },
+    nameLabel: { ar: "الاسم (اختياري)", en: "Name (optional)" },
+    namePlaceholder: { ar: "اسمك الكامل", en: "Your full name" },
+    emailLabel: { ar: "البريد الإلكتروني", en: "Email" },
+    emailPlaceholder: { ar: "you@example.com", en: "you@example.com" },
+    passwordLabel: { ar: "كلمة المرور", en: "Password" },
+    passwordHint: { ar: "8 أحرف على الأقل", en: "At least 8 characters" },
+    showPassword: { ar: "إظهار كلمة المرور", en: "Show password" },
+    hidePassword: { ar: "إخفاء كلمة المرور", en: "Hide password" },
+    riskAccept: {
+      ar: "أُقرّ بأن التداول في الفوركس ينطوي على خطر كبير، وأنني أتحمّل كامل المسؤولية عن قراراتي الاستثمارية.",
+      en: "I acknowledge that Forex trading involves substantial risk and that I am solely responsible for my investment decisions.",
+    },
+    registerBtn: { ar: "إنشاء الحساب", en: "Create account" },
+    loginBtn: { ar: "تسجيل الدخول", en: "Sign in" },
+    processing: { ar: "جارٍ المعالجة...", en: "Processing..." },
+    haveAccount: { ar: "لديك حساب بالفعل؟", en: "Already have an account?" },
+    noAccount: { ar: "ليس لديك حساب؟", en: "Don't have an account?" },
+    switchRegister: { ar: "أنشئ حساباً مجانياً", en: "Create a free account" },
+    switchLogin: { ar: "سجّل الدخول", en: "Sign in" },
+    termsNote: {
+      ar: "بالمتابعة، فأنت توافق على شروط الاستخدام وتقرّ بأن التداول ينطوي على خطر فقدان رأس المال.",
+      en: "By continuing, you agree to the Terms of Use and acknowledge that trading carries the risk of capital loss.",
+    },
+    joinTelegram: {
+      ar: "انضمّ إلى مجتمع تيليجرام",
+      en: "Join our Telegram Community",
+    },
+    riskDisclosure: {
+      ar: "التداول في سوق الفوركس والأسواق المالية يحمل مخاطر عالية وقد يؤدي إلى فقدان جزء كبير أو كامل من رأس المال المستثمر. الأداء السابق للبوت أو المنصة ليس ضماناً للنتائج المستقبلية. W Forex Bot منصّة تقنية ولا تضمن الأرباح.",
+      en: "Trading in Forex and financial markets carries high risk and may result in the loss of part or all of the invested capital. Past performance of the bot or platform does not guarantee future results. W Forex Bot is a technology platform and does not guarantee profits.",
+    },
+    errors: {
+      fillFields: {
+        ar: "يرجى إدخال البريد الإلكتروني وكلمة المرور",
+        en: "Please enter your email and password",
+      },
+      shortPassword: {
+        ar: "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+        en: "Password must be at least 8 characters",
+      },
+      mustAcceptRisk: {
+        ar: "يجب الموافقة على إقرار المخاطر للمتابعة",
+        en: "You must accept the risk disclosure to continue",
+      },
+      emailRegistered: {
+        ar: "هذا البريد مسجّل مسبقاً",
+        en: "This email is already registered",
+      },
+      invalidCredentials: {
+        ar: "بيانات الدخول غير صحيحة",
+        en: "Invalid email or password",
+      },
+      unexpected: {
+        ar: "حدث خطأ غير متوقع. حاول مرة أخرى.",
+        en: "An unexpected error occurred. Please try again.",
+      },
+    },
+  },
 } as const;
 
 export type Dictionary = typeof dictionary;

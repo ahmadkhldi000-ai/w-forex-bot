@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { Logo } from "@/components/ui/logo";
+import { LangToggle } from "@/components/marketing/lang-toggle";
+import { useI18n } from "@/lib/i18n/provider";
 import {
   registerAccount,
   loginAccount,
@@ -26,7 +28,9 @@ import {
 type Mode = "login" | "register";
 
 export default function AuthPage() {
+  const { lang, dir, t } = useI18n();
   const router = useRouter();
+  const a = t.auth;
   const [mode, setMode] = useState<Mode>("register");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -45,13 +49,13 @@ export default function AuthPage() {
     setLoading(true);
 
     if (!email.trim() || !password) {
-      setError("يرجى إدخال البريد الإلكتروني وكلمة المرور");
+      setError(a.errors.fillFields[lang]);
       setLoading(false);
       return;
     }
 
     if (password.length < 8) {
-      setError("كلمة المرور يجب أن تكون 8 أحرف على الأقل");
+      setError(a.errors.shortPassword[lang]);
       setLoading(false);
       return;
     }
@@ -59,7 +63,7 @@ export default function AuthPage() {
     try {
       if (mode === "register") {
         if (!riskAccepted) {
-          setError("يجب الموافقة على إقرار المخاطر للمتابعة");
+          setError(a.errors.mustAcceptRisk[lang]);
           setLoading(false);
           return;
         }
@@ -70,7 +74,12 @@ export default function AuthPage() {
           riskAccepted,
         });
         if (!result.ok) {
-          setError(result.error);
+          // Map backend error → localized message
+          setError(
+            result.error.includes("مسجّل") || result.error.includes("already")
+              ? a.errors.emailRegistered[lang]
+              : a.errors.unexpected[lang]
+          );
           setLoading(false);
           return;
         }
@@ -78,7 +87,7 @@ export default function AuthPage() {
       } else {
         const result = await loginAccount(email.trim(), password);
         if (!result.ok) {
-          setError(result.error);
+          setError(a.errors.invalidCredentials[lang]);
           setLoading(false);
           return;
         }
@@ -87,13 +96,16 @@ export default function AuthPage() {
       // → straight to the dashboard
       router.push("/dashboard");
     } catch {
-      setError("حدث خطأ غير متوقع. حاول مرة أخرى.");
+      setError(a.errors.unexpected[lang]);
       setLoading(false);
     }
   };
 
   return (
-    <main className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-[var(--bg-base)] px-4 py-12">
+    <main
+      dir={dir}
+      className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-[var(--bg-base)] px-4 py-12"
+    >
       {/* Decorative background */}
       <div className="pointer-events-none absolute inset-0">
         <div
@@ -106,6 +118,11 @@ export default function AuthPage() {
         />
       </div>
 
+      {/* Language toggle — top corner */}
+      <div className="absolute right-4 top-4 z-20 sm:right-6 sm:top-6">
+        <LangToggle variant="solid" />
+      </div>
+
       <Container className="relative z-10">
         <div className="mx-auto max-w-md">
           {/* Back to home */}
@@ -113,8 +130,8 @@ export default function AuthPage() {
             href="/"
             className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-[var(--text-muted)] transition-smooth hover:text-[var(--text-primary)]"
           >
-            <ArrowLeft className="h-4 w-4 rotate-180" />
-            العودة للرئيسية
+            <ArrowLeft className={lang === "ar" ? "h-4 w-4 rotate-180" : "h-4 w-4"} />
+            {a.backHome[lang]}
           </Link>
 
           {/* Card */}
@@ -137,7 +154,7 @@ export default function AuthPage() {
                     : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                 }`}
               >
-                حساب جديد
+                {a.registerTab[lang]}
               </button>
               <button
                 type="button"
@@ -151,17 +168,17 @@ export default function AuthPage() {
                     : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                 }`}
               >
-                تسجيل الدخول
+                {a.loginTab[lang]}
               </button>
             </div>
 
             <h1 className="mb-1 text-center text-2xl font-bold text-[var(--text-primary)]">
-              {mode === "register" ? "أنشئ حسابك المجاني" : "أهلاً بعودتك 👋"}
+              {mode === "register" ? a.registerTitle[lang] : a.loginTitle[lang]}
             </h1>
             <p className="mb-6 text-center text-sm text-[var(--text-muted)]">
               {mode === "register"
-                ? "ابدأ التداول الذكي خلال أقل من دقيقة"
-                : "سجّل دخولك للوصول إلى لوحة التحكم"}
+                ? a.registerSubtitle[lang]
+                : a.loginSubtitle[lang]}
             </p>
 
             {/* Form error */}
@@ -177,16 +194,22 @@ export default function AuthPage() {
               {mode === "register" && (
                 <div>
                   <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">
-                    الاسم (اختياري)
+                    {a.nameLabel[lang]}
                   </label>
                   <div className="relative">
-                    <User className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-dim)]" />
+                    <User
+                      className={`pointer-events-none absolute top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-dim)] ${
+                        dir === "rtl" ? "right-3" : "left-3"
+                      }`}
+                    />
                     <input
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="اسمك الكامل"
-                      className="w-full rounded-xl border border-[var(--border-soft)] bg-[var(--bg-base)]/60 py-3 pr-10 pl-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-dim)] outline-none transition-smooth focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20"
+                      placeholder={a.namePlaceholder[lang]}
+                      className={`w-full rounded-xl border border-[var(--border-soft)] bg-[var(--bg-base)]/60 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-dim)] outline-none transition-smooth focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 ${
+                        dir === "rtl" ? "pr-10 pl-4" : "pl-10 pr-4"
+                      }`}
                     />
                   </div>
                 </div>
@@ -194,28 +217,38 @@ export default function AuthPage() {
 
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">
-                  البريد الإلكتروني
+                  {a.emailLabel[lang]}
                 </label>
                 <div className="relative">
-                  <Mail className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-dim)]" />
+                  <Mail
+                    className={`pointer-events-none absolute top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-dim)] ${
+                      dir === "rtl" ? "right-3" : "left-3"
+                    }`}
+                  />
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
+                    placeholder={a.emailPlaceholder[lang]}
                     dir="ltr"
-                    className="w-full rounded-xl border border-[var(--border-soft)] bg-[var(--bg-base)]/60 py-3 pr-10 pl-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-dim)] outline-none transition-smooth focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20"
+                    className={`w-full rounded-xl border border-[var(--border-soft)] bg-[var(--bg-base)]/60 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-dim)] outline-none transition-smooth focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 ${
+                      dir === "rtl" ? "pr-10 pl-4" : "pl-10 pr-4"
+                    }`}
                   />
                 </div>
               </div>
 
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">
-                  كلمة المرور
+                  {a.passwordLabel[lang]}
                 </label>
                 <div className="relative">
-                  <Lock className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-dim)]" />
+                  <Lock
+                    className={`pointer-events-none absolute top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-dim)] ${
+                      dir === "rtl" ? "right-3" : "left-3"
+                    }`}
+                  />
                   <input
                     type={showPassword ? "text" : "password"}
                     required
@@ -223,13 +256,17 @@ export default function AuthPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     dir="ltr"
-                    className="w-full rounded-xl border border-[var(--border-soft)] bg-[var(--bg-base)]/60 py-3 pr-10 pl-10 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-dim)] outline-none transition-smooth focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20"
+                    className={`w-full rounded-xl border border-[var(--border-soft)] bg-[var(--bg-base)]/60 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-dim)] outline-none transition-smooth focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 ${
+                      dir === "rtl" ? "pr-10 pl-10" : "pl-10 pr-10"
+                    }`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-dim)] transition-smooth hover:text-[var(--text-muted)]"
-                    aria-label={showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+                    className={`absolute top-1/2 -translate-y-1/2 text-[var(--text-dim)] transition-smooth hover:text-[var(--text-muted)] ${
+                      dir === "rtl" ? "left-3" : "right-3"
+                    }`}
+                    aria-label={showPassword ? a.hidePassword[lang] : a.showPassword[lang]}
                   >
                     {showPassword ? (
                       <EyeOff className="h-4 w-4" />
@@ -240,7 +277,7 @@ export default function AuthPage() {
                 </div>
                 {mode === "register" && (
                   <p className="mt-1 text-[11px] text-[var(--text-dim)]">
-                    8 أحرف على الأقل
+                    {a.passwordHint[lang]}
                   </p>
                 )}
               </div>
@@ -264,8 +301,7 @@ export default function AuthPage() {
                     )}
                   </button>
                   <span className="text-[11px] leading-relaxed text-[var(--text-muted)]">
-                    أُقرّ بأن التداول في الفوركس ينطوي على خطر كبير، وأنني أتحمّل
-                    كامل المسؤولية عن قراراتي الاستثمارية.
+                    {a.riskAccept[lang]}
                   </span>
                 </label>
               )}
@@ -278,10 +314,10 @@ export default function AuthPage() {
                 {loading ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    جارٍ المعالجة...
+                    {a.processing[lang]}
                   </>
                 ) : (
-                  <>{mode === "register" ? "إنشاء الحساب" : "تسجيل الدخول"}</>
+                  <>{mode === "register" ? a.registerBtn[lang] : a.loginBtn[lang]}</>
                 )}
               </button>
             </form>
@@ -290,7 +326,7 @@ export default function AuthPage() {
             <p className="mt-5 text-center text-xs text-[var(--text-muted)]">
               {mode === "register" ? (
                 <>
-                  لديك حساب بالفعل؟{" "}
+                  {a.haveAccount[lang]}{" "}
                   <button
                     type="button"
                     onClick={() => {
@@ -299,12 +335,12 @@ export default function AuthPage() {
                     }}
                     className="font-semibold text-[var(--accent)] hover:underline"
                   >
-                    سجّل الدخول
+                    {a.switchLogin[lang]}
                   </button>
                 </>
               ) : (
                 <>
-                  ليس لديك حساب؟{" "}
+                  {a.noAccount[lang]}{" "}
                   <button
                     type="button"
                     onClick={() => {
@@ -313,15 +349,14 @@ export default function AuthPage() {
                     }}
                     className="font-semibold text-[var(--accent)] hover:underline"
                   >
-                    أنشئ حساباً مجانياً
+                    {a.switchRegister[lang]}
                   </button>
                 </>
               )}
             </p>
 
             <p className="mt-5 text-center text-[11px] leading-relaxed text-[var(--text-dim)]">
-              بالمتابعة، فأنت توافق على شروط الاستخدام وتقرّ بأن التداول
-              ينطوي على خطر فقدان رأس المال.
+              {a.termsNote[lang]}
             </p>
           </div>
 
@@ -333,16 +368,13 @@ export default function AuthPage() {
             className="mt-5 flex items-center justify-center gap-2 rounded-xl border border-[#229ED9]/30 bg-[#229ED9]/8 py-2.5 text-sm font-semibold text-[#229ED9] transition-smooth hover:bg-[#229ED9]/15"
           >
             <Send className="h-4 w-4" />
-            انضمّ إلى مجتمع تيليجرام
+            {a.joinTelegram[lang]}
           </a>
 
           {/* Risk disclosure */}
           <div className="mt-6 rounded-xl border border-[var(--border-soft)] bg-[var(--bg-surface)]/40 p-4">
             <p className="text-[11px] leading-relaxed text-[var(--text-muted)]">
-              التداول في سوق الفوركس والأسواق المالية يحمل مخاطر عالية وقد
-              يؤدي إلى فقدان جزء كبير أو كامل من رأس المال المستثمر. الأداء
-              السابق للبوت أو المنصة ليس ضماناً للنتائج المستقبلية. W Forex
-              Bot منصّة تقنية ولا تضمن الأرباح.
+              {a.riskDisclosure[lang]}
             </p>
           </div>
         </div>
