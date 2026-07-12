@@ -69,10 +69,10 @@ const SEED: Record<string, { bid: number; ask: number }> = {
   EURGBP: { bid: 0.8525, ask: 0.8526 },
   EURJPY: { bid: 175.42, ask: 175.43 },
   GBPJPY: { bid: 205.95, ask: 205.96 },
-  XAUUSD: { bid: 2365.4, ask: 2365.65 },
-  XAGUSD: { bid: 30.85, ask: 30.87 },
-  BTCUSD: { bid: 62480, ask: 62520 },
-  ETHUSD: { bid: 3420, ask: 3425 },
+  XAUUSD: { bid: 4110.0, ask: 4110.4 },
+  XAGUSD: { bid: 51.2, ask: 51.24 },
+  BTCUSD: { bid: 108500, ask: 108600 },
+  ETHUSD: { bid: 2650, ask: 2652 },
 };
 
 // ----------------------------------------------------------------
@@ -122,27 +122,51 @@ async function fetchCrypto(): Promise<Record<string, number> | null> {
 }
 
 /**
- * Fetch REAL gold & silver via CORS proxy (allorigins.win).
- * Yahoo Finance GC=F (gold futures) and SI=F (silver futures)
- * give real-time COMEX prices. The proxy bypasses CORS so
- * the browser can read them.
+ * Fetch REAL gold & silver from Yahoo Finance (GC=F / SI=F futures →
+ * COMEX spot). Yahoo blocks direct browser calls (CORS), so we try
+ * multiple CORS proxies in order until one returns valid data.
+ *
+ * Proxies are tried in sequence — the first one that yields a
+ * positive numeric price wins, so a single failing proxy never
+ * breaks the gold price.
  */
+const CORS_PROXIES = [
+  // allorigins /raw — returns the raw upstream body
+  (target: string) =>
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`,
+  // codetabs proxy
+  (target: string) =>
+    `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(target)}`,
+  // corsproxy.io
+  (target: string) => `https://corsproxy.io/?url=${encodeURIComponent(target)}`,
+];
+
 async function fetchMetals(): Promise<Record<string, number> | null> {
   const p: Record<string, number> = {};
+
   const fetchOne = async (sym: string, ticker: string) => {
-    try {
-      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(
-        `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`
-      )}`;
-      const res = await fetch(proxyUrl, { cache: "no-store" });
-      if (!res.ok) return;
-      const data = await res.json();
-      const price = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
-      if (price && price > 0) p[sym] = price;
-    } catch {
-      /* skip */
+    const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`;
+    // Try each proxy in order
+    for (const makeProxy of CORS_PROXIES) {
+      try {
+        const res = await fetch(makeProxy(yahooUrl), { cache: "no-store" });
+        if (!res.ok) continue;
+        const text = await res.text();
+        if (!text || text.length < 20) continue;
+        const data = JSON.parse(text);
+        const price =
+          data?.chart?.result?.[0]?.meta?.regularMarketPrice ??
+          data?.chart?.result?.[0]?.indicators?.quote?.[0]?.close?.slice(-1)[0];
+        if (price && price > 0) {
+          p[sym] = price;
+          return; // success — stop trying proxies for this symbol
+        }
+      } catch {
+        // try next proxy
+      }
     }
   };
+
   await Promise.all([
     fetchOne("XAUUSD", "GC=F"),
     fetchOne("XAGUSD", "SI=F"),
@@ -184,7 +208,10 @@ export function useLivePrices(symbols?: string[], tickMs = 3000) {
         if (real[sym] && real[sym] > 0) {
           const spec = SPECS[sym];
           const mid = real[sym];
-          const prevMid = prevMidRef.current[sym] ?? mid;
+          // On first real fetch, compare against the seed (prior known price)
+          // so we show a meaningful change instead of 0.00%.
+          const seedMid = SEED[sym] ? (SEED[sym].bid + SEED[sym].ask) / 2 : mid;
+          const prevMid = prevMidRef.current[sym] ?? seedMid;
           const changePct = prevMid > 0 ? ((mid - prevMid) / prevMid) * 100 : 0;
           prevMidRef.current[sym] = mid;
           updated[sym] = {

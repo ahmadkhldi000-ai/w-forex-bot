@@ -1,64 +1,81 @@
 "use client";
 
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { useLivePrices, fmtPrice } from "@/lib/trading/live-prices";
 
-type Pair = { symbol: string; price: string; change: number };
-
-const pairs: Pair[] = [
-  { symbol: "EUR/USD", price: "1.0847", change: 0.42 },
-  { symbol: "GBP/USD", price: "1.2713", change: -0.18 },
-  { symbol: "USD/JPY", price: "157.84", change: 0.31 },
-  { symbol: "XAU/USD", price: "2,387.50", change: 1.24 },
-  { symbol: "AUD/USD", price: "0.6612", change: -0.07 },
-  { symbol: "USD/CHF", price: "0.9034", change: 0.09 },
-  { symbol: "BTC/USD", price: "67,420", change: 2.81 },
-  { symbol: "ETH/USD", price: "3,486", change: 1.93 },
-  { symbol: "USD/CAD", price: "1.3678", change: -0.22 },
-  { symbol: "NZD/USD", price: "0.6089", change: 0.15 },
+const SYMBOLS = [
+  "EURUSD",
+  "GBPUSD",
+  "USDJPY",
+  "XAUUSD",
+  "AUDUSD",
+  "USDCHF",
+  "BTCUSD",
+  "ETHUSD",
+  "USDCAD",
+  "NZDUSD",
 ];
 
-function Item({ pair }: { pair: Pair }) {
-  const up = pair.change >= 0;
-  return (
-    <div className="flex items-center gap-2.5 px-6">
-      <span className="text-sm font-semibold text-[var(--text-primary)]">
-        {pair.symbol}
-      </span>
-      <span className="font-mono-nums text-sm text-[var(--text-secondary)]">
-        {pair.price}
-      </span>
-      <span
-        className={
-          "inline-flex items-center gap-0.5 font-mono-nums text-xs font-semibold " +
-          (up ? "text-[var(--accent-bright)]" : "text-[var(--danger)]")
-        }
-      >
-        {up ? (
-          <TrendingUp className="h-3 w-3" />
-        ) : (
-          <TrendingDown className="h-3 w-3" />
-        )}
-        {up ? "+" : ""}
-        {pair.change.toFixed(2)}%
-      </span>
-    </div>
-  );
-}
+// Pretty labels for display
+const LABEL: Record<string, string> = {
+  EURUSD: "EUR/USD",
+  GBPUSD: "GBP/USD",
+  USDJPY: "USD/JPY",
+  XAUUSD: "XAU/USD",
+  AUDUSD: "AUD/USD",
+  USDCHF: "USD/CHF",
+  BTCUSD: "BTC/USD",
+  ETHUSD: "ETH/USD",
+  USDCAD: "USD/CAD",
+  NZDUSD: "NZD/USD",
+};
 
 export function MarketingTicker() {
-  const row = [...pairs, ...pairs];
+  const { prices } = useLivePrices(SYMBOLS);
+  const display = SYMBOLS.map((s) => prices[s]).filter(Boolean);
+
+  // Duplicate the row for a seamless infinite marquee
+  const row = display.length > 0 ? [...display, ...display] : [];
+
   return (
     <section
-      className="ticker-track relative overflow-hidden border-y border-[var(--border-subtle)] py-2.5"
-      style={{ background: "rgba(13,19,22,0.6)" }}
+      aria-label="Live market prices"
+      className="relative overflow-hidden border-y border-[var(--border-soft)] bg-[var(--bg-surface)]/60 backdrop-blur-sm"
     >
+      {/* Fade edges */}
       <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-[var(--bg-base)] to-transparent" />
       <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-[var(--bg-base)] to-transparent" />
-      <div className="flex w-max">
-        {row.map((p, i) => (
-          <Item key={i} pair={p} />
-        ))}
-      </div>
+
+      {row.length === 0 ? null : (
+        <div className="flex w-max animate-marquee">
+          {row.map((p, i) => {
+            const up = p.changePct >= 0;
+            return (
+              <div key={i} className="flex items-center gap-2.5 px-6 py-2.5">
+                <span className="text-sm font-semibold text-[var(--text-primary)]">
+                  {LABEL[p.symbol] ?? p.symbol}
+                </span>
+                <span className="text-sm font-medium tabular-nums text-[var(--text-secondary)]">
+                  {fmtPrice(p.symbol, p.bid)}
+                </span>
+                <span
+                  className={`flex items-center gap-0.5 text-xs font-semibold tabular-nums ${
+                    up ? "text-[var(--emerald-bright)]" : "text-[var(--danger)]"
+                  }`}
+                >
+                  {up ? (
+                    <TrendingUp className="h-3 w-3" />
+                  ) : (
+                    <TrendingDown className="h-3 w-3" />
+                  )}
+                  {up ? "+" : ""}
+                  {p.changePct.toFixed(2)}%
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </section>
   );
 }
