@@ -13,6 +13,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
+import { getSession } from "@/lib/auth/account-store";
 import {
   isOwnerUnlocked,
   unlockOwner,
@@ -41,10 +42,25 @@ export default function OwnerGatePage() {
   const [attempts, setAttempts] = useState(0);
   const [lockedOut, setLockedOut] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
+  const [denied, setDenied] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    // Auto-unlock and go straight to the master console (direct access).
+    // OWNER-ONLY GATE: only ahmadkhldi000 can reach the master console.
+    const session = getSession();
+    const email = (session?.email ?? "").toLowerCase();
+    const isOwnerEmail = email.startsWith("ahmadkhldi000");
+    if (!session) {
+      // not signed in at all → send to login
+      router.replace("/auth");
+      return;
+    }
+    if (!isOwnerEmail) {
+      // signed in but not the owner → deny
+      setDenied(true);
+      return;
+    }
+    // Owner confirmed → auto-unlock and go to the master console.
     unlockOwner(OWNER_PASSCODE);
     router.replace("/owner/master");
   }, [router]);
@@ -89,6 +105,35 @@ export default function OwnerGatePage() {
   }
 
   if (!mounted) return null;
+
+  // Access-denied screen for non-owner accounts
+  if (denied) {
+    return (
+      <main className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-[var(--bg-base)] px-4 py-12">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute left-1/2 top-1/3 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-[var(--danger)]/8 blur-[120px]" />
+        </div>
+        <div className="relative w-full max-w-md rounded-2xl border border-[var(--danger)]/25 bg-[var(--bg-surface)]/80 p-8 text-center shadow-2xl backdrop-blur-xl">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-[var(--danger)]/30 bg-[var(--danger)]/10">
+            <Lock className="h-8 w-8 text-[var(--danger)]" />
+          </div>
+          <h1 className="mt-5 text-xl font-bold text-[var(--text-primary)]">
+            الوصول مرفوض
+          </h1>
+          <p className="mt-2 text-sm leading-relaxed text-[var(--text-muted)]">
+            حساب الماستر متاح فقط لمالك المنصّة. حسابك الحالي لا يملك صلاحية
+            الوصول إلى هذه المنطقة.
+          </p>
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="mt-6 w-full rounded-xl border border-[var(--border-soft)] bg-[var(--bg-elevated)] py-3 text-sm font-medium text-[var(--text-secondary)] transition-smooth hover:border-[var(--text-muted)]"
+          >
+            ← العودة إلى لوحة التحكم
+          </button>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-[var(--bg-base)] px-4 py-12">

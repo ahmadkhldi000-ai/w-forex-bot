@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { cn } from "@/lib/utils";
+import { getSession } from "@/lib/auth/account-store";
 import {
   isOwnerUnlocked,
   lockOwner,
@@ -80,7 +81,11 @@ export default function OwnerMasterPage() {
   // ---------- auth gate ----------
   useEffect(() => {
     setMounted(true);
-    if (!isOwnerUnlocked()) {
+    // OWNER-ONLY: verify the signed-in user is ahmadkhldi000
+    const session = getSession();
+    const email = (session?.email ?? "").toLowerCase();
+    const isOwnerEmail = email.startsWith("ahmadkhldi000");
+    if (!session || !isOwnerEmail || !isOwnerUnlocked()) {
       router.replace("/owner");
       return;
     }

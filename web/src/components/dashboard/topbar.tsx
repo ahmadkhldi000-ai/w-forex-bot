@@ -27,6 +27,10 @@ export function Topbar() {
 
   const user = session;
 
+  // Owner-only gate: the Master Account button appears ONLY when the
+  // signed-in email belongs to the platform owner (ahmadkhldi000).
+  const isOwner = (user?.email ?? "").toLowerCase().startsWith("ahmadkhldi000");
+
   const initials = (user?.name ?? user?.email ?? "U")
     .split(/[\s@.]+/)
     .filter(Boolean)
@@ -51,15 +55,17 @@ export function Topbar() {
 
       <div className="flex-1" />
 
-      {/* Owner Vault entry — always visible for the owner */}
-      <button
-        onClick={() => router.push("/owner")}
-        className="flex items-center gap-1.5 rounded-xl border border-[var(--gold)]/30 bg-[var(--gold)]/10 px-3 py-2 text-xs font-bold text-[var(--gold-bright)] transition-smooth hover:border-[var(--gold)]/50 hover:bg-[var(--gold)]/15"
-        title="حساب الماستر (MT5)"
-      >
-        <Crown className="h-[16px] w-[16px]" />
-        <span className="hidden sm:inline">حساب الماستر</span>
-      </button>
+      {/* Owner Vault entry — visible ONLY for the owner (ahmadkhldi000) */}
+      {isOwner && (
+        <button
+          onClick={() => router.push("/owner")}
+          className="flex items-center gap-1.5 rounded-xl border border-[var(--gold)]/30 bg-[var(--gold)]/10 px-3 py-2 text-xs font-bold text-[var(--gold-bright)] transition-smooth hover:border-[var(--gold)]/50 hover:bg-[var(--gold)]/15"
+          title="حساب الماستر (MT5)"
+        >
+          <Crown className="h-[16px] w-[16px]" />
+          <span className="hidden sm:inline">حساب الماستر</span>
+        </button>
+      )}
 
       {/* Notifications */}
       <button
