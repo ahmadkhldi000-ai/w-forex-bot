@@ -25,17 +25,10 @@ import {
   Copy,
   Check,
   Info,
-  Globe,
-  ExternalLink,
 } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { cn } from "@/lib/utils";
 import { getSession } from "@/lib/auth/account-store";
-import {
-  getGoogleClientId,
-  setGoogleClientId,
-  isGoogleConfigured,
-} from "@/lib/auth/google-gsi";
 import {
   isOwnerUnlocked,
   lockOwner,
@@ -79,16 +72,6 @@ export default function OwnerMasterPage() {
   const [connecting, setConnecting] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
-  // Google OAuth client ID (runtime-configurable, no redeploy needed)
-  const [googleIdInput, setGoogleIdInput] = useState("");
-  const [googleIdSaved, setGoogleIdSaved] = useState(false);
-  const [googleStatus, setGoogleStatus] = useState(false);
-
-  // Load current Google client ID on mount
-  useEffect(() => {
-    setGoogleIdInput(getGoogleClientId());
-    setGoogleStatus(isGoogleConfigured());
-  }, []);
   const [minsLeft, setMinsLeft] = useState(0);
 
   // ---------- master refresh ----------
@@ -225,19 +208,6 @@ export default function OwnerMasterPage() {
     router.replace("/owner");
   }
 
-  function handleSaveGoogleId() {
-    setGoogleClientId(googleIdInput);
-    setGoogleStatus(isGoogleConfigured());
-    setGoogleIdSaved(true);
-    setTimeout(() => setGoogleIdSaved(false), 2500);
-  }
-
-  function handleClearGoogleId() {
-    setGoogleClientId("");
-    setGoogleIdInput("");
-    setGoogleStatus(false);
-  }
-
   function copyValue(field: string, value: string) {
     try {
       navigator.clipboard.writeText(value);
@@ -371,118 +341,6 @@ export default function OwnerMasterPage() {
             }}
           />
         )}
-
-        {/* ---------- Google OAuth setup ---------- */}
-        <div className="mt-8 overflow-hidden rounded-2xl border border-[var(--border-strong)] bg-[var(--bg-surface)]">
-          <div className="flex items-center gap-3 border-b border-[var(--border-subtle)] bg-gradient-to-r from-[var(--info)]/6 to-transparent px-6 py-4">
-            <div
-              className={cn(
-                "flex h-9 w-9 items-center justify-center rounded-lg border",
-                googleStatus
-                  ? "border-[var(--emerald)]/30 bg-[var(--emerald)]/10"
-                  : "border-[var(--gold)]/30 bg-[var(--gold)]/10"
-              )}
-            >
-              {googleStatus ? (
-                <CheckCircle2 className="h-4 w-4 text-[var(--emerald-bright)]" />
-              ) : (
-                <Globe className="h-4 w-4 text-[var(--gold-bright)]" />
-              )}
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-[var(--text-primary)]">
-                  خدمة «سجّل مع جوجل»
-                </h3>
-                <span
-                  className={cn(
-                    "rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide",
-                    googleStatus
-                      ? "bg-[var(--emerald)]/15 text-[var(--emerald-bright)]"
-                      : "bg-[var(--gold)]/15 text-[var(--gold-bright)]"
-                  )}
-                >
-                  {googleStatus ? "مُفعّلة" : "غير مُفعّلة"}
-                </span>
-              </div>
-              <p className="text-xs text-[var(--text-muted)]">
-                فعّل تسجيل الدخول عبر جوجل بإدخال Google Client ID مرّة واحدة
-              </p>
-            </div>
-          </div>
-
-          {googleIdSaved && (
-            <div className="mx-6 mt-4 flex items-center gap-2 rounded-lg border border-[var(--emerald)]/25 bg-[var(--emerald)]/8 px-3 py-2.5 text-xs text-[var(--emerald-bright)] flash-green">
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              تمّ حفظ الإعداد بنجاح — خدمة جوجل مُفعّلة الآن.
-            </div>
-          )}
-
-          <div className="space-y-4 px-6 py-5">
-            <label className="block">
-              <span className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">
-                Google OAuth Client ID
-              </span>
-              <input
-                value={googleIdInput}
-                onChange={(e) => setGoogleIdInput(e.target.value)}
-                placeholder="xxxxxx.apps.googleusercontent.com"
-                dir="ltr"
-                className="w-full rounded-xl border border-[var(--border-soft)] bg-[var(--bg-elevated)] px-3.5 py-2.5 text-left text-sm font-mono-nums text-[var(--text-primary)] placeholder:text-[var(--text-dim)] transition-smooth focus:border-[var(--info)] focus:outline-none focus:ring-2 focus:ring-[var(--info)]/20"
-              />
-            </label>
-
-            {/* Setup guide */}
-            <div className="flex items-start gap-2 rounded-lg border border-[var(--info)]/15 bg-[var(--info)]/6 px-3 py-2.5 text-xs leading-relaxed text-[var(--text-secondary)]">
-              <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--info)]" />
-              <div>
-                <p className="font-medium text-[var(--info)]">كيف تحصل عليه؟</p>
-                <ol className="mt-1 list-inside list-decimal space-y-0.5">
-                  <li>
-                    ادخل إلى{" "}
-                    <a
-                      href="https://console.cloud.google.com/apis/credentials"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-0.5 font-medium text-[var(--info)] underline"
-                    >
-                      Google Cloud Console
-                      <ExternalLink className="h-2.5 w-2.5" />
-                    </a>
-                  </li>
-                  <li>أنشئ OAuth 2.0 Client ID (Web application)</li>
-                  <li>
-                    أضف Authorized JavaScript origin:{" "}
-                    <span dir="ltr" className="font-mono-nums text-[var(--text-primary)]">
-                      https://wforexbot.vercel.app
-                    </span>
-                  </li>
-                  <li>انسخ الـ Client ID والصقه هنا أعلاه</li>
-                </ol>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-end gap-2 border-t border-[var(--border-subtle)] px-6 py-4">
-            {googleStatus && (
-              <button
-                onClick={handleClearGoogleId}
-                className="flex items-center gap-1.5 rounded-lg border border-[var(--border-soft)] bg-[var(--bg-elevated)] px-3 py-2 text-xs font-medium text-[var(--text-secondary)] transition-smooth hover:border-[var(--danger)]/40 hover:text-[var(--danger)]"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-                إزالة
-              </button>
-            )}
-            <button
-              onClick={handleSaveGoogleId}
-              disabled={!googleIdInput.trim()}
-              className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-[var(--info)] to-[#2a9bc4] px-5 py-2 text-xs font-bold text-white transition-smooth hover:shadow-[0_6px_20px_-6px_var(--info)] disabled:opacity-40"
-            >
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              حفظ وتفعيل
-            </button>
-          </div>
-        </div>
 
         {/* ---------- Security note ---------- */}
         <div className="mt-8 flex items-start gap-3 rounded-xl border border-[var(--border-soft)] bg-[var(--bg-surface)]/60 p-5">

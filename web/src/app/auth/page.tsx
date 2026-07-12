@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -17,8 +17,6 @@ import {
 } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { Logo } from "@/components/ui/logo";
-import { GoogleIcon } from "@/components/ui/google-icon";
-import { GOOGLE_AUTH_URL } from "@/lib/auth/config";
 import {
   registerAccount,
   loginAccount,
@@ -37,24 +35,6 @@ export default function AuthPage() {
   const [riskAccepted, setRiskAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [googleError, setGoogleError] = useState<string | null>(null);
-  const [googleLoading, setGoogleLoading] = useState(false);
-
-  // Surface errors returned from the Google OAuth callback (?google_error=...)
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const gerr = params.get("google_error");
-      if (gerr) {
-        setGoogleError(gerr);
-        params.delete("google_error");
-        const clean = params.toString()
-          ? `?${params.toString()}`
-          : window.location.pathname;
-        window.history.replaceState({}, "", clean);
-      }
-    }
-  }, []);
 
   // ============================================================
   //  Email + Password auth (works instantly, no external setup).
@@ -110,15 +90,6 @@ export default function AuthPage() {
       setError("حدث خطأ غير متوقع. حاول مرة أخرى.");
       setLoading(false);
     }
-  };
-
-  // ============================================================
-  //  Google Sign-In via BACKEND OAuth redirect flow (optional).
-  // ============================================================
-  const handleGoogleLogin = () => {
-    setGoogleLoading(true);
-    setGoogleError(null);
-    window.location.href = `${GOOGLE_AUTH_URL}?mode=register`;
   };
 
   return (
@@ -192,48 +163,6 @@ export default function AuthPage() {
                 ? "ابدأ التداول الذكي خلال أقل من دقيقة"
                 : "سجّل دخولك للوصول إلى لوحة التحكم"}
             </p>
-
-            {/* Google error */}
-            {googleError && (
-              <div className="mb-4 flex items-start gap-2 rounded-xl border border-[var(--gold)]/30 bg-[var(--gold)]/10 px-3 py-2.5 text-xs text-[var(--gold-bright)]">
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                <span>
-                  {googleError === "access_denied"
-                    ? "تم رفض إذن الوصول إلى حساب جوجل."
-                    : googleError === "token_exchange"
-                      ? "تعذّر استكمال الاتصال مع جوجل."
-                      : googleError === "userinfo"
-                        ? "تعذّر قراءة بيانات حساب جوجل."
-                        : googleError === "email_not_verified"
-                          ? "لم يتم تأكيد بريدك الإلكتروني في جوجل."
-                          : "تعذّر تسجيل الدخول عبر جوجل. جرّب البريد وكلمة المرور."}
-                </span>
-              </div>
-            )}
-
-            {/* Google button */}
-            <button
-              type="button"
-              onClick={handleGoogleLogin}
-              disabled={googleLoading || loading}
-              className="mb-4 flex w-full items-center justify-center gap-2.5 rounded-xl border border-[var(--border-soft)] bg-[var(--bg-base)]/60 py-3 text-sm font-semibold text-[var(--text-primary)] transition-smooth hover:border-[var(--accent)]/40 hover:bg-[var(--bg-base)] disabled:opacity-50"
-            >
-              {googleLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin text-gray-500" />
-              ) : (
-                <GoogleIcon className="h-5 w-5" />
-              )}
-              <span>المتابعة باستخدام جوجل</span>
-            </button>
-
-            {/* Divider */}
-            <div className="my-5 flex items-center gap-3">
-              <div className="h-px flex-1 bg-[var(--border-soft)]" />
-              <span className="text-[11px] font-medium text-[var(--text-dim)]">
-                أو بالبريد الإلكتروني
-              </span>
-              <div className="h-px flex-1 bg-[var(--border-soft)]" />
-            </div>
 
             {/* Form error */}
             {error && (
@@ -343,7 +272,7 @@ export default function AuthPage() {
 
               <button
                 type="submit"
-                disabled={loading || googleLoading}
+                disabled={loading}
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--accent)] py-3 text-sm font-bold text-white shadow-lg shadow-[var(--accent)]/20 transition-smooth hover:brightness-110 disabled:opacity-50"
               >
                 {loading ? (

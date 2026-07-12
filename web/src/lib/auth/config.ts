@@ -9,8 +9,6 @@ export const API_URL = (
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"
 ).replace(/\/$/, "");
 
-/** Full URL of the Google sign-in endpoint on the backend. */
-export const GOOGLE_AUTH_URL = `${API_URL}/api/auth/google`;
 
 /** Token storage keys (kept in sync between localStorage + cookie). */
 export const TOKEN_KEY = "wfb_token";

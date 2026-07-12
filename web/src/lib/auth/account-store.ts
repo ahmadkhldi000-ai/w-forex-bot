@@ -11,7 +11,6 @@
  * their profile is saved with `provider: GOOGLE` and no password.
  */
 
-import type { GoogleProfile } from "@/lib/auth/google-gsi";
 
 export type AccountProvider = "LOCAL" | "GOOGLE";
 
@@ -144,42 +143,6 @@ export async function loginAccount(
   return { ok: true, account };
 }
 
-/**
- * Upsert a Google account. If the email already has a LOCAL account,
- * link Google to it (merge). Returns whether this was a first-time link.
- */
-export function upsertGoogleAccount(profile: GoogleProfile): {
-  account: StoredAccount;
-  firstLogin: boolean;
-} {
-  const existing = findAccount(profile.email);
-  const now = new Date().toISOString();
-
-  if (existing) {
-    const merged: StoredAccount = {
-      ...existing,
-      name: existing.name || profile.name,
-      avatarUrl: existing.avatarUrl || profile.picture,
-      provider: "GOOGLE",
-      updatedAt: now,
-    };
-    saveAccount(merged);
-    return { account: merged, firstLogin: false };
-  }
-
-  const account: StoredAccount = {
-    id: genId(),
-    email: profile.email.toLowerCase(),
-    name: profile.name,
-    avatarUrl: profile.picture,
-    provider: "GOOGLE",
-    riskAccepted: false,
-    createdAt: now,
-    updatedAt: now,
-  };
-  saveAccount(account);
-  return { account, firstLogin: true };
-}
 
 // --- Session (current logged-in user) ---
 
@@ -220,29 +183,4 @@ export function setSession(account: StoredAccount): Session {
 export function clearSession() {
   if (typeof window === "undefined") return;
   sessionStorage.removeItem(SESSION_KEY);
-}
-
-/** Link an email + password to an existing Google account (after Google sign-in). */
-export async function linkEmailAndPassword(
-  googleEmail: string,
-  password: string,
-  riskAccepted: boolean
-): Promise<{ ok: true; account: StoredAccount } | { ok: false; error: string }> {
-  const account = findAccount(googleEmail);
-  if (!account) {
-    return { ok: false, error: "حساب جوجل غير موجود" };
-  }
-  if (password.length < 8) {
-    return { ok: false, error: "كلمة المرور يجب أن تكون 8 أحرف على الأقل" };
-  }
-  const now = new Date().toISOString();
-  const updated: StoredAccount = {
-    ...account,
-    passwordHash: await hashPassword(password),
-    riskAccepted,
-    riskAcceptedAt: riskAccepted ? now : account.riskAcceptedAt,
-    updatedAt: now,
-  };
-  saveAccount(updated);
-  return { ok: true, account: updated };
 }
