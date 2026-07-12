@@ -3,35 +3,53 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, AlertTriangle, Send, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  AlertTriangle,
+  Send,
+  Loader2,
+  Mail,
+  Lock,
+  User,
+  Eye,
+  EyeOff,
+  CheckCircle2,
+} from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { Logo } from "@/components/ui/logo";
 import { GoogleIcon } from "@/components/ui/google-icon";
+import { GOOGLE_AUTH_URL } from "@/lib/auth/config";
 import {
-  isGoogleConfigured,
-  loadGoogleScript,
-  decodeGoogleCredential,
-  getGoogleClientId,
-} from "@/lib/auth/google-gsi";
-import { upsertGoogleAccount, setSession } from "@/lib/auth/account-store";
+  registerAccount,
+  loginAccount,
+  setSession,
+} from "@/lib/auth/account-store";
+
+type Mode = "login" | "register";
 
 export default function AuthPage() {
   const router = useRouter();
+  const [mode, setMode] = useState<Mode>("register");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [riskAccepted, setRiskAccepted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [googleError, setGoogleError] = useState<string | null>(null);
   const [googleLoading, setGoogleLoading] = useState(false);
 
   // Surface errors returned from the Google OAuth callback (?google_error=...)
-  const [googleError, setGoogleError] = useState<string | null>(null);
-
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const gerr = params.get("google_error");
       if (gerr) {
         setGoogleError(gerr);
-        // Clean the URL so the error doesn't persist on refresh
         params.delete("google_error");
         const clean = params.toString()
-          ? `${window.location.pathname}?${params.toString()}`
+          ? `?${params.toString()}`
           : window.location.pathname;
         window.history.replaceState({}, "", clean);
       }
@@ -39,53 +57,72 @@ export default function AuthPage() {
   }, []);
 
   // ============================================================
-  //  Google Sign-In — the only way in.
-  //  Flow: click "Continue with Google" → Google account chooser
-  //  appears → user picks an email → we register/sign-in them
-  //  AUTOMATICALLY and jump straight to the dashboard.
+  //  Email + Password auth (works instantly, no external setup).
   // ============================================================
-  const handleGoogleLogin = async () => {
-    setGoogleLoading(true);
-    setGoogleError(null);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
 
-    // Fallback when Google OAuth isn't configured: let the user type
-    // their email manually so they can still proceed.
-    if (!isGoogleConfigured()) {
-      setGoogleLoading(false);
-      setGoogleError("not_configured");
+    if (!email.trim() || !password) {
+      setError("يرجى إدخال البريد الإلكتروني وكلمة المرور");
+      setLoading(false);
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("كلمة المرور يجب أن تكون 8 أحرف على الأقل");
+      setLoading(false);
       return;
     }
 
     try {
-      await loadGoogleScript();
-      window.google!.accounts.id.initialize({
-        client_id: getGoogleClientId(),
-        callback: (response) => {
-          const profile = decodeGoogleCredential(response.credential);
-          if (!profile || !profile.email_verified) {
-            setGoogleLoading(false);
-            setGoogleError("email_not_verified");
-            return;
-          }
-          // ✅ AUTO-REGISTER: create or update the account from the
-          // Google profile and start a session immediately.
-          const { account } = upsertGoogleAccount(profile);
-          setSession(account);
-          // → straight to the dashboard
-          router.push("/dashboard");
-        },
-        cancel_on_tap_outside: true,
-      });
-      // Surface the Google account chooser (One Tap)
-      window.google!.accounts.id.prompt();
+      if (mode === "register") {
+        if (!riskAccepted) {
+          setError("يجب الموافقة على إقرار المخاطر للمتابعة");
+          setLoading(false);
+          return;
+        }
+        const result = await registerAccount({
+          email: email.trim(),
+          password,
+          name: name.trim() || undefined,
+          riskAccepted,
+        });
+        if (!result.ok) {
+          setError(result.error);
+          setLoading(false);
+          return;
+        }
+        setSession(result.account);
+      } else {
+        const result = await loginAccount(email.trim(), password);
+        if (!result.ok) {
+          setError(result.error);
+          setLoading(false);
+          return;
+        }
+        setSession(result.account);
+      }
+      // → straight to the dashboard
+      router.push("/dashboard");
     } catch {
-      setGoogleLoading(false);
-      setGoogleError("script_error");
+      setError("حدث خطأ غير متوقع. حاول مرة أخرى.");
+      setLoading(false);
     }
   };
 
+  // ============================================================
+  //  Google Sign-In via BACKEND OAuth redirect flow (optional).
+  // ============================================================
+  const handleGoogleLogin = () => {
+    setGoogleLoading(true);
+    setGoogleError(null);
+    window.location.href = `${GOOGLE_AUTH_URL}?mode=register`;
+  };
+
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--bg-base)] px-4 py-12">
+    <main className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-[var(--bg-base)] px-4 py-12">
       {/* Decorative background */}
       <div className="pointer-events-none absolute inset-0">
         <div
@@ -103,24 +140,57 @@ export default function AuthPage() {
           {/* Back to home */}
           <Link
             href="/"
-            className="mb-6 inline-flex items-center gap-2 text-sm text-[var(--text-muted)] transition-smooth hover:text-[var(--text-primary)]"
+            className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-[var(--text-muted)] transition-smooth hover:text-[var(--text-primary)]"
           >
             <ArrowLeft className="h-4 w-4 rotate-180" />
             العودة للرئيسية
           </Link>
 
-          {/* Logo */}
-          <div className="mb-8">
-            <Logo height={44} priority />
-          </div>
-
-          {/* Card — Google only */}
+          {/* Card */}
           <div className="rounded-2xl border border-[var(--border-soft)] bg-[var(--bg-surface)]/90 p-8 backdrop-blur-xl">
+            <div className="mb-6 flex flex-col items-center">
+              <Logo height={40} priority />
+            </div>
+
+            {/* Mode toggle */}
+            <div className="mb-6 grid grid-cols-2 gap-1 rounded-xl border border-[var(--border-soft)] bg-[var(--bg-base)]/50 p-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("register");
+                  setError(null);
+                }}
+                className={`rounded-lg py-2.5 text-sm font-semibold transition-smooth ${
+                  mode === "register"
+                    ? "bg-[var(--accent)] text-white shadow-lg"
+                    : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                }`}
+              >
+                حساب جديد
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("login");
+                  setError(null);
+                }}
+                className={`rounded-lg py-2.5 text-sm font-semibold transition-smooth ${
+                  mode === "login"
+                    ? "bg-[var(--accent)] text-white shadow-lg"
+                    : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                }`}
+              >
+                تسجيل الدخول
+              </button>
+            </div>
+
             <h1 className="mb-1 text-center text-2xl font-bold text-[var(--text-primary)]">
-              تابع مع جوجل
+              {mode === "register" ? "أنشئ حسابك المجاني" : "أهلاً بعودتك 👋"}
             </h1>
-            <p className="mb-7 text-center text-sm text-[var(--text-muted)]">
-              سجّل الدخول أو أنشئ حسابك في ثوانٍ — بإيميل جوجل فقط
+            <p className="mb-6 text-center text-sm text-[var(--text-muted)]">
+              {mode === "register"
+                ? "ابدأ التداول الذكي خلال أقل من دقيقة"
+                : "سجّل دخولك للوصول إلى لوحة التحكم"}
             </p>
 
             {/* Google error */}
@@ -128,35 +198,197 @@ export default function AuthPage() {
               <div className="mb-4 flex items-start gap-2 rounded-xl border border-[var(--gold)]/30 bg-[var(--gold)]/10 px-3 py-2.5 text-xs text-[var(--gold-bright)]">
                 <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
                 <span>
-                  {googleError === "not_configured"
-                    ? "تسجيل الدخول عبر جوجل غير مُفعّل حالياً. يرجى المحاولة لاحقاً."
-                    : googleError === "email_not_verified"
-                      ? "لم يتم تأكيد بريدك الإلكتروني في جوجل."
-                      : googleError === "script_error"
-                        ? "تعذّر تحميل خدمة جوجل. تحقق من اتصالك وحاول مرة أخرى."
-                        : "تعذّر تسجيل الدخول عبر جوجل. حاول مرة أخرى."}
+                  {googleError === "access_denied"
+                    ? "تم رفض إذن الوصول إلى حساب جوجل."
+                    : googleError === "token_exchange"
+                      ? "تعذّر استكمال الاتصال مع جوجل."
+                      : googleError === "userinfo"
+                        ? "تعذّر قراءة بيانات حساب جوجل."
+                        : googleError === "email_not_verified"
+                          ? "لم يتم تأكيد بريدك الإلكتروني في جوجل."
+                          : "تعذّر تسجيل الدخول عبر جوجل. جرّب البريد وكلمة المرور."}
                 </span>
               </div>
             )}
 
-            {/* Primary CTA — Google */}
+            {/* Google button */}
             <button
               type="button"
               onClick={handleGoogleLogin}
-              disabled={googleLoading}
-              className="flex w-full items-center justify-center gap-3 rounded-xl border border-[var(--border-soft)] bg-white py-3.5 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:border-gray-300 hover:bg-gray-50 hover:shadow active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={googleLoading || loading}
+              className="mb-4 flex w-full items-center justify-center gap-2.5 rounded-xl border border-[var(--border-soft)] bg-[var(--bg-base)]/60 py-3 text-sm font-semibold text-[var(--text-primary)] transition-smooth hover:border-[var(--accent)]/40 hover:bg-[var(--bg-base)] disabled:opacity-50"
             >
               {googleLoading ? (
                 <Loader2 className="h-5 w-5 animate-spin text-gray-500" />
               ) : (
                 <GoogleIcon className="h-5 w-5" />
               )}
-              <span>
-                {googleLoading
-                  ? "جارٍ التحويل إلى جوجل..."
-                  : "المتابعة باستخدام جوجل"}
-              </span>
+              <span>المتابعة باستخدام جوجل</span>
             </button>
+
+            {/* Divider */}
+            <div className="my-5 flex items-center gap-3">
+              <div className="h-px flex-1 bg-[var(--border-soft)]" />
+              <span className="text-[11px] font-medium text-[var(--text-dim)]">
+                أو بالبريد الإلكتروني
+              </span>
+              <div className="h-px flex-1 bg-[var(--border-soft)]" />
+            </div>
+
+            {/* Form error */}
+            {error && (
+              <div className="mb-4 flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-xs text-red-400">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Email + Password form */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {mode === "register" && (
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">
+                    الاسم (اختياري)
+                  </label>
+                  <div className="relative">
+                    <User className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-dim)]" />
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="اسمك الكامل"
+                      className="w-full rounded-xl border border-[var(--border-soft)] bg-[var(--bg-base)]/60 py-3 pr-10 pl-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-dim)] outline-none transition-smooth focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">
+                  البريد الإلكتروني
+                </label>
+                <div className="relative">
+                  <Mail className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-dim)]" />
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    dir="ltr"
+                    className="w-full rounded-xl border border-[var(--border-soft)] bg-[var(--bg-base)]/60 py-3 pr-10 pl-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-dim)] outline-none transition-smooth focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">
+                  كلمة المرور
+                </label>
+                <div className="relative">
+                  <Lock className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-dim)]" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    dir="ltr"
+                    className="w-full rounded-xl border border-[var(--border-soft)] bg-[var(--bg-base)]/60 py-3 pr-10 pl-10 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-dim)] outline-none transition-smooth focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-dim)] transition-smooth hover:text-[var(--text-muted)]"
+                    aria-label={showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+                {mode === "register" && (
+                  <p className="mt-1 text-[11px] text-[var(--text-dim)]">
+                    8 أحرف على الأقل
+                  </p>
+                )}
+              </div>
+
+              {/* Risk acceptance (register only) */}
+              {mode === "register" && (
+                <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-[var(--border-soft)] bg-[var(--bg-base)]/40 px-3 py-3 transition-smooth hover:border-[var(--accent)]/30">
+                  <button
+                    type="button"
+                    role="checkbox"
+                    aria-checked={riskAccepted}
+                    onClick={() => setRiskAccepted((v) => !v)}
+                    className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-smooth ${
+                      riskAccepted
+                        ? "border-[var(--accent)] bg-[var(--accent)]"
+                        : "border-[var(--border-soft)] bg-transparent"
+                    }`}
+                  >
+                    {riskAccepted && (
+                      <CheckCircle2 className="h-3.5 w-3.5 text-white" />
+                    )}
+                  </button>
+                  <span className="text-[11px] leading-relaxed text-[var(--text-muted)]">
+                    أُقرّ بأن التداول في الفوركس ينطوي على خطر كبير، وأنني أتحمّل
+                    كامل المسؤولية عن قراراتي الاستثمارية.
+                  </span>
+                </label>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading || googleLoading}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--accent)] py-3 text-sm font-bold text-white shadow-lg shadow-[var(--accent)]/20 transition-smooth hover:brightness-110 disabled:opacity-50"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    جارٍ المعالجة...
+                  </>
+                ) : (
+                  <>{mode === "register" ? "إنشاء الحساب" : "تسجيل الدخول"}</>
+                )}
+              </button>
+            </form>
+
+            {/* Switch mode link */}
+            <p className="mt-5 text-center text-xs text-[var(--text-muted)]">
+              {mode === "register" ? (
+                <>
+                  لديك حساب بالفعل؟{" "}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("login");
+                      setError(null);
+                    }}
+                    className="font-semibold text-[var(--accent)] hover:underline"
+                  >
+                    سجّل الدخول
+                  </button>
+                </>
+              ) : (
+                <>
+                  ليس لديك حساب؟{" "}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("register");
+                      setError(null);
+                    }}
+                    className="font-semibold text-[var(--accent)] hover:underline"
+                  >
+                    أنشئ حساباً مجانياً
+                  </button>
+                </>
+              )}
+            </p>
 
             <p className="mt-5 text-center text-[11px] leading-relaxed text-[var(--text-dim)]">
               بالمتابعة، فأنت توافق على شروط الاستخدام وتقرّ بأن التداول
@@ -175,9 +407,8 @@ export default function AuthPage() {
             انضمّ إلى مجتمع تيليجرام
           </a>
 
-          {/* Risk disclaimer */}
-          <div className="mt-4 flex items-start gap-2 rounded-xl border border-[var(--gold)]/15 bg-[var(--gold)]/5 p-3">
-            <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--gold-bright)]" />
+          {/* Risk disclosure */}
+          <div className="mt-6 rounded-xl border border-[var(--border-soft)] bg-[var(--bg-surface)]/40 p-4">
             <p className="text-[11px] leading-relaxed text-[var(--text-muted)]">
               التداول في سوق الفوركس والأسواق المالية يحمل مخاطر عالية وقد
               يؤدي إلى فقدان جزء كبير أو كامل من رأس المال المستثمر. الأداء

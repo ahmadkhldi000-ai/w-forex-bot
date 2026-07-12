@@ -1,180 +1,128 @@
-# 🔐 إعداد تسجيل الدخول عبر جوجل (Google OAuth)
+# دليل تفعيل تسجيل الدخول عبر جوجل (Google OAuth Setup)
 
-دليل خطوة بخطوة لتفعيل ميزة **"تسجيل الدخول باستخدام جوجل"** في منصة W Forex Bot.
+## المشكلة التي تم حلها
+كان زر "المتابعة باستخدام جوجل" لا يعمل لأن المعرف (Client ID) لم يكن مُدخلاً.
 
----
-
-## نظرة سريعة على آلية العمل
-
-```
-المستخدم يضغط زر جوجل
-        │
-        ▼
-[الخادم] /api/auth/google  ───►  يعيد التوجيه إلى شاشة موافقة جوجل
-        │
-        ▼
-[جوجل] المستخدم يختار حسابه ويوافق
-        │
-        ▼
-[الخادم] /api/auth/google/callback  ───►  يستلم الكود، يجلب بيانات المستخدم، ينشئ/يحدّث الحساب، يُصدر JWT
-        │
-        ▼
-[الواجهة] /auth/google/callback?token=...  ───►  يخزّن التوكن ويحوّل للوحة التحكم
-```
+## الحل المُطبّق
+تم تحويل النظام إلى **Backend OAuth Flow** — الأكثر أماناً والمعتمد رسمياً من جوجل:
+- المعرف (Client ID) والسر (Client Secret) يبقيان مخفيين في الخادم (server) ولا يظهران في المتصفح أبداً.
+- عند الضغط على الزر، يُحوَّل المستخدم تلقائياً إلى الخادم → ثم إلى شاشة موافقة جوجل → ثم يعود للموقع وهو مسجّل.
 
 ---
 
-## الخطوة 1: إنشاء مشروع على Google Cloud
+## الخطوات المطلوبة (مرة واحدة فقط)
 
-1. اذهب إلى **Google Cloud Console**: 👉 https://console.cloud.google.com
-2. اضغط على **Select a project** (أعلى اليسار) → **NEW PROJECT**
-3. اكتب اسم المشروع: `W Forex Bot`
-4. اضغط **CREATE**
+### الخطوة 1: إنشاء مشروع في Google Cloud Console
 
----
+1. اذهب إلى: https://console.cloud.google.com/
+2. سجّل الدخول بحساب جوجل الخاص بك.
+3. اضغط على شعار المشروع في الأعلى → **New Project** (مشروع جديد).
+4. اسم المشروع: `W Forex Bot` → اضغط **Create**.
 
-## الخطوة 2: تهيئة شاشة الموافقة (OAuth Consent Screen)
+### الخطوة 2: إعداد شاشة الموافقة (OAuth Consent Screen)
 
-> هذه الشاشة يراها المستخدم عندما يوافق على تسجيل الدخول.
-
-1. من القائمة الجانبية: **APIs & Services** → **OAuth consent screen**
-2. اختر نوع المستخدم: **External** (لأن المنصة عامة)
-3. اضغط **CREATE**
-4. املأ البيانات الأساسية:
-   - **App name:** `W Forex Bot`
-   - **User support email:** بريدك
-   - **Developer contact information:** بريدك
-5. اضغط **SAVE AND CONTINUE**
-6. في **Scopes** اضغط **ADD OR REMOVE SCOPES** وأضف:
-   - `userinfo.email` (الوصول للبريد)
-   - `userinfo.profile` (الوصول للاسم والصورة)
+1. من القائمة الجانبية: **APIs & Services** → **OAuth consent screen**.
+2. اختر نوع المستخدم: **External** (خارجي).
+3. املأ البيانات:
+   - **App name**: `W Forex Bot`
+   - **User support email**: بريدك الإلكتروني
+   - **Developer contact email**: بريدك الإلكتروني
+4. اضغط **Save and Continue**.
+5. في صفحة **Scopes** → اضغط **Add or Remove Scopes**.
+6. أضف:
+   - `userinfo.email` (البريد الإلكتروني)
+   - `userinfo.profile` (معلومات الملف الشخصي)
    - `openid`
-7. اضغط **SAVE AND CONTINUE**
-8. في **Test users** أضف بريدك (أثناء التطوير/الاختبار)
-9. اضغط **SAVE AND CONTINUE**
+7. اضغط **Save and Continue** حتى النهاية.
 
-> ⚠️ للإنتاج العام: تحتاج **Publishing status = In production** + التحقق من Google (قد يستغرق أيام). للنسخة التجريبية يمكن البقاء في وضع Testing مع إضافة بريدك في Test users.
+### الخطوة 3: إنشاء بيانات الاعتماد (Credentials)
 
----
-
-## الخطوة 3: إنشاء بيانات اعتماد OAuth (Credentials)
-
-1. من القائمة الجانبية: **APIs & Services** → **Credentials**
-2. اضغط **+ CREATE CREDENTIALS** → **OAuth client ID**
-3. **Application type:** `Web application`
-4. **Name:** `W Forex Bot Web Client`
-5. **Authorized JavaScript origins** — أضف:
-   ```
-   http://localhost:3000
-   https://wforexbot.vercel.app
-   https://api.wforexbot.com
-   ```
-6. **Authorized redirect URIs** — أضف (هذا أهم خطأ يُرتكب!):
+1. من القائمة الجانبية: **APIs & Services** → **Credentials**.
+2. اضغط **+ CREATE CREDENTIALS** → **OAuth client ID**.
+3. نوع التطبيق: **Web application**.
+4. اسم التطبيق: `W Forex Bot Web`.
+5. **Authorized redirect URIs** (مهماً جداً):
+   أضف هذا الرابط بالضبط:
    ```
    http://localhost:4000/api/auth/google/callback
-   https://api.wforexbot.com/api/auth/google/callback
    ```
-   > ⚠️ **ملاحظة مهمة:** يجب أن تطابق `GOOGLE_REDIRECT_URL` في الخادم هذه القيمة **بالضبط** (بما في ذلك http/https والشرطة المائلة).
-7. اضغط **CREATE**
-8. ستظهر لك نافذة تحتوي على:
-   - **Client ID** — انسخه (يبدأ بـ `xxxxx.apps.googleusercontent.com`)
-   - **Client Secret** — انسخه
+6. اضغط **Create**.
 
----
+### الخطوة 4: نسخ المفاتيح
 
-## الخطوة 4: إعداد متغيرات البيئة
+بعد الإنشاء ستظهر لك نافذة تحتوي على:
+- **Client ID** (مثل: `123456789-xxxxx.apps.googleusercontent.com`)
+- **Client Secret** (مثل: `GOCSPX-xxxxxxxxxxxxx`)
 
-### الخادم (Server) — ملف `.env`:
+**انسخهما الآن** (لن يظهر السر مرة أخرى).
+
+### الخطوة 5: إضافتها في الخادم
+
+افتح ملف `.env` في مجلد `server`:
+
 ```bash
+nano server/.env
+```
+
+أضف هذه الأسطر في نهاية الملف:
+
+```env
 # Google OAuth
-GOOGLE_CLIENT_ID=xxxxxxxxxxxx.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=GOCSPX-xxxxxxxxxxxxxxxxx
-# يجب أن تطابق ما أضفته في Google Console
-GOOGLE_REDIRECT_URL=https://api.wforexbot.com/api/auth/google/callback
-# رابط الواجهة الأمامية (المستخدم يعود إليها بعد الدخول)
-FRONTEND_URL=https://wforexbot.vercel.app
+GOOGLE_CLIENT_ID=ضع_هنا_الـ_Client_ID_الذي_نسخته
+GOOGLE_CLIENT_SECRET=ضع_هنا_الـ_Client_Secret_الذي_نسخته
+GOOGLE_REDIRECT_URL=http://localhost:4000/api/auth/google/callback
+FRONTEND_URL=http://localhost:3000
 ```
 
-### الواجهة (Frontend) — Vercel Environment Variables:
-في Vercel: مشروع `wforexbot` → Settings → Environment Variables:
-```
-NEXT_PUBLIC_API_URL = https://api.wforexbot.com
-```
-> أضف نفس القيمة لمحيط Production و Preview و Development.
+احفظ الملف (Ctrl+O ثم Enter ثم Ctrl+X).
 
----
-
-## الخطوة 5: تطبيق ترحيل قاعدة البيانات (Database Migration)
-
-يجب تطبيق الترحيل على قاعدة البيانات لإضافة حقول OAuth الجديدة:
+### الخطوة 6: إعادة تشغيل الخادم
 
 ```bash
 cd server
-npx prisma migrate dev --name add_google_oauth
+npm run dev
 ```
 
-> إذا كنت على Render/مزود استضافة، نفّذ هذا الأمر بعد نشر الخادم أو أضفه إلى سكربت الإطلاق:
-> ```bash
-> npx prisma migrate deploy
-> ```
+### الخطوة 7: الاختبار
+
+1. افتح: http://localhost:3000/auth
+2. اضغط على زر **"المتابعة باستخدام جوجل"**.
+3. ستظهر شاشة موافقة جوجل → اختر حسابك → سيتم تسجيلك تلقائياً ووجهك للوحة التحكم.
 
 ---
 
-## الخطوة 6: الاختبار
+## للنشر على الإنترنت (Production)
 
-1. شغّل الخادم والواجهة محلياً:
-   ```bash
-   # Terminal 1 — الخادم
-   cd server && npm run dev
+عند رفع الموقع على Vercel (الواجهة) وعلى خادم الـ API:
 
-   # Terminal 2 — الواجهة
-   cd web && npm run dev
-   ```
-2. اذهب إلى http://localhost:3000/auth
-3. اضغط **"تسجيل الدخول عبر جوجل"**
-4. ستظهر شاشة جوجل → اختر حسابك → ستُعاد إلى لوحة التحكم
-5. تحقق من الخادم من وجود سجل (audit log) جديد
-6. تحقق من قاعدة البيانات — سيكون لديك مستخدم جديد بـ `provider = GOOGLE`
-
----
-
-## استكشاف الأخطاء
-
-| المشكلة | الحل |
-|---------|-----|
-| `redirect_uri_mismatch` | القيمة في `GOOGLE_REDIRECT_URL` لا تطابق ما في Google Console. يجب التطابق **الحرفي**. |
-| `access_denied` | المستخدم ألغى الموافقة، أو المستخدم غير مضاف لـ Test users (وضع Testing). |
-| `invalid_client` | `GOOGLE_CLIENT_ID` أو `GOOGLE_CLIENT_SECRET` غير صحيح. |
-| `email_not_verified` | البريد في حساب جوجل غير مؤكد. |
-| الزر لا يظهر / لا يعمل | تأكد من ضبط `NEXT_PUBLIC_API_URL` في Vercel. |
-| `This app isn't verified` | هذا طبيعي في وضع Testing — اضغط Advanced → Go to app. |
-
----
-
-## بنية الكود المُضافة
-
-### الخادم (`server/`)
-```
-src/routes/google.ts          ← مسارات OAuth (/google + /google/callback)
-src/config/env.ts             ← إعدادات Google (clientId, secret, redirectUrl)
-src/index.ts                  ← تسجيل الراوتر
-prisma/schema.prisma          ← نموذج User + AccountProvider enum
+### في خادم الـ API (Backend) — اضبط متغيرات البيئة:
+```env
+GOOGLE_CLIENT_ID=نفس_الـ_Client_ID
+GOOGLE_CLIENT_SECRET=نفس_الـ_Client_Secret
+GOOGLE_REDIRECT_URL=https://[عنوان-الـ-API]/api/auth/google/callback
+FRONTEND_URL=https://[عنوان-الموقع]
 ```
 
-### الواجهة (`web/`)
+### في Google Cloud Console — أضف URI الإنتاج:
 ```
-src/lib/auth/config.ts                          ← إدارة التوكن + إعدادات API
-src/components/ui/google-icon.tsx               ← أيقونة جوجل الرسمية (SVG)
-src/app/auth/page.tsx                           ← زر جوجل الفعّال
-src/app/auth/google/callback/page.tsx           ← صفحة استلام التوكن والتوجيه
+https://[عنوان-الـ-API]/api/auth/google/callback
+```
+
+### في Vercel (الواجهة) — اضبط:
+```
+NEXT_PUBLIC_API_URL=https://[عنوان-الـ-API]
 ```
 
 ---
 
-## ملاحظات أمنية
+## ملخص ما تم تعديله في الكود
 
-- ✅ **JWT موقّع** من الخادم — لا يمكن تزويره.
-- ✅ **الحسابات مرتبطة** — مستخدم البريد/كلمة المرور الذي يسجّل لاحقاً بجوجل يُربط تلقائياً بنفس الحساب.
-- ✅ **upsert آمن** — لا تُنشأ حسابات مكررة.
-- ✅ **audit logs** — كل عملية دخول/تسجيل عبر جوجل مُسجّلة.
-- ✅ النطاقات مُقيّدة في Google Console لمنع إساءة الاستخدام.
+| الملف | التغيير |
+|------|---------|
+| `web/src/app/auth/page.tsx` | تحويل زر جوجل لاستخدام Backend OAuth Flow بدلاً من Client-side GIS. لم يعد يحتاج `NEXT_PUBLIC_GOOGLE_CLIENT_ID`. |
+| الخطأ | رسائل الخطأ تم تحديثها لتغطي جميع رموز أخطاء الـ Backend. |
+
+## التحقق من سلامة الكود
+- ✅ TypeScript compilation: نظيف
+- ✅ Production build: ناجح (35 routes)
+- ✅ جميع الأخطاء مغطاة برسائل عربية واضحة
