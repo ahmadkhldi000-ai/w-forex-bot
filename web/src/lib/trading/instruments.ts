@@ -60,8 +60,8 @@ export async function syncRealPrices(): Promise<void> {
       fetch("https://open.er-api.com/v6/latest/USD", { cache: "no-store" }).then((r) => r.json()).catch(() => null),
       fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd", { cache: "no-store" }).then((r) => r.json()).catch(() => null),
       Promise.all([
-        fetch("https://query1.finance.yahoo.com/v8/finance/chart/GC=F?interval=1d&range=1d", { headers: { "User-Agent": "Mozilla/5.0" }, cache: "no-store" }).then((r) => r.json()).catch(() => null),
-        fetch("https://query1.finance.yahoo.com/v8/finance/chart/SI=F?interval=1d&range=1d", { headers: { "User-Agent": "Mozilla/5.0" }, cache: "no-store" }).then((r) => r.json()).catch(() => null),
+        fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent("https://query1.finance.yahoo.com/v8/finance/chart/GC=F?interval=1d&range=1d")}`, { cache: "no-store" }).then((r) => r.json()).catch(() => null),
+        fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent("https://query1.finance.yahoo.com/v8/finance/chart/SI=F?interval=1d&range=1d")}`, { cache: "no-store" }).then((r) => r.json()).catch(() => null),
       ]),
     ]);
 

@@ -2,18 +2,16 @@
 
 /**
  * ============================================================
- *  W FOREX BOT — Live Price Service
- *  Fetches REAL global forex/metal/crypto prices from
- *  free public APIs. No API key required.
+ *  W FOREX BOT — Master Data Source (ONLY source of truth)
+ * ============================================================
  *
- *  Sources (in priority order):
- *    1. open.er-api.com  — real-time forex rates (free, no key)
- *    2. Frankfurter API  — ECB reference rates (free, no key)
- *    3. Local seed prices (last resort fallback)
+ *  ALL numbers shown in the website come from here.
+ *  No random/mock data. Everything is either:
+ *    1. From the MT5 Master Account (balance, equity, trades)
+ *    2. Real global market prices (forex, gold, crypto)
  *
- *  Updates every 60 seconds for the full grid, with a
- *  sub-second tick simulation between fetches to keep
- *  the UI feeling "alive" (real price ± tiny jitter).
+ *  Gold/silver prices use a CORS proxy to fetch real Yahoo
+ *  Finance futures prices (GC=F, SI=F).
  * ============================================================
  */
 
@@ -27,8 +25,40 @@ export interface LivePrice {
   lastUpdate: number;
 }
 
-// Real base prices (updated by API; used as initial/fallback seed)
-const SEED_PRICES: Record<string, { bid: number; ask: number }> = {
+// ----------------------------------------------------------------
+//  Instrument specifications (digits, pip, spread)
+// ----------------------------------------------------------------
+interface Spec {
+  symbol: string;
+  digits: number;
+  pip: number;
+  spread: number;
+  category: "FX" | "METAL" | "CRYPTO";
+}
+
+const SPECS: Record<string, Spec> = {
+  EURUSD: { symbol: "EURUSD", digits: 5, pip: 0.0001, spread: 0.0001, category: "FX" },
+  GBPUSD: { symbol: "GBPUSD", digits: 5, pip: 0.0001, spread: 0.0001, category: "FX" },
+  USDJPY: { symbol: "USDJPY", digits: 3, pip: 0.01, spread: 0.01, category: "FX" },
+  USDCHF: { symbol: "USDCHF", digits: 5, pip: 0.0001, spread: 0.0001, category: "FX" },
+  AUDUSD: { symbol: "AUDUSD", digits: 5, pip: 0.0001, spread: 0.0001, category: "FX" },
+  USDCAD: { symbol: "USDCAD", digits: 5, pip: 0.0001, spread: 0.0001, category: "FX" },
+  NZDUSD: { symbol: "NZDUSD", digits: 5, pip: 0.0001, spread: 0.0001, category: "FX" },
+  EURGBP: { symbol: "EURGBP", digits: 5, pip: 0.0001, spread: 0.0001, category: "FX" },
+  EURJPY: { symbol: "EURJPY", digits: 3, pip: 0.01, spread: 0.01, category: "FX" },
+  GBPJPY: { symbol: "GBPJPY", digits: 3, pip: 0.01, spread: 0.01, category: "FX" },
+  XAUUSD: { symbol: "XAUUSD", digits: 2, pip: 0.01, spread: 0.25, category: "METAL" },
+  XAGUSD: { symbol: "XAGUSD", digits: 3, pip: 0.001, spread: 0.02, category: "METAL" },
+  BTCUSD: { symbol: "BTCUSD", digits: 1, pip: 0.1, spread: 40, category: "CRYPTO" },
+  ETHUSD: { symbol: "ETHUSD", digits: 2, pip: 0.01, spread: 5, category: "CRYPTO" },
+};
+
+export const DIGITS: Record<string, number> = Object.fromEntries(
+  Object.entries(SPECS).map(([k, v]) => [k, v.digits])
+);
+
+// Initial/fallback seed (will be overwritten by real prices immediately)
+const SEED: Record<string, { bid: number; ask: number }> = {
   EURUSD: { bid: 1.0842, ask: 1.0843 },
   GBPUSD: { bid: 1.2715, ask: 1.2716 },
   USDJPY: { bid: 161.82, ask: 161.83 },
@@ -45,161 +75,122 @@ const SEED_PRICES: Record<string, { bid: number; ask: number }> = {
   ETHUSD: { bid: 3420, ask: 3425 },
 };
 
-const DIGITS: Record<string, number> = {
-  EURUSD: 5, GBPUSD: 5, USDJPY: 3, USDCHF: 5, AUDUSD: 5,
-  USDCAD: 5, NZDUSD: 5, EURGBP: 5, EURJPY: 3, GBPJPY: 3,
-  XAUUSD: 2, XAGUSD: 3, BTCUSD: 1, ETHUSD: 2,
-};
+// ----------------------------------------------------------------
+//  REAL PRICE FETCHERS
+// ----------------------------------------------------------------
 
-/**
- * Fetch real forex rates from open.er-api.com (base USD).
- * Returns a map of SYMBOL → bid price.
- */
-async function fetchRealRates(): Promise<Record<string, number> | null> {
+/** Fetch real forex rates (CORS-enabled, no key needed). */
+async function fetchForex(): Promise<Record<string, number> | null> {
   try {
-    const res = await fetch("https://open.er-api.com/v6/latest/USD", {
-      cache: "no-store",
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const res = await fetch("https://open.er-api.com/v6/latest/USD", { cache: "no-store" });
+    if (!res.ok) return null;
     const data = await res.json();
-    if (!data.rates) throw new Error("No rates in response");
-
-    const r = data.rates;
-    // Build our symbol prices from real USD-based rates
-    const prices: Record<string, number> = {};
-    // USD-based pairs (how many foreign per 1 USD)
-    // EURUSD = 1/EUR (EUR per USD → USD per EUR = 1/rate)
-    if (r.EUR) prices.EURUSD = 1 / r.EUR;
-    if (r.GBP) prices.GBPUSD = 1 / r.GBP;
-    if (r.JPY) prices.USDJPY = r.JPY;
-    if (r.CHF) prices.USDCHF = r.CHF;
-    if (r.AUD) prices.AUDUSD = 1 / r.AUD;
-    if (r.CAD) prices.USDCAD = r.CAD;
-    if (r.NZD) prices.NZDUSD = 1 / r.NZD;
-    // Crosses
-    if (r.EUR && r.GBP) prices.EURGBP = r.GBP / r.EUR;
-    if (r.EUR && r.JPY) prices.EURJPY = r.JPY / r.EUR;
-    if (r.GBP && r.JPY) prices.GBPJPY = r.JPY / r.GBP;
-    // Gold & Silver (er-api includes XAU/XAG)
-    if (r.XAU) prices.XAUUSD = 1 / r.XAU; // XAU per USD → USD per oz
-    if (r.XAG) prices.XAGUSD = 1 / r.XAG;
-
-    return prices;
-  } catch (err) {
-    console.warn("[prices] er-api fetch failed, trying fallback...", err);
+    const r = data.rates || {};
+    const p: Record<string, number> = {};
+    if (r.EUR) p.EURUSD = 1 / r.EUR;
+    if (r.GBP) p.GBPUSD = 1 / r.GBP;
+    if (r.JPY) p.USDJPY = r.JPY;
+    if (r.CHF) p.USDCHF = r.CHF;
+    if (r.AUD) p.AUDUSD = 1 / r.AUD;
+    if (r.CAD) p.USDCAD = r.CAD;
+    if (r.NZD) p.NZDUSD = 1 / r.NZD;
+    if (r.EUR && r.GBP) p.EURGBP = r.GBP / r.EUR;
+    if (r.EUR && r.JPY) p.EURJPY = r.JPY / r.EUR;
+    if (r.GBP && r.JPY) p.GBPJPY = r.JPY / r.GBP;
+    return p;
+  } catch {
     return null;
   }
 }
 
-/**
- * Fetch real crypto prices from CoinGecko (free, no key).
- */
-async function fetchCryptoRates(): Promise<Record<string, number> | null> {
+/** Fetch real crypto prices (CORS-enabled, no key needed). */
+async function fetchCrypto(): Promise<Record<string, number> | null> {
   try {
     const res = await fetch(
       "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd",
       { cache: "no-store" }
     );
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) return null;
     const data = await res.json();
-    const prices: Record<string, number> = {};
-    if (data.bitcoin?.usd) prices.BTCUSD = data.bitcoin.usd;
-    if (data.ethereum?.usd) prices.ETHUSD = data.ethereum.usd;
-    return prices;
-  } catch (err) {
-    console.warn("[prices] crypto fetch failed", err);
+    const p: Record<string, number> = {};
+    if (data.bitcoin?.usd) p.BTCUSD = data.bitcoin.usd;
+    if (data.ethereum?.usd) p.ETHUSD = data.ethereum.usd;
+    return p;
+  } catch {
     return null;
   }
 }
 
 /**
- * Fetch real metals prices from Yahoo Finance (free, no key).
- * GC=F = Gold futures, SI=F = Silver futures
+ * Fetch REAL gold & silver via CORS proxy (allorigins.win).
+ * Yahoo Finance GC=F (gold futures) and SI=F (silver futures)
+ * give real-time COMEX prices. The proxy bypasses CORS so
+ * the browser can read them.
  */
-async function fetchMetalRates(): Promise<Record<string, number> | null> {
-  try {
-    const [goldRes, silverRes] = await Promise.all([
-      fetch("https://query1.finance.yahoo.com/v8/finance/chart/GC=F?interval=1d&range=1d", {
-        headers: { "User-Agent": "Mozilla/5.0" },
-        cache: "no-store",
-      }),
-      fetch("https://query1.finance.yahoo.com/v8/finance/chart/SI=F?interval=1d&range=1d", {
-        headers: { "User-Agent": "Mozilla/5.0" },
-        cache: "no-store",
-      }),
-    ]);
-    const prices: Record<string, number> = {};
-    if (goldRes.ok) {
-      const data = await goldRes.json();
-      prices.XAUUSD = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
+async function fetchMetals(): Promise<Record<string, number> | null> {
+  const p: Record<string, number> = {};
+  const fetchOne = async (sym: string, ticker: string) => {
+    try {
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(
+        `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`
+      )}`;
+      const res = await fetch(proxyUrl, { cache: "no-store" });
+      if (!res.ok) return;
+      const data = await res.json();
+      const price = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
+      if (price && price > 0) p[sym] = price;
+    } catch {
+      /* skip */
     }
-    if (silverRes.ok) {
-      const data = await silverRes.json();
-      prices.XAGUSD = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
-    }
-    return prices;
-  } catch (err) {
-    console.warn("[prices] metals fetch failed", err);
-    return null;
-  }
+  };
+  await Promise.all([
+    fetchOne("XAUUSD", "GC=F"),
+    fetchOne("XAGUSD", "SI=F"),
+  ]);
+  return Object.keys(p).length > 0 ? p : null;
 }
 
-/**
- * Main hook: returns a live-updating map of real prices.
- * @param symbols Which symbols to track (default: all)
- * @param tickMs Micro-tick interval for smooth UI updates (default 2000ms)
- */
-export function useLivePrices(symbols?: string[], tickMs = 2000) {
+// ----------------------------------------------------------------
+//  MAIN HOOK: useLivePrices
+// ----------------------------------------------------------------
+export function useLivePrices(symbols?: string[], tickMs = 3000) {
+  const syms = symbols ?? Object.keys(SEED);
   const [prices, setPrices] = useState<Record<string, LivePrice>>(() => {
     const init: Record<string, LivePrice> = {};
-    const syms = symbols ?? Object.keys(SEED_PRICES);
     for (const s of syms) {
-      const seed = SEED_PRICES[s];
+      const seed = SEED[s];
       if (seed) {
-        init[s] = {
-          symbol: s,
-          bid: seed.bid,
-          ask: seed.ask,
-          changePct: 0,
-          lastUpdate: Date.now(),
-        };
+        init[s] = { symbol: s, bid: seed.bid, ask: seed.ask, changePct: 0, lastUpdate: Date.now() };
       }
     }
     return init;
   });
-
-  const [lastFetch, setLastFetch] = useState<number>(0);
-  const prevPricesRef = useRef<Record<string, number>>({});
+  const prevMidRef = useRef<Record<string, number>>({});
   const mountedRef = useRef(true);
 
-  // Real fetch (every 60s)
   const doRealFetch = useCallback(async () => {
-    const [fxRates, cryptoRates, metalRates] = await Promise.all([
-      fetchRealRates(),
-      fetchCryptoRates(),
-      fetchMetalRates(),
+    const [fx, crypto, metals] = await Promise.all([
+      fetchForex(),
+      fetchCrypto(),
+      fetchMetals(),
     ]);
     if (!mountedRef.current) return;
-
-    const allReal = { ...(fxRates || {}), ...(cryptoRates || {}), ...(metalRates || {}) };
-    if (Object.keys(allReal).length === 0) return;
+    const real = { ...(fx || {}), ...(crypto || {}), ...(metals || {}) };
+    if (Object.keys(real).length === 0) return;
 
     setPrices((prev) => {
       const updated = { ...prev };
       for (const sym of Object.keys(updated)) {
-        if (allReal[sym]) {
-          const digits = DIGITS[sym] ?? 5;
-          const mid = allReal[sym];
-          const spread = getSpread(sym);
-          const bid = round(mid - spread / 2, digits);
-          const ask = round(mid + spread / 2, digits);
-          const prevMid = prevPricesRef.current[sym] ?? mid;
+        if (real[sym] && real[sym] > 0) {
+          const spec = SPECS[sym];
+          const mid = real[sym];
+          const prevMid = prevMidRef.current[sym] ?? mid;
           const changePct = prevMid > 0 ? ((mid - prevMid) / prevMid) * 100 : 0;
-          prevPricesRef.current[sym] = mid;
+          prevMidRef.current[sym] = mid;
           updated[sym] = {
             symbol: sym,
-            bid,
-            ask,
+            bid: round(mid - spec.spread / 2, spec.digits),
+            ask: round(mid + spec.spread / 2, spec.digits),
             changePct,
             lastUpdate: Date.now(),
           };
@@ -207,64 +198,19 @@ export function useLivePrices(symbols?: string[], tickMs = 2000) {
       }
       return updated;
     });
-    setLastFetch(Date.now());
   }, []);
 
-  // Micro-tick: add tiny jitter to keep the UI feeling alive
   useEffect(() => {
     mountedRef.current = true;
-    // Initial real fetch immediately
     doRealFetch();
-    // Real fetch every 60 seconds
     const realInterval = setInterval(doRealFetch, 60_000);
-    // Micro-tick every 2s (small ±0.5 pip jitter for "live" feel)
-    const tickInterval = setInterval(() => {
-      if (!mountedRef.current) return;
-      setPrices((prev) => {
-        const updated = { ...prev };
-        for (const sym of Object.keys(updated)) {
-          const digits = DIGITS[sym] ?? 5;
-          const tickSize = getTickSize(sym);
-          // ±0.5 tick jitter
-          const jitter = (Math.random() - 0.5) * tickSize;
-          const newBid = round(updated[sym].bid + jitter, digits);
-          const newAsk = round(newBid + getSpread(sym), digits);
-          updated[sym] = {
-            ...updated[sym],
-            bid: newBid,
-            ask: newAsk,
-            lastUpdate: Date.now(),
-          };
-        }
-        return updated;
-      });
-    }, tickMs);
-
     return () => {
       mountedRef.current = false;
       clearInterval(realInterval);
-      clearInterval(tickInterval);
     };
-  }, [doRealFetch, tickMs]);
+  }, [doRealFetch]);
 
-  return { prices, lastFetch };
-}
-
-function getSpread(symbol: string): number {
-  if (symbol.startsWith("BTC") || symbol.startsWith("ETH")) return 40;
-  if (symbol.startsWith("XAU")) return 0.25;
-  if (symbol.startsWith("XAG")) return 0.02;
-  if (symbol.endsWith("JPY")) return 0.01;
-  return 0.0001;
-}
-
-function getTickSize(symbol: string): number {
-  if (symbol.startsWith("BTC")) return 5;
-  if (symbol.startsWith("ETH")) return 0.5;
-  if (symbol.startsWith("XAU")) return 0.05;
-  if (symbol.startsWith("XAG")) return 0.005;
-  if (symbol.endsWith("JPY")) return 0.005;
-  return 0.00005;
+  return { prices };
 }
 
 function round(n: number, digits: number): number {
