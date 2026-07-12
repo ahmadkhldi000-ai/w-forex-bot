@@ -63,9 +63,12 @@ export default function AuthPage() {
     setGoogleLoading(true);
     setGoogleError(null);
 
+    // If Google OAuth isn't configured yet, fall back to manual email entry
+    // so the user can still proceed to the account-linking flow.
     if (!isGoogleConfigured()) {
       setGoogleLoading(false);
-      setGoogleError("not_configured");
+      setManualEmail("");
+      setShowManualModal(true);
       return;
     }
 
@@ -93,6 +96,32 @@ export default function AuthPage() {
       setGoogleLoading(false);
       setGoogleError("script_error");
     }
+  };
+
+  // Manual email entry (fallback when Google OAuth isn't configured)
+  const [showManualModal, setShowManualModal] = useState(false);
+  const [manualEmail, setManualEmail] = useState("");
+  const [manualError, setManualError] = useState<string | null>(null);
+
+  const proceedWithManualEmail = () => {
+    setManualError(null);
+    const email = manualEmail.trim().toLowerCase();
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (!emailOk) {
+      setManualError("بريد إلكتروني غير صالح");
+      return;
+    }
+    // Build a synthetic Google profile so the link-account page works unchanged
+    const profile = {
+      sub: "manual_" + btoa(email).replace(/=/g, ""),
+      email,
+      email_verified: true,
+      name: email.split("@")[0],
+      picture: "",
+    };
+    sessionStorage.setItem("wfb_pending_google", JSON.stringify(profile));
+    setShowManualModal(false);
+    router.push("/auth/link-account");
   };
 
   // Form fields
@@ -347,6 +376,54 @@ export default function AuthPage() {
           }}
           onClose={() => setShowRiskModal(false)}
         />
+      )}
+
+      {/* Manual email modal — fallback when Google OAuth isn't configured */}
+      {showManualModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-[var(--border-soft)] bg-[var(--bg-surface)] p-6 shadow-2xl">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white">
+                <GoogleIcon className="h-5 w-5" />
+              </div>
+              <h3 className="text-lg font-bold text-[var(--text-primary)]">
+                المتابعة بالبريد الإلكتروني
+              </h3>
+            </div>
+            <p className="mb-4 text-sm leading-relaxed text-[var(--text-secondary)]">
+              أدخل بريدك الإلكتروني للمتابعة إلى صفحة إعداد الحساب.
+            </p>
+            <div className="relative">
+              <Mail className="absolute top-1/2 start-3 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
+              <input
+                type="email"
+                value={manualEmail}
+                autoFocus
+                onChange={(e) => setManualEmail(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && proceedWithManualEmail()}
+                placeholder="you@example.com"
+                className="w-full rounded-xl border border-[var(--border-soft)] bg-[var(--bg-elevated)] py-3 ps-10 pe-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-dim)]"
+              />
+            </div>
+            {manualError && (
+              <p className="mt-2 text-xs text-[var(--danger)]">{manualError}</p>
+            )}
+            <div className="mt-5 flex gap-3">
+              <button
+                onClick={() => setShowManualModal(false)}
+                className="flex-1 rounded-xl border border-[var(--border-strong)] py-2.5 text-sm font-medium text-[var(--text-secondary)] transition-smooth hover:bg-[var(--bg-elevated)]"
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={proceedWithManualEmail}
+                className="flex-1 rounded-xl bg-gradient-to-r from-[var(--accent)] to-[var(--accent-bright)] py-2.5 text-sm font-semibold text-[var(--bg-base)] transition-smooth hover:opacity-90"
+              >
+                متابعة
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </main>
   );
