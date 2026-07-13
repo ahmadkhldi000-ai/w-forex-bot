@@ -97,6 +97,7 @@ export default function LiveTradingPage() {
                   candles={feed.candles}
                   trades={tradesForSymbol}
                   livePrice={feed.tick?.price ?? 0}
+                  tfMs={feed.tfMs}
                 />
               </div>
             </section>

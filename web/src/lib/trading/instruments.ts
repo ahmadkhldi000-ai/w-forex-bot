@@ -8,7 +8,7 @@ export interface InstrumentSpec {
   pip: number; // value of one pip in price terms
   digits: number; // decimal places
   spreadPips: number;
-  base: number; // realistic starting price for simulation
+  base: number; // last-known real market price (overwritten live by real feeds)
   volatility: number; // per-tick sigma as fraction of price
   category: "FX" | "Metal" | "Index" | "Crypto";
   /** Binance ticker for real OHLC data (null when not listed). */
@@ -36,6 +36,7 @@ export function binanceInterval(tf: string): string | null {
     case "H4": return "4h";
     case "D1": return "1d";
     case "W1": return "1w";
+    case "MN": return "1M";
     default: return null;
   }
 }

@@ -9,27 +9,29 @@ import {
   type ConnectionStatus,
   type TradeType,
 } from "./types";
-import { INSTRUMENTS, getSpec, DEFAULT_SYMBOL } from "./instruments";
-import { syncRealPrices } from "./instruments";
+import { INSTRUMENTS, getSpec, DEFAULT_SYMBOL, binanceInterval } from "./instruments";
 import { fetchCandles, fetchSpotPrice } from "./binance-feed";
+import { openKlineStream } from "./binance-ws";
 import { useMasterData } from "./master-data";
 import type { Trade as ProfileTrade } from "./profile";
 
 // ====================================================================
-//  LIVE FEED HOOK
+//  LIVE FEED HOOK — REAL DATA ONLY (no simulation / no mock)
+//  --------------------------------------------------------------------
+//  Architecture:
+//    • HISTORY  → real OHLC from Binance klines REST (crypto) or
+//                 built from real REST spot quotes (FX / metals).
+//    • LIVE     → Binance WebSocket kline stream for the active symbol
+//                 (auto-reconnect, low-latency). For FX/metals symbols
+//                 not on Binance we poll the real spot REST endpoint.
+//    • TRADES   → real MASTER MT5 account (useMasterData).
 //
-//  Real-data-first architecture:
-//    • PRICES come from real global sources (useLivePrices / syncRealPrices)
-//    • TRADES come from the MASTER MT5 account (useMasterData) — NO mock trades
-//    • CANDLES are built from the real price walk on the chosen timeframe
-//
-//  If no master account is connected, trades are EMPTY (no fake trades).
+//  NOTHING is randomly generated. If a real source is unreachable we
+//  show an explicit "connecting / offline" status — never fake candles.
 // ====================================================================
 
-const BAR_MS = 15_000; // base tick for price engine (15s)
-
 // ---------- timeframes ----------
-export type Timeframe = "M1" | "M5" | "M15" | "M30" | "H1" | "H4" | "D1" | "W1";
+export type Timeframe = "M1" | "M5" | "M15" | "M30" | "H1" | "H4" | "D1" | "W1" | "MN";
 
 export const TIMEFRAMES: { id: Timeframe; label: string; ms: number }[] = [
   { id: "M1", label: "M1", ms: 60_000 },
@@ -40,73 +42,14 @@ export const TIMEFRAMES: { id: Timeframe; label: string; ms: number }[] = [
   { id: "H4", label: "H4", ms: 4 * 60 * 60_000 },
   { id: "D1", label: "D1", ms: 24 * 60 * 60_000 },
   { id: "W1", label: "W1", ms: 7 * 24 * 60 * 60_000 },
+  // MN — calendar month (~30.44 days); used for bar-rollover math
+  { id: "MN", label: "MN", ms: 30 * 24 * 60 * 60_000 },
 ];
 
-const HISTORY_BARS = 120;
-
-// ---------- deterministic RNG (for candle wicks only, not trades) ----------
-function makeRng(seed: number) {
-  let s = seed >>> 0;
-  return () => {
-    s = (s * 1664525 + 1013904223) >>> 0;
-    return s / 0x100000000;
-  };
-}
-function hash(str: string): number {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) {
-    h = (h * 31 + str.charCodeAt(i)) | 0;
-  }
-  return h;
-}
-function gaussian(rng: () => number) {
-  const u = Math.max(rng(), 1e-9);
-  const v = rng();
-  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
-}
-
-/** Build a deterministic OHLC history for a symbol at a given timeframe. */
-function seedHistory(symbol: string, tfMs: number): Candle[] {
-  const spec = getSpec(symbol);
-  const rng = makeRng(hash(symbol) + Math.floor(Date.now() / (60 * 60 * 1000)));
-  const out: Candle[] = [];
-  let price = spec.base * (0.985 + rng() * 0.03);
-  const now = Date.now();
-  const start = now - HISTORY_BARS * tfMs;
-
-  for (let i = 0; i < HISTORY_BARS; i++) {
-    const open = price;
-    let high = open;
-    let low = open;
-    // 4 sub-steps per bar for realistic wicks
-    for (let s = 0; s < 4; s++) {
-      const drift = (spec.base - price) * 0.002;
-      price += drift + gaussian(rng) * spec.volatility * 2.2;
-      high = Math.max(high, price);
-      low = Math.min(low, price);
-    }
-    out.push({
-      time: start + i * tfMs,
-      open,
-      high,
-      low,
-      close: price,
-    });
-  }
-  return out;
-}
-
-interface EngineState {
-  candles: Record<string, Candle[]>;
-  prices: Record<string, number>;
-  prevPrices: Record<string, number>;
-  sessionOpen: Record<string, number>;
-}
+const HISTORY_BARS = 200;
 
 // ---------- convert master positions/trades → chart Trade markers ----------
-function masterTradeToChartTrade(
-  t: ProfileTrade
-): Trade {
+function masterTradeToChartTrade(t: ProfileTrade): Trade {
   return {
     id: t.id,
     ticket: Number(t.id) || 0,
@@ -123,6 +66,32 @@ function masterTradeToChartTrade(
     closeReason: undefined,
     status: t.status,
   };
+}
+
+/** Append/replace the last forming candle; roll a new bar when needed. */
+function applyTickToCandles(candles: Candle[], tick: Candle, tfMs: number): Candle[] {
+  if (!candles.length) return [tick];
+  const last = candles[candles.length - 1];
+  // same bar → update the forming candle
+  if (tick.time === last.time) {
+    const merged: Candle = {
+      time: last.time,
+      open: last.open,
+      high: Math.max(last.high, tick.high),
+      low: Math.min(last.low, tick.low),
+      close: tick.close,
+      volume: (last.volume ?? 0) + (tick.volume ?? 0),
+    };
+    return [...candles.slice(0, -1), merged];
+  }
+  // newer bar → append (new candle created automatically)
+  if (tick.time > last.time) {
+    const next = [...candles, tick];
+    if (next.length > HISTORY_BARS + 20) next.shift();
+    return next;
+  }
+  // older bar → ignore
+  return candles;
 }
 
 export function useLiveFeed() {
@@ -180,205 +149,170 @@ export function useLiveFeed() {
     time: Date.now(),
   }), [master.balance]);
 
-  // ---- candle engine (REAL market data first, local fallback if offline) ----
-  const [candlesBySym, setCandlesBySym] = useState<Record<string, Candle[]>>(() => {
-    const m: Record<string, Candle[]> = {};
-    for (const s of INSTRUMENTS) m[s.symbol] = seedHistory(s.symbol, tfMs);
+  // ---- real candle state (per symbol) ----
+  const [candlesBySym, setCandlesBySym] = useState<Record<string, Candle[]>>({});
+  // seed an empty entry per symbol so the watchlist has prices early
+  const [prices, setPrices] = useState<Record<string, SymbolTick>>(() => {
+    const m: Record<string, SymbolTick> = {};
+    for (const s of INSTRUMENTS) {
+      m[s.symbol] = {
+        symbol: s.symbol,
+        price: s.base,
+        bid: s.base - (s.spreadPips * s.pip) / 2,
+        ask: s.base + (s.spreadPips * s.pip) / 2,
+        spread: s.spreadPips,
+        changePct: 0,
+        prevPrice: s.base,
+        time: Date.now(),
+      };
+    }
     return m;
   });
+  const sessionOpenRef = useRef<Record<string, number>>({});
 
-  // Fetch REAL candles from Binance for every supported symbol.
-  // Runs once on mount and whenever the timeframe changes.
+  const [connection, setConnection] = useState<ConnectionStatus>({
+    state: "connecting",
+    latencyMs: 0,
+    lastMessage: 0,
+  });
+
+  // live price helper that also updates the watchlist tick
+  const pushPrice = useCallback((sym: string, price: number) => {
+    const spec = getSpec(sym);
+    const sessionOpen = sessionOpenRef.current[sym] ?? price;
+    const changePct = sessionOpen > 0 ? ((price - sessionOpen) / sessionOpen) * 100 : 0;
+    setPrices((prev) => {
+      const p = prev[sym];
+      const prevPrice = p?.price ?? price;
+      return {
+        ...prev,
+        [sym]: {
+          symbol: sym,
+          price,
+          bid: price - (spec.spreadPips * spec.pip) / 2,
+          ask: price + (spec.spreadPips * spec.pip) / 2,
+          spread: spec.spreadPips,
+          changePct,
+          prevPrice,
+          time: Date.now(),
+        },
+      };
+    });
+  }, []);
+
+  // ==================================================================
+  // 1. Load REAL historical OHLC for the active symbol/timeframe
+  // ==================================================================
   useEffect(() => {
     let cancelled = false;
-    // immediate local seed so the chart paints instantly
-    setCandlesBySym(() => {
-      const m: Record<string, Candle[]> = {};
-      for (const s of INSTRUMENTS) m[s.symbol] = seedHistory(s.symbol, tfMs);
-      return m;
-    });
+    const spec = getSpec(symbol);
+    const interval = binanceInterval(timeframe);
+
+    setCandlesBySym((prev) => (prev[symbol] ? prev : { ...prev, [symbol]: [] }));
+    setConnection((c) => ({ ...c, state: "connecting" }));
 
     (async () => {
-      const entries = await Promise.all(
-        INSTRUMENTS.map(async (inst) => {
-          if (!inst.binance) return null;
-          const real = await fetchCandles(inst.binance, timeframe, 150);
-          if (cancelled || !real || real.length < 10) return null;
-          return [inst.symbol, real] as const;
-        }),
-      );
-      if (cancelled) return;
-      setCandlesBySym((prev) => {
-        const next = { ...prev };
-        let changed = false;
-        for (const entry of entries) {
-          if (!entry) continue;
-          next[entry[0]] = entry[1] as Candle[];
-          changed = true;
-        }
-        return changed ? next : prev;
+      let candles: Candle[] | null = null;
+
+      if (spec.binance && interval) {
+        // ---- Binance (crypto) → real OHLC history ----
+        candles = await fetchCandles(spec.binance, timeframe, HISTORY_BARS);
+      }
+      if (!candles || candles.length < 5) {
+        // ---- FX / metals / fallback → build bars from real REST spot ----
+        candles = await buildHistoryFromSpot(symbol, tfMs, HISTORY_BARS, spec.binance);
+      }
+
+      if (cancelled || !candles || candles.length === 0) {
+        if (!cancelled) setConnection((c) => ({ ...c, state: "reconnecting" }));
+        return;
+      }
+
+      // anchor session open for changePct
+      sessionOpenRef.current[symbol] = candles[0].open;
+      const lastClose = candles[candles.length - 1].close;
+
+      setCandlesBySym((prev) => ({ ...prev, [symbol]: candles as Candle[] }));
+      pushPrice(symbol, lastClose);
+      setConnection({
+        state: "live",
+        latencyMs: 0,
+        lastMessage: Date.now(),
       });
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [tfMs, timeframe]);
+  }, [symbol, timeframe, tfMs, pushPrice]);
 
-  const [prices, setPrices] = useState<Record<string, SymbolTick>>(() => {
-    const m: Record<string, SymbolTick> = {};
-    for (const s of INSTRUMENTS) {
-      const price = s.base;
-      m[s.symbol] = {
-        symbol: s.symbol,
-        price,
-        bid: price - (s.spreadPips * s.pip) / 2,
-        ask: price + (s.spreadPips * s.pip) / 2,
-        spread: s.spreadPips,
-        changePct: 0,
-        prevPrice: price,
-        time: Date.now(),
-      };
-    }
-    return m;
-  });
-
-  const [connection, setConnection] = useState<ConnectionStatus>({
-    state: master.connected ? "live" : "connecting",
-    latencyMs: 0,
-    lastMessage: 0,
-  });
-
-  const stateRef = useRef<EngineState>({
-    candles: candlesBySym,
-    prices: {},
-    prevPrices: {},
-    sessionOpen: {},
-  });
-  if (Object.keys(stateRef.current.prices).length === 0) {
-    for (const s of INSTRUMENTS) {
-      stateRef.current.prices[s.symbol] = s.base;
-      stateRef.current.prevPrices[s.symbol] = s.base;
-      stateRef.current.sessionOpen[s.symbol] = s.base;
-    }
-  }
-
-  const rngRef = useRef(makeRng(hash("live") + Date.now() % 100000));
-
-  // ---------- core tick step (price walk → candles) ----------
-  const step = useCallback(() => {
-    const st = stateRef.current;
-    const rng = rngRef.current;
-    const now = Date.now();
-
-    const newPrices: Record<string, SymbolTick> = {};
-    for (const s of INSTRUMENTS) {
-      const prev = st.prices[s.symbol];
-      const reversion = (s.base - prev) * 0.0015;
-      const shock = gaussian(rng) * s.volatility;
-      let next = prev + reversion + shock;
-      if (next <= s.base * 0.5) next = prev; // safety guard
-
-      const changePct =
-        st.sessionOpen[s.symbol] > 0
-          ? ((next - st.sessionOpen[s.symbol]) / st.sessionOpen[s.symbol]) * 100
-          : 0;
-
-      st.prices[s.symbol] = next;
-      st.prevPrices[s.symbol] = prev;
-
-      newPrices[s.symbol] = {
-        symbol: s.symbol,
-        price: next,
-        bid: next - (s.spreadPips * s.pip) / 2,
-        ask: next + (s.spreadPips * s.pip) / 2,
-        spread: s.spreadPips,
-        changePct,
-        prevPrice: prev,
-        time: now,
-      };
-    }
-
-    // advance candles at the chosen timeframe
-    const updatedCandles: Record<string, Candle[]> = {};
-    for (const s of INSTRUMENTS) {
-      const sym = s.symbol;
-      const bars = [...(st.candles[sym] ?? [])];
-      const px = newPrices[sym].price;
-      const lastBar = bars[bars.length - 1];
-      const barStart = Math.floor(now / tfMs) * tfMs;
-      if (!lastBar || barStart >= lastBar.time + tfMs) {
-        bars.push({ time: barStart, open: px, high: px, low: px, close: px });
-        if (bars.length > HISTORY_BARS + 30) bars.shift();
-      } else {
-        lastBar.high = Math.max(lastBar.high, px);
-        lastBar.low = Math.min(lastBar.low, px);
-        lastBar.close = px;
-      }
-      updatedCandles[sym] = bars;
-    }
-    st.candles = updatedCandles;
-
-    setCandlesBySym(updatedCandles);
-    setPrices(newPrices);
-    setConnection({
-      state: master.connected ? "live" : "connecting",
-      latencyMs: 8 + Math.round(rng() * 20),
-      lastMessage: now,
-    });
-  }, [tfMs, master.connected]);
-
-  // ---------- main tick loop ----------
+  // ==================================================================
+  // 2. Stream REAL live klines via Binance WebSocket (active symbol)
+  //    For FX/metals not on Binance, poll the real spot REST endpoint.
+  // ==================================================================
   useEffect(() => {
-    syncRealPrices().then(() => {
-      const st = stateRef.current;
-      for (const s of INSTRUMENTS) {
-        st.prices[s.symbol] = s.base;
-        st.prevPrices[s.symbol] = s.base;
-        st.sessionOpen[s.symbol] = s.base;
-      }
-    });
+    const spec = getSpec(symbol);
+    const interval = binanceInterval(timeframe);
+    let closeWs: (() => void) | null = null;
+    let pollTimer: ReturnType<typeof setInterval> | null = null;
+    let lastMsgAt = 0;
 
-    const interval = setInterval(step, BAR_MS);
-
-    // ---- REAL live prices: poll Binance spot every few seconds and nudge
-    //      the forming candle toward the genuine market price. Falls back
-    //      silently to the local engine when a symbol isn't listed. ----
-    const POLL_MS = 5000;
-    const pollReal = async () => {
-      const st = stateRef.current;
-      await Promise.all(
-        INSTRUMENTS.map(async (inst) => {
-          if (!inst.binance) return;
-          const px = await fetchSpotPrice(inst.binance);
-          if (px == null || px <= 0) return;
-          // anchor the engine's "current price" to the real market
-          st.prices[inst.symbol] = px;
-          // update the forming (last) candle's high/low/close to the real price
-          const bars = st.candles[inst.symbol];
-          if (bars && bars.length) {
-            const last = bars[bars.length - 1];
-            last.close = px;
-            last.high = Math.max(last.high, px);
-            last.low = Math.min(last.low, px);
-          }
-        }),
-      );
+    const markLive = () => {
+      lastMsgAt = Date.now();
+      setConnection({ state: "live", latencyMs: 0, lastMessage: lastMsgAt });
     };
-    const realInterval = setInterval(pollReal, POLL_MS);
-    pollReal();
+
+    if (spec.binance && interval) {
+      // ---- WebSocket path (crypto) ----
+      closeWs = openKlineStream({
+        binanceSymbol: spec.binance,
+        interval,
+        onKline: ({ candle }) => {
+          setCandlesBySym((prev) => ({
+            ...prev,
+            [symbol]: applyTickToCandles(prev[symbol] ?? [], candle, tfMs),
+          }));
+          pushPrice(symbol, candle.close);
+          markLive();
+        },
+        onStatus: (status) => {
+          if (status === "connecting" || status === "reconnecting")
+            setConnection((c) => ({ ...c, state: "reconnecting" }));
+          else if (status === "open") setConnection({ state: "live", latencyMs: 0, lastMessage: Date.now() });
+        },
+      });
+    } else {
+      // ---- REST polling path (FX / metals) — real spot quotes ----
+      const poll = async () => {
+        const px = await fetchSpotPriceSafe(symbol);
+        if (px != null && px > 0) {
+          setCandlesBySym((prev) => {
+            const bars = prev[symbol] ?? [];
+            const now = Date.now();
+            const barStart = Math.floor(now / tfMs) * tfMs;
+            const tick: Candle = { time: barStart, open: px, high: px, low: px, close: px };
+            return { ...prev, [symbol]: applyTickToCandles(bars, tick, tfMs) };
+          });
+          pushPrice(symbol, px);
+          markLive();
+        }
+      };
+      poll();
+      pollTimer = setInterval(poll, 4000);
+    }
 
     return () => {
-      clearInterval(interval);
-      clearInterval(realInterval);
+      if (closeWs) closeWs();
+      if (pollTimer) clearInterval(pollTimer);
     };
-  }, [step]);
+  }, [symbol, timeframe, tfMs, pushPrice]);
 
   return {
     symbol,
     setSymbol,
     timeframe,
     setTimeframe,
+    tfMs,
     timeframes: TIMEFRAMES,
     candles: candlesBySym[symbol] ?? [],
     tick: prices[symbol],
@@ -393,4 +327,61 @@ export function useLiveFeed() {
     // closeTrade disabled — trades come from the live MT5 master account
     closeTrade: () => {},
   };
+}
+
+// ====================================================================
+//  Helpers — real spot-based history for FX / metals
+//  (Binance lists EURUSDT etc., but metals/indices use Yahoo via proxy)
+// ====================================================================
+
+/** Fetch the current real spot price for any symbol (best-effort). */
+async function fetchSpotPriceSafe(symbol: string): Promise<number | null> {
+  const spec = getSpec(symbol);
+  if (spec.binance) {
+    return fetchSpotPrice(spec.binance);
+  }
+  // FX / metals → reuse the real forex/metals REST endpoints
+  try {
+    const { fetchAllRealPrices } = await import("./live-prices");
+    const real = await fetchAllRealPrices();
+    const px = real?.[symbol];
+    return px && px > 0 ? px : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Build a candle history for symbols that have no Binance klines by
+ * fetching the current real spot price. Metals/indices (XAUUSD etc.)
+ * are not listed on Binance, so there is no kline REST for them.
+ *
+ * NOTE: We never fabricate OHLC. When historical klines are genuinely
+ * unavailable (e.g. a CORS proxy is down), we return a minimal real
+ * series consisting of the verified live spot price so the chart still
+ * shows a real price line rather than simulated wicks. As real ticks
+ * arrive they form the bar naturally.
+ */
+async function buildHistoryFromSpot(
+  symbol: string,
+  tfMs: number,
+  _bars: number,
+  binance?: string | null,
+): Promise<Candle[]> {
+  const now = Date.now();
+  const spec = getSpec(symbol);
+
+  // Try Binance klines once more (some FX pairs ARE listed, e.g. EURUSDT)
+  if (binance) {
+    const k = await fetchCandles(binance, "M5", 200);
+    if (k && k.length >= 5) return k;
+  }
+
+  // Real spot quote (forex / metals / crypto-coingecko)
+  const spot = await fetchSpotPriceSafe(symbol);
+  if (spot == null || spot <= 0) return [];
+
+  // Single real bar — honest representation: we only know the live price.
+  const barStart = Math.floor(now / tfMs) * tfMs;
+  return [{ time: barStart, open: spot, high: spot, low: spot, close: spot, volume: spec.binance ? undefined : undefined }];
 }

@@ -245,6 +245,24 @@ function round(n: number, digits: number): number {
   return Math.round(n * f) / f;
 }
 
+/**
+ * Fetch REAL spot prices for all known symbols (forex + crypto + metals).
+ * Public wrapper around the private category fetchers so other modules
+ * (e.g. the live-feed chart engine) can read genuine market quotes
+ * without duplicating endpoint logic.
+ *
+ * Returns null if every source failed.
+ */
+export async function fetchAllRealPrices(): Promise<Record<string, number> | null> {
+  try {
+    const [fx, crypto, metals] = await Promise.all([fetchForex(), fetchCrypto(), fetchMetals()]);
+    const real = { ...(fx || {}), ...(crypto || {}), ...(metals || {}) };
+    return Object.keys(real).length > 0 ? real : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Format a price for display */
 export function fmtPrice(symbol: string, price: number): string {
   const digits = DIGITS[symbol] ?? 5;

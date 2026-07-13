@@ -16,12 +16,12 @@
 // ====================================================================
 
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { Timer } from "lucide-react";
 import type {
   IChartApi,
   ISeriesApi,
   ISeriesMarkersPluginApi,
   IPriceLine,
-  SeriesType,
   SeriesMarker,
   Time,
 } from "lightweight-charts";
@@ -41,6 +41,8 @@ interface Props {
   candles: Candle[];
   trades: Trade[]; // open + closed trades for this symbol
   livePrice: number;
+  /** Bar duration in ms — used for the candle-close countdown. */
+  tfMs: number;
 }
 
 // ---- palette (kept in lockstep with globals.css design tokens) ----
@@ -62,12 +64,13 @@ const COL = {
 
 type OHLC = { o: number; h: number; l: number; c: number; up?: boolean };
 
-export function CandlestickChart({ symbol, candles, trades, livePrice }: Props) {
+export function CandlestickChart({ symbol, candles, trades, livePrice, tfMs }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [legend, setLegend] = useState<OHLC | null>(null);
   const [flash, setFlash] = useState<"up" | "down" | null>(null);
   const [ready, setReady] = useState(false);
+  const [countdown, setCountdown] = useState("--:--");
 
   const spec = useMemo(() => getSpec(symbol), [symbol]);
 
@@ -313,6 +316,29 @@ export function CandlestickChart({ symbol, candles, trades, livePrice }: Props) 
     return () => clearTimeout(id);
   }, [symbol, fitOnSymbol]);
 
+  // ====================================================================
+  // 7. Candle-close countdown (time remaining in the current bar)
+  // ====================================================================
+  useEffect(() => {
+    if (!tfMs) return;
+    const tick = () => {
+      const now = Date.now();
+      const barEnd = (Math.floor(now / tfMs) + 1) * tfMs;
+      let remaining = Math.max(0, Math.floor((barEnd - now) / 1000));
+      const h = Math.floor(remaining / 3600);
+      const m = Math.floor((remaining % 3600) / 60);
+      const s = remaining % 60;
+      setCountdown(
+        h > 0
+          ? `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
+          : `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`,
+      );
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [tfMs]);
+
   const change = useMemo(() => {
     if (!legend || !legend.o) return null;
     return legend.c - legend.o;
@@ -362,6 +388,12 @@ export function CandlestickChart({ symbol, candles, trades, livePrice }: Props) 
           <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-[var(--emerald)] align-middle" />
         </div>
       )}
+
+      {/* ===== Candle-close countdown (top-right, below price) ===== */}
+      <div className="pointer-events-none absolute right-3 top-12 z-20 flex items-center gap-1.5 rounded-md border border-[var(--border)] bg-[var(--surface)]/80 px-2 py-0.5 font-mono-nums text-[10px] text-[var(--fg-muted)] backdrop-blur-sm">
+        <Timer className="h-3 w-3 text-[var(--gold)]" />
+        <span className="tabular-nums tracking-tight text-[var(--fg)]">{countdown}</span>
+      </div>
 
       {/* ===== lightweight-charts canvas mount ===== */}
       <div
