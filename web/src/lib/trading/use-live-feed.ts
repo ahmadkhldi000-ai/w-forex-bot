@@ -11,6 +11,7 @@ import {
 } from "./types";
 import { INSTRUMENTS, getSpec, DEFAULT_SYMBOL } from "./instruments";
 import { syncRealPrices } from "./instruments";
+import { fetchCandles, fetchSpotPrice } from "./binance-feed";
 import { useMasterData } from "./master-data";
 import type { Trade as ProfileTrade } from "./profile";
 
@@ -28,16 +29,17 @@ import type { Trade as ProfileTrade } from "./profile";
 const BAR_MS = 15_000; // base tick for price engine (15s)
 
 // ---------- timeframes ----------
-export type Timeframe = "M1" | "M3" | "M5" | "M15" | "H1" | "H4" | "D1";
+export type Timeframe = "M1" | "M5" | "M15" | "M30" | "H1" | "H4" | "D1" | "W1";
 
 export const TIMEFRAMES: { id: Timeframe; label: string; ms: number }[] = [
   { id: "M1", label: "M1", ms: 60_000 },
-  { id: "M3", label: "M3", ms: 3 * 60_000 },
   { id: "M5", label: "M5", ms: 5 * 60_000 },
   { id: "M15", label: "M15", ms: 15 * 60_000 },
+  { id: "M30", label: "M30", ms: 30 * 60_000 },
   { id: "H1", label: "H1", ms: 60 * 60_000 },
   { id: "H4", label: "H4", ms: 4 * 60 * 60_000 },
   { id: "D1", label: "D1", ms: 24 * 60 * 60_000 },
+  { id: "W1", label: "W1", ms: 7 * 24 * 60 * 60_000 },
 ];
 
 const HISTORY_BARS = 120;
@@ -178,20 +180,50 @@ export function useLiveFeed() {
     time: Date.now(),
   }), [master.balance]);
 
-  // ---- candle engine (real-price-anchored, timeframe-aware) ----
+  // ---- candle engine (REAL market data first, local fallback if offline) ----
   const [candlesBySym, setCandlesBySym] = useState<Record<string, Candle[]>>(() => {
     const m: Record<string, Candle[]> = {};
     for (const s of INSTRUMENTS) m[s.symbol] = seedHistory(s.symbol, tfMs);
     return m;
   });
-  // Re-seed candles when the timeframe changes
+
+  // Fetch REAL candles from Binance for every supported symbol.
+  // Runs once on mount and whenever the timeframe changes.
   useEffect(() => {
+    let cancelled = false;
+    // immediate local seed so the chart paints instantly
     setCandlesBySym(() => {
       const m: Record<string, Candle[]> = {};
       for (const s of INSTRUMENTS) m[s.symbol] = seedHistory(s.symbol, tfMs);
       return m;
     });
-  }, [tfMs]);
+
+    (async () => {
+      const entries = await Promise.all(
+        INSTRUMENTS.map(async (inst) => {
+          if (!inst.binance) return null;
+          const real = await fetchCandles(inst.binance, timeframe, 150);
+          if (cancelled || !real || real.length < 10) return null;
+          return [inst.symbol, real] as const;
+        }),
+      );
+      if (cancelled) return;
+      setCandlesBySym((prev) => {
+        const next = { ...prev };
+        let changed = false;
+        for (const entry of entries) {
+          if (!entry) continue;
+          next[entry[0]] = entry[1] as Candle[];
+          changed = true;
+        }
+        return changed ? next : prev;
+      });
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [tfMs, timeframe]);
 
   const [prices, setPrices] = useState<Record<string, SymbolTick>>(() => {
     const m: Record<string, SymbolTick> = {};
@@ -308,7 +340,38 @@ export function useLiveFeed() {
     });
 
     const interval = setInterval(step, BAR_MS);
-    return () => clearInterval(interval);
+
+    // ---- REAL live prices: poll Binance spot every few seconds and nudge
+    //      the forming candle toward the genuine market price. Falls back
+    //      silently to the local engine when a symbol isn't listed. ----
+    const POLL_MS = 5000;
+    const pollReal = async () => {
+      const st = stateRef.current;
+      await Promise.all(
+        INSTRUMENTS.map(async (inst) => {
+          if (!inst.binance) return;
+          const px = await fetchSpotPrice(inst.binance);
+          if (px == null || px <= 0) return;
+          // anchor the engine's "current price" to the real market
+          st.prices[inst.symbol] = px;
+          // update the forming (last) candle's high/low/close to the real price
+          const bars = st.candles[inst.symbol];
+          if (bars && bars.length) {
+            const last = bars[bars.length - 1];
+            last.close = px;
+            last.high = Math.max(last.high, px);
+            last.low = Math.min(last.low, px);
+          }
+        }),
+      );
+    };
+    const realInterval = setInterval(pollReal, POLL_MS);
+    pollReal();
+
+    return () => {
+      clearInterval(interval);
+      clearInterval(realInterval);
+    };
   }, [step]);
 
   return {

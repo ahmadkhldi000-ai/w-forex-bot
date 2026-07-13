@@ -14,6 +14,8 @@ export interface Candle {
   high: number;
   low: number;
   close: number;
+  /** Trade volume for the bar (optional — rendered as a histogram pane). */
+  volume?: number;
 }
 
 /** A trade marker drawn on the chart (entry / exit) */
