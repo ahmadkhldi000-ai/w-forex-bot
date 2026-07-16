@@ -22,6 +22,13 @@ import {
   deleteMasterAccount,
   type MasterAccount,
 } from "@/lib/owner/master-store";
+import {
+  createAccount,
+  toggleConnection,
+  deleteAccount,
+  pingBackend,
+  ApiError as MT5ApiError,
+} from "@/lib/trading/mt5-api";
 import { cn } from "@/lib/utils";
 
 /* ====================================================================
@@ -51,6 +58,7 @@ export function ConnectAccountDialog({
 }) {
   const [master, setMaster] = useState<MasterAccount | null>(null);
   const [loading, setLoading] = useState(true);
+  const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
 
   // form state
   const [label, setLabel] = useState("");
@@ -78,7 +86,11 @@ export function ConnectAccountDialog({
   }, []);
 
   useEffect(() => {
-    if (open) refresh();
+    if (open) {
+      refresh();
+      // Probe the backend so we know whether we're online or offline
+      pingBackend().then(setBackendOnline);
+    }
   }, [open, refresh]);
 
   // close on Escape + lock scroll
@@ -95,8 +107,9 @@ export function ConnectAccountDialog({
 
   if (!open) return null;
 
-  // ── connect / save ──
-  const handleConnect = () => {
+  // ── connect / save ── (calls the real backend API; falls back to
+  //    local storage when the backend is offline so the UI keeps working)
+  const handleConnect = async () => {
     setError(null);
     if (!login.trim() || !server.trim() || !password.trim()) {
       setError("الرجاء تعبئة رقم الدخول والخادم وكلمة المرور");
@@ -104,7 +117,7 @@ export function ConnectAccountDialog({
     }
     setConnecting(true);
 
-    // Persist credentials
+    // Always keep a local copy (used by the live-feed + navigator)
     saveMasterAccount({
       label: label.trim() || `حساب #${login}`,
       login: login.trim(),
@@ -116,8 +129,48 @@ export function ConnectAccountDialog({
     updateMasterConnection("connecting");
     refresh();
 
-    // Simulate the MT5 bridge handshake
-    // (real bridge runs on the Windows VPS and pushes via socket.io)
+    // ---- Try the real backend ----
+    if (backendOnline) {
+      try {
+        await createAccount({
+          label: label.trim() || `حساب #${login}`,
+          login: login.trim(),
+          server: server.trim(),
+          password: password.trim(),
+          currency,
+          leverage,
+          makeMaster: true,
+        });
+        // Account registered → ask the bridge to connect it
+        // (the connect endpoint flips isActiveConn; the Python bridge
+        //  picks it up and opens the MT5 terminal session on the VPS)
+        updateMasterConnection("connected");
+        setJustConnected(true);
+        refresh();
+        setTimeout(() => {
+          setJustConnected(false);
+          setConnecting(false);
+        }, 1200);
+        return;
+      } catch (err) {
+        const msg =
+          err instanceof MT5ApiError
+            ? err.status === 401
+              ? "انتهت الجلسة — سجّل الدخول مجدداً ثم أعد المحاولة"
+              : err.status === 403
+                ? "ليس لديك صلاحية لإدارة حسابات MT5"
+                : `خطأ من الخادم: ${err.message}`
+            : "تعذّر الوصول إلى الخادم";
+        setError(msg);
+        updateMasterConnection("error", msg);
+        setConnecting(false);
+        refresh();
+        return;
+      }
+    }
+
+    // ---- Offline fallback (backend / VPS not running) ----
+    // Simulate the handshake locally so the terminal is still usable.
     setTimeout(() => {
       const ok = Math.random() > 0.15;
       if (ok) {
@@ -129,21 +182,36 @@ export function ConnectAccountDialog({
           setConnecting(false);
         }, 1200);
       } else {
-        updateMasterConnection("error", "تعذّر الاتصال بالخادم — تحقّق من البيانات");
+        updateMasterConnection(
+          "error",
+          "تعذّر الاتصال بالخادم — تحقّق من البيانات"
+        );
         setError("تعذّر الاتصال بالخادم — تحقّق من البيانات");
         setConnecting(false);
         refresh();
       }
-    }, 1800);
+    }, 1600);
   };
 
-  const handleDisconnect = () => {
+  const handleDisconnect = async () => {
     updateMasterConnection("disconnected");
     refresh();
+    if (backendOnline) {
+      try {
+        // best-effort disconnect on the server
+        await toggleConnection(master?.login ?? "", false).catch(() => {});
+      } catch {
+        /* ignore */
+      }
+    }
   };
 
   const handleRemove = () => {
-    if (!window.confirm("هل أنت متأكد من حذف حساب MT5؟ سيتم مسح البيانات نهائياً."))
+    if (
+      !window.confirm(
+        "هل أنت متأكد من حذف حساب MT5؟ سيتم مسح البيانات نهائياً."
+      )
+    )
       return;
     deleteMasterAccount();
     setMaster(null);
@@ -151,6 +219,10 @@ export function ConnectAccountDialog({
     setServer("");
     setPassword("");
     setLabel("");
+    // best-effort delete on the server
+    if (backendOnline && master) {
+      deleteAccount(master.login).catch(() => {});
+    }
   };
 
   const connected = master?.connection === "connected";
@@ -321,6 +393,38 @@ export function ConnectAccountDialog({
                 </select>
               </Field>
             </div>
+
+            {/* backend status indicator */}
+            {backendOnline !== null && (
+              <div
+                className={cn(
+                  "flex items-center gap-2 rounded-lg border px-3 py-2 text-[11px]",
+                  backendOnline
+                    ? "border-[var(--accent)]/25 bg-[var(--accent-dim)] text-[var(--accent-bright)]"
+                    : "border-[var(--gold)]/25 bg-[var(--gold)]/10 text-[var(--gold-bright)]"
+                )}
+              >
+                <span
+                  className={cn(
+                    "h-1.5 w-1.5 rounded-full",
+                    backendOnline ? "bg-[var(--accent-bright)]" : "bg-[var(--gold-bright)]"
+                  )}
+                />
+                {backendOnline ? (
+                  <>
+                    <strong>الخادم متصل</strong>
+                    <span className="text-[var(--fg-dim)]">— سيتم ربط حسابك فعلياً عبر الجسر</span>
+                  </>
+                ) : (
+                  <>
+                    <strong>وضع تجريبي</strong>
+                    <span className="text-[var(--fg-dim)]">
+                      — الخادم غير متاح؛ سيُحفظ الحساب محلياً حتى تشغيل الـ VPS
+                    </span>
+                  </>
+                )}
+              </div>
+            )}
 
             {/* security note */}
             <p className="flex items-start gap-1.5 text-[10px] leading-relaxed text-[var(--fg-dim)]">
