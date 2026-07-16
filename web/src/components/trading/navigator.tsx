@@ -9,6 +9,7 @@ import {
   Wallet,
   User,
   Cpu,
+  PlugZap,
 } from "lucide-react";
 import { AccountSnapshot } from "@/lib/trading/types";
 import { cn, formatMoney } from "@/lib/utils";
@@ -30,10 +31,12 @@ export function Navigator({
   account,
   masterLogin,
   connected,
+  onConnect,
 }: {
   account: AccountSnapshot | null;
   masterLogin?: number | string;
   connected?: boolean;
+  onConnect?: () => void;
 }) {
   const [open, setOpen] = useState<Record<NodeKey, boolean>>({
     accounts: true,
@@ -102,6 +105,20 @@ export function Navigator({
                 />
               </div>
             )}
+
+            {/* Connect / manage MT5 account button */}
+            <button
+              onClick={onConnect}
+              className={cn(
+                "mt-1 flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-[11px] font-semibold transition-smooth",
+                connected
+                  ? "text-[var(--fg-muted)] hover:bg-[var(--bg-hover)]/60 hover:text-[var(--fg)]"
+                  : "bg-[var(--accent)]/15 text-[var(--accent-bright)] hover:bg-[var(--accent)]/25"
+              )}
+            >
+              <PlugZap className="h-3.5 w-3.5 shrink-0" />
+              {connected ? "إدارة الحساب" : "ربط حساب MT5"}
+            </button>
           </div>
         )}
 

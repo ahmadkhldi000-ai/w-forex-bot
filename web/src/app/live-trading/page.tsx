@@ -10,6 +10,7 @@ import { Navigator } from "@/components/trading/navigator";
 import { TradeToolbar } from "@/components/trading/trade-toolbar";
 import { Toolbox } from "@/components/trading/toolbox";
 import { OrderDialog } from "@/components/trading/order-dialog";
+import { ConnectAccountDialog } from "@/components/trading/connect-account-dialog";
 import { useLiveFeed } from "@/lib/trading/use-live-feed";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -32,6 +33,7 @@ export default function LiveTradingPage() {
   const feed = useLiveFeed();
   const [toolboxHeight, setToolboxHeight] = useState<"open" | "closed">("open");
   const [orderOpen, setOrderOpen] = useState(false);
+  const [connectOpen, setConnectOpen] = useState(false);
 
   // positions relevant to the currently selected symbol
   const tradesForSymbol = useMemo(
@@ -59,6 +61,7 @@ export default function LiveTradingPage() {
                 account={feed.account}
                 masterLogin={feed.masterLogin ?? undefined}
                 connected={feed.masterConnected}
+                onConnect={() => setConnectOpen(true)}
               />
             </div>
 
@@ -143,6 +146,8 @@ export default function LiveTradingPage() {
         symbol={feed.symbol}
         tick={feed.tick}
       />
+
+      <ConnectAccountDialog open={connectOpen} onClose={() => setConnectOpen(false)} />
     </div>
   );
 }
