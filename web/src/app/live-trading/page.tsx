@@ -1,97 +1,84 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { Topbar } from "@/components/dashboard/topbar";
 import { CandlestickChart } from "@/components/trading/candlestick-chart";
 import { SymbolHeader } from "@/components/trading/symbol-header";
-import { SymbolPicker } from "@/components/trading/symbol-picker";
-import { TradesPanel } from "@/components/trading/trades-panel";
+import { MarketWatch } from "@/components/trading/market-watch";
+import { Navigator } from "@/components/trading/navigator";
+import { TradeToolbar } from "@/components/trading/trade-toolbar";
+import { Toolbox } from "@/components/trading/toolbox";
+import { OrderDialog } from "@/components/trading/order-dialog";
 import { useLiveFeed } from "@/lib/trading/use-live-feed";
-import { LivePriceTicker } from "@/components/dashboard/live-price-ticker";
-import { Layers, Crosshair, TrendingUp, TrendingDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+/* ====================================================================
+   Live Trading — MetaTrader 5 style terminal.
+
+   Faithful MT5 multi-panel layout:
+   ┌──────────────────────────────────────────────────────┐
+   │  Topbar (terminal chrome)                             │
+   ├──────┬───────────────────────────────────┬───────────┤
+   │ Nav  │  Toolbar · SymbolHeader · Chart   │ Market    │
+   │      │                                   │ Watch     │
+   ├──────┴───────────────────────────────────┴───────────┤
+   │  Toolbox  (Trading | History | Exposure | News …)     │
+   └──────────────────────────────────────────────────────┘
+   ==================================================================== */
 
 export default function LiveTradingPage() {
   const feed = useLiveFeed();
+  const [toolboxHeight, setToolboxHeight] = useState<"open" | "closed">("open");
+  const [orderOpen, setOrderOpen] = useState(false);
+
+  // positions relevant to the currently selected symbol
   const tradesForSymbol = useMemo(
-    () => feed.trades.filter((t) => t.symbol === feed.symbol),
-    [feed.trades, feed.symbol]
+    () =>
+      feed.openTrades.filter(
+        (t) => t.symbol === feed.symbol || t.symbol === feed.symbol.replace("/", "")
+      ),
+    [feed.openTrades, feed.symbol]
   );
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] lg:pr-[252px]">
+    <div className="bg-[var(--bg-base)]">
       <Sidebar />
-      <div className="flex min-w-0 flex-col">
+
+      <div className="flex min-h-dvh min-w-0 flex-col lg:mr-[252px] lg:h-dvh lg:min-h-0 lg:overflow-hidden">
         <Topbar />
-        <div className="px-4 pt-4 lg:px-6 lg:pt-6">
-          <LivePriceTicker />
-        </div>
-        <main className="flex-1 overflow-hidden p-4 lg:p-6">
-          <div className="grid h-full grid-cols-1 gap-4 xl:grid-cols-[260px_minmax(0,1fr)_360px]">
-            {/* ===== Symbol watchlist ===== */}
-            <aside className="hidden flex-col rounded-2xl border border-[var(--border)] bg-[var(--surface)]/60 p-3 xl:flex">
-              <div className="mb-3 flex items-center gap-2 px-1">
-                <Layers className="h-4 w-4 text-[var(--emerald)]" />
-                <h2 className="text-sm font-semibold text-[var(--fg)]">Markets</h2>
-              </div>
-              <SymbolPicker active={feed.symbol} ticks={feed.allTicks} onSelect={feed.setSymbol} />
-            </aside>
 
-            {/* ===== Chart + header ===== */}
-            <section className="flex min-w-0 flex-col rounded-2xl border border-[var(--border)] bg-[var(--surface)]/40 p-4">
-              <SymbolHeader tick={feed.tick} connection={feed.connection} />
+        {/* ============ Terminal body — fills remaining viewport ============ */}
+        <main dir="ltr" className="flex min-h-0 flex-1 flex-col p-1.5 sm:p-2">
+          {/* ---- top row: Navigator | Chart | Market Watch ---- */}
+          <div className="flex min-h-0 flex-1 flex-col gap-1.5 sm:gap-2 lg:flex-row">
+            {/* Navigator panel (desktop XL+) */}
+            <div className="hidden w-[208px] shrink-0 overflow-hidden border border-[var(--border)] bg-[var(--surface)]/50 xl:flex">
+              <Navigator
+                account={feed.account}
+                masterLogin={feed.masterLogin ?? undefined}
+                connected={feed.masterConnected}
+              />
+            </div>
 
-              {/* ===== Timeframe selector ===== */}
-              <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                <span className="flex items-center gap-1 text-[11px] font-medium text-[var(--fg-muted)]">
-                  <Layers className="h-3 w-3" /> الفريم
-                </span>
-                {feed.timeframes.map((tf) => (
-                  <button
-                    key={tf.id}
-                    onClick={() => feed.setTimeframe(tf.id)}
-                    className={`rounded-md px-2.5 py-1 text-[11px] font-semibold transition-smooth ${
-                      feed.timeframe === tf.id
-                        ? "bg-[var(--accent)] text-[var(--bg)]"
-                        : "bg-[var(--surface)]/60 text-[var(--fg-muted)] hover:bg-[var(--surface)] hover:text-[var(--fg)]"
-                    }`}
-                  >
-                    {tf.label}
-                  </button>
-                ))}
-                <span className="mx-2 h-3 w-px bg-[var(--border)]" />
-                <span className="text-[11px] text-[var(--fg-dim)]">
-                  {feed.masterConnected ? (
-                    <span className="flex items-center gap-1 text-[var(--emerald)]">
-                      <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--emerald)]" />
-                      متصل بحساب الماستر
-                      {feed.masterLogin ? ` #${feed.masterLogin}` : ""}
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1 text-amber-400">
-                      <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400" />
-                      بانتظار حساب الماستر — لا توجد صفقات وهمية
-                    </span>
-                  )}
-                </span>
-              </div>
+            {/* Center: Toolbar + SymbolHeader + Chart */}
+            <div className="flex min-w-0 flex-1 flex-col overflow-hidden border border-[var(--border)] bg-[var(--surface)]/50">
+              <TradeToolbar
+                timeframes={feed.timeframes}
+                timeframe={feed.timeframe}
+                onTimeframe={feed.setTimeframe}
+                onNewOrder={() => setOrderOpen(true)}
+              />
 
-              <div className="mt-3 flex flex-wrap items-center gap-1.5 border-b border-[var(--border)] pb-3 text-[11px]">
-                <ChartLegend color="var(--emerald)" label="Bullish" />
-                <ChartLegend color="var(--danger)" label="Bearish" />
-                <span className="mx-1 h-3 w-px bg-[var(--border)]" />
-                <ChartMark icon={<TrendingUp className="h-3 w-3" />} color="var(--emerald-bright)" label="BUY" />
-                <ChartMark icon={<TrendingDown className="h-3 w-3" />} color="var(--danger)" label="SELL" />
-                <span className="mx-1 h-3 w-px bg-[var(--border)]" />
-                <ChartLegend color="var(--danger)" label="Stop Loss" dashed />
-                <ChartLegend color="var(--emerald)" label="Take Profit" dashed />
-                <ChartLegend color="rgba(255,255,255,0.5)" label="Entry" dashed />
-                <span className="ml-auto flex items-center gap-1 text-[var(--fg-dim)]">
-                  <Crosshair className="h-3 w-3" /> Hover for OHLC
-                </span>
-              </div>
+              {/* live symbol header — Bid / Ask / spread */}
+              {feed.tick && (
+                <div className="border-b border-[var(--border)] bg-[var(--bg-elev)]/30">
+                  <SymbolHeader tick={feed.tick} connection={feed.connection} />
+                </div>
+              )}
 
-              <div className="mt-2 min-h-0 flex-1">
+              <div className="relative min-h-[260px] flex-1">
                 <CandlestickChart
                   symbol={feed.symbol}
                   candles={feed.candles}
@@ -100,42 +87,62 @@ export default function LiveTradingPage() {
                   tfMs={feed.tfMs}
                 />
               </div>
-            </section>
+            </div>
 
-            {/* ===== Trades + account ===== */}
-            <aside className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)]/60">
-              <TradesPanel
-                openTrades={feed.openTrades}
-                closedTrades={feed.closedTrades}
+            {/* Market Watch panel */}
+            <div className="h-[280px] w-full shrink-0 overflow-hidden border border-[var(--border)] bg-[var(--surface)]/50 sm:h-auto lg:w-[300px] xl:w-[316px]">
+              <MarketWatch
+                active={feed.symbol}
                 ticks={feed.allTicks}
-                account={feed.account}
-                onClose={feed.closeTrade}
+                onSelect={feed.setSymbol}
               />
-            </aside>
+            </div>
+          </div>
+
+          {/* ---- Toolbox (bottom) ---- MT5 collapsible panel */}
+          <div className="mt-1.5 shrink-0 overflow-hidden border border-[var(--border)] bg-[var(--bg-elev)]/40 sm:mt-2">
+            {/* collapse toggle tab */}
+            <button
+              onClick={() => setToolboxHeight((h) => (h === "open" ? "closed" : "open"))}
+              className="flex h-[34px] w-full items-center gap-2 border-b border-[var(--border)] bg-[var(--bg-elev)]/70 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--fg-muted)] transition-smooth hover:text-[var(--fg)]"
+            >
+              <ChevronDown
+                className={cn(
+                  "h-3.5 w-3.5 text-[var(--fg-dim)] transition-transform duration-200",
+                  toolboxHeight === "closed" && "rotate-180"
+                )}
+              />
+              Toolbox
+              <span className="flex items-center gap-1 rounded-full bg-[var(--accent-dim)] px-1.5 py-0.5 text-[9px] normal-case tracking-normal text-[var(--accent-bright)]">
+                {feed.openTrades.length} open
+              </span>
+            </button>
+
+            <div
+              className={cn(
+                "transition-[height] duration-300 ease-out",
+                toolboxHeight === "open" ? "h-[240px]" : "h-0"
+              )}
+            >
+              {toolboxHeight === "open" && (
+                <Toolbox
+                  openTrades={feed.openTrades}
+                  closedTrades={feed.closedTrades}
+                  account={feed.account}
+                  connection={feed.connection}
+                />
+              )}
+            </div>
           </div>
         </main>
       </div>
-    </div>
-  );
-}
 
-function ChartLegend({ color, label, dashed }: { color: string; label: string; dashed?: boolean }) {
-  return (
-    <span className="flex items-center gap-1.5 text-[var(--fg-muted)]">
-      <span
-        className="inline-block h-2 w-2 rounded-sm"
-        style={{ background: dashed ? "transparent" : color, borderTop: dashed ? `2px dashed ${color}` : undefined }}
+      <OrderDialog
+        open={orderOpen}
+        onClose={() => setOrderOpen(false)}
+        symbol={feed.symbol}
+        tick={feed.tick}
       />
-      {label}
-    </span>
-  );
-}
-
-function ChartMark({ icon, color, label }: { icon: React.ReactNode; color: string; label: string }) {
-  return (
-    <span className="flex items-center gap-1 text-[var(--fg-muted)]">
-      <span style={{ color }}>{icon}</span>
-      {label}
-    </span>
+    </div>
   );
 }
