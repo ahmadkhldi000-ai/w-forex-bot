@@ -49,7 +49,7 @@ export default function LiveTradingPage() {
       <Sidebar />
 
       <div className="flex min-h-dvh min-w-0 flex-col lg:mr-[252px] lg:h-dvh lg:min-h-0 lg:overflow-hidden">
-        <Topbar />
+        <Topbar showConnectMT5 />
 
         {/* ============ Terminal body — fills remaining viewport ============ */}
         <main dir="ltr" className="flex min-h-0 flex-1 flex-col p-1.5 sm:p-2">
